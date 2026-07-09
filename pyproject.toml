@@ -1,0 +1,38 @@
+[project]
+name = "tabit-engine"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "pydantic>=2,<3",
+    "numpy>=1.24,<2",
+    "soundfile>=0.12",
+    "librosa>=0.10",
+    "yt-dlp>=2024.1",
+    "mir_eval>=0.7",
+    # Heavy / native — validated in this task's smoke test:
+    "essentia>=2.1b6.dev1110 ; sys_platform != 'win32'",
+    # PyPI's latest demucs release (4.0.1) predates the `demucs.api` module the
+    # engine needs (it only exists on the GitHub main branch, unreleased as of
+    # 2026-07-09). Pinned to a specific commit for reproducibility.
+    "demucs @ git+https://github.com/facebookresearch/demucs.git@e976d93ecc3865e5757426930257e200846a520a",
+    "crepe>=0.0.15",
+    "crema>=0.2",
+    # crema's 2019-era code imports `keras.models.model_from_config`, which was
+    # removed in the Keras 3 rewrite that ships by default with tensorflow>=2.16.
+    # Pin both to the last Keras-2-compatible release pair with Python 3.11 wheels.
+    "tensorflow==2.15.0",
+    "keras==2.15.0",
+    # crema also does `from pkg_resources import resource_filename` at import
+    # time; setuptools>=81 dropped pkg_resources. Needed at runtime (this pin)
+    # AND at build time for crepe's legacy setup.py — see constraints-build.txt.
+    "setuptools<81",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-mock>=3"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests that load real ML models / audio (slow; opt-in with -m integration)",
+]
+addopts = "-m 'not integration'"
