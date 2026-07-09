@@ -26,6 +26,12 @@ dependencies = [
     # time; setuptools>=81 dropped pkg_resources. Needed at runtime (this pin)
     # AND at build time for crepe's legacy setup.py — see constraints-build.txt.
     "setuptools<81",
+    # pumpp 0.6.0's LabelEncoder (used internally by crema) duck-types the
+    # sklearn transformer API without inheriting from BaseEstimator. sklearn
+    # 1.6 made check_is_fitted() call estimator.__sklearn_tags__(), which
+    # such classes don't have, so CremaChordModel.predict() raises
+    # AttributeError deep inside pumpp's chord task. Pin below the 1.6 cutover.
+    "scikit-learn<1.6",
 ]
 
 [project.optional-dependencies]
