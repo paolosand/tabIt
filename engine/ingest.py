@@ -47,10 +47,12 @@ def ingest(src: str, workdir: str, sample_rate: int = 44100) -> IngestResult:
     wav_path = os.path.join(workdir, "audio.wav")
     if _is_url(src):
         downloaded, info = _download_audio(src, workdir)
-        _to_mono_wav(downloaded, wav_path, sample_rate)
-        os.remove(downloaded)
+        try:
+            _to_mono_wav(downloaded, wav_path, sample_rate)
+        finally:
+            os.remove(downloaded)
         source = Source(kind="youtube", videoId=info.get("id"),
-                        title=info.get("title"), duration=float(info.get("duration", 0.0)))
+                        title=info.get("title"), duration=float(info.get("duration") or 0.0))
     else:
         _to_mono_wav(src, wav_path, sample_rate)
         info_sf = sf.info(wav_path)
