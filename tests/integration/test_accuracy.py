@@ -55,18 +55,10 @@ def test_majmin_accuracy_on_synthetic_clip(ref_clip):
 
     # Honest floor: crema is trained on real-world recordings (guitars, full
     # mixes, vocals, room noise), not clean additively-synthesized tones, so
-    # a synthetic clip is out-of-distribution for the model. We only enforce
-    # the brief's >= 0.4 floor if the model actually clears it here; we do not
-    # game the fixture (e.g. injecting noise/tuning it to the model) just to
-    # force a passing accuracy number. A real accuracy floor requires a real,
-    # licensed/self-recorded labeled song -- tracked as a documented follow-up
-    # (see tests/fixtures/ref_clip/ note in the task-11 report).
-    if score >= 0.4:
-        assert score >= 0.4
-    else:
-        print(
-            f"NOTE: measured majmin accuracy {score:.3f} is below the brief's "
-            "0.4 floor. This is expected for a synthetic-tone fixture (crema "
-            "is trained on real recordings). Not asserted as a failure -- see "
-            "task-11-report.md for the follow-up plan (swap in a real labeled clip)."
-        )
+    # a synthetic clip is out-of-distribution for the model. This is a
+    # synthetic-fixture floor, not a real-music accuracy benchmark -- it just
+    # guards against a regression on this deterministic fixture. A real
+    # accuracy floor requires a real, licensed/self-recorded labeled song --
+    # tracked as a documented follow-up (see tests/fixtures/ref_clip/ note in
+    # the task-11 report).
+    assert score >= 0.4

@@ -8,7 +8,10 @@ dependencies = [
     "soundfile>=0.12",
     "librosa>=0.10",
     "yt-dlp>=2024.1",
-    "mir_eval>=0.7",
+    # Pinned to the exact version validated against this engine; mir_eval's
+    # 0.7 -> 0.8.x line introduced API drift (e.g. chord/util signatures)
+    # that isn't guaranteed compatible with the harness in this task.
+    "mir_eval==0.8.2",
     # Heavy / native — validated in this task's smoke test:
     "essentia>=2.1b6.dev1110 ; sys_platform != 'win32'",
     # PyPI's latest demucs release (4.0.1) predates the `demucs.api` module the

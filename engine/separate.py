@@ -1,8 +1,11 @@
+import logging
 import os
 
 import librosa
 import numpy as np
 import soundfile as sf
+
+logger = logging.getLogger(__name__)
 
 
 def _hpss_fallback(wav_path: str, out_dir: str) -> dict[str, str]:
@@ -28,7 +31,10 @@ def separate(wav_path: str, out_dir: str, model: str = "htdemucs_6s") -> dict[st
             save_audio(source, p, samplerate=sep.samplerate)
             paths[name] = p
         return paths
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "Demucs separation failed (%s); falling back to HPSS (no bass stem)", exc
+        )
         return _hpss_fallback(wav_path, out_dir)
 
 

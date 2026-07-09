@@ -23,8 +23,8 @@ def detect_bass_notes(bass_wav: str, segments: list[ChordSegment]) -> list[str]:
     for seg in segments:
         mask = (times >= seg.start) & (times < seg.end) & (conf > 0.5)
         if not mask.any():
-            result.append(seg.root)
+            result.append(seg.bass)
             continue
         pc = _hz_to_pitch_class(float(np.median(freqs[mask])))
-        result.append(pc or seg.root)
+        result.append(pc or seg.bass)
     return result
