@@ -30,6 +30,16 @@ The "push the bounds" bit: run the chord model on the harmonic (drums-removed) m
 track the isolated bass stem in parallel, then reconcile to emit slash chords (`C/G`) — which
 most tools skip entirely.
 
+### Install (engine)
+
+Plain `pip install -e ".[dev]"` is **not sufficient** — crema's legacy build needs an old
+`setuptools`, so the build step must be constrained separately:
+
+```
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]" --build-constraint constraints-build.txt
+```
+
 ## Docs
 
 - **Design spec:** [`docs/superpowers/specs/2026-07-09-tabit-design.md`](docs/superpowers/specs/2026-07-09-tabit-design.md)
@@ -37,19 +47,22 @@ most tools skip entirely.
 
 ## Progress
 
-### Sub-project 1 — MIR engine (current)
-- [ ] Task 0 — Project scaffolding + dependency smoke test
-- [ ] Task 1 — Chart schema (`schema.py`)
-- [ ] Task 2 — Scale suggestions (`scales.py`)
-- [ ] Task 3 — Audio ingest (`ingest.py`)
-- [ ] Task 4 — Beat/tempo tracking (`beats.py`)
-- [ ] Task 5 — Key detection (`key.py`)
-- [ ] Task 6 — Chord recognition (`chords.py`)
-- [ ] Task 7 — Source separation (`separate.py`)
-- [ ] Task 8 — Bass-note / slash-chord detection (`bass.py`)
-- [ ] Task 9 — Post-processing (`postprocess.py`)
-- [ ] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
-- [ ] Task 11 — Accuracy harness (`mir_eval`)
+### Sub-project 1 — MIR engine ✅ complete
+
+`python -m engine.cli <youtube-url|audio-file> -o chart.json` runs the full pipeline end-to-end (~10s on a short clip, Apple Silicon).
+
+- [x] Task 0 — Project scaffolding + dependency smoke test
+- [x] Task 1 — Chart schema (`schema.py`)
+- [x] Task 2 — Scale suggestions (`scales.py`)
+- [x] Task 3 — Audio ingest (`ingest.py`)
+- [x] Task 4 — Beat/tempo tracking (`beats.py`)
+- [x] Task 5 — Key detection (`key.py`)
+- [x] Task 6 — Chord recognition (`chords.py`)
+- [x] Task 7 — Source separation (`separate.py`)
+- [x] Task 8 — Bass-note / slash-chord detection (`bass.py`)
+- [x] Task 9 — Post-processing (`postprocess.py`)
+- [x] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
+- [x] Task 11 — Accuracy harness (`mir_eval`) — measured **0.495** majmin weighted accuracy on a **synthetic**, programmatically-generated Am→F→C→G fixture (`tests/integration/test_accuracy.py`), asserted as a regression floor (`>= 0.4`) for that fixture only. **This is not a real-music accuracy claim** — crema is trained on real recordings, so a synthesized-tone clip is out-of-distribution and this number says nothing about accuracy on an actual song. A real-song accuracy floor (licensed/self-recorded, hand-labeled) remains a documented follow-up (see task-11 report)
 
 ### Sub-project 2 — Web app (FastAPI + React)
 - [ ] Not yet planned (plan written after the engine produces real charts)
