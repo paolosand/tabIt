@@ -49,7 +49,7 @@ most tools skip entirely.
 - [ ] Task 8 — Bass-note / slash-chord detection (`bass.py`)
 - [ ] Task 9 — Post-processing (`postprocess.py`)
 - [ ] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
-- [ ] Task 11 — Accuracy harness (`mir_eval`)
+- [x] Task 11 — Accuracy harness (`mir_eval`) — measured **0.495** majmin weighted accuracy on a synthesized Am→F→C→G fixture (`tests/integration/test_accuracy.py`); a real-song accuracy floor is a documented follow-up (see task-11 report)
 
 ### Sub-project 2 — Web app (FastAPI + React)
 - [ ] Not yet planned (plan written after the engine produces real charts)
