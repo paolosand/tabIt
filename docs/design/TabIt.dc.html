@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(0.972 0.008 85); }
+    * { box-sizing: border-box; }
+    a { color: oklch(0.42 0.09 250); text-decoration: underline; text-decoration-color: oklch(0.75 0.06 250); text-underline-offset: 2px; }
+    a:hover { color: oklch(0.32 0.11 250); }
+    ::selection { background: oklch(0.90 0.12 92); }
+    @keyframes tabit-pulse {
+      0%, 100% { opacity: 0.25; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-2px); }
+    }
+    @keyframes tabit-fade-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(0.972 0.008 85); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column;">
+
+  <!-- ============ LANDING ============ -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="Landing" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; animation:tabit-fade-in 0.4s ease-out;">
+
+      <div style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:56px; color:oklch(0.28 0.02 70); letter-spacing:-0.01em; margin-bottom:6px;">tabIt</div>
+      <div style="font-size:14px; color:oklch(0.52 0.02 70); letter-spacing:0.02em; margin-bottom:44px; text-align:center;">paste a song, follow the chords, play along</div>
+
+      <div style="width:100%; max-width:560px; background:oklch(0.988 0.006 85); border-radius:3px; padding:36px 32px 28px; position:relative; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);">
+        <div style="position:absolute; left:44px; top:0; bottom:0; width:1.5px; background:oklch(0.70 0.10 25 / 0.55);"></div>
+
+        <div style="padding-left:28px;">
+          <label style="display:block; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70); margin-bottom:10px;">YouTube link</label>
+          <input
+            type="text"
+            value="{{ urlValue }}"
+            onChange="{{ onUrlChange }}"
+            onKeyDown="{{ onUrlKeyDown }}"
+            placeholder="https://www.youtube.com/watch?v=..."
+            style="width:100%; border:none; border-bottom:1.5px solid oklch(0.88 0.015 250); background:transparent; font-family:'Fraunces',serif; font-size:20px; color:oklch(0.28 0.02 70); padding:6px 2px 12px; outline:none;"
+          />
+          <div style="display:flex; align-items:center; gap:14px; margin-top:22px;">
+            <button
+              onClick="{{ onAnalyzeClick }}"
+              style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.988 0.006 85); background:oklch(0.28 0.02 70); border:none; border-radius:2px; padding:12px 22px; cursor:pointer; transition:background 180ms ease-out, transform 180ms ease-out;"
+              style-hover="background:oklch(0.36 0.03 70); transform:translateY(-1px);"
+              style-active="transform:translateY(0px);"
+            >Find the chords</button>
+            <span style="font-size:12px; color:oklch(0.52 0.02 70);">no account, no clutter — paste and go</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:14px; margin:22px 0 4px; color:oklch(0.52 0.02 70);">
+            <div style="flex:1; height:1px; background:oklch(0.88 0.015 250);"></div>
+            <span style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase;">or</span>
+            <div style="flex:1; height:1px; background:oklch(0.88 0.015 250);"></div>
+          </div>
+
+          <label
+            style="display:flex; align-items:center; justify-content:center; gap:8px; border:1.5px dashed oklch(0.55 0.02 70 / 0.45); border-radius:3px; padding:14px; font-size:13px; color:oklch(0.52 0.02 70); cursor:pointer; transition:border-color 180ms ease-out, background 180ms ease-out;"
+            style-hover="border-color:oklch(0.55 0.02 70 / 0.8); background:oklch(0.94 0.01 85 / 0.5);"
+          >
+            <span>drop an audio file, or click to choose one</span>
+            <input type="file" accept="audio/*" onChange="{{ onFileChosen }}" style="display:none;" />
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-top:26px; font-size:11.5px; color:oklch(0.52 0.02 70); text-align:center; max-width:420px; line-height:1.5;">
+        Demo mode — every link or file opens the same sample analysis below so you can see the sync in action.
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ ANALYZING ============ -->
+  <sc-if value="{{ isAnalyzing }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Analyzing" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; animation:tabit-fade-in 0.35s ease-out;">
+      <div style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px; color:oklch(0.28 0.02 70);">tabIt</div>
+      <div style="display:flex; align-items:center; gap:9px; font-size:14px; color:oklch(0.52 0.02 70); letter-spacing:0.02em;">
+        <span>Listening for chords, key and scale</span>
+        <span style="display:inline-flex; gap:3px;">
+          <span style="width:5px; height:5px; border-radius:50%; background:oklch(0.55 0.02 70); display:inline-block; animation:tabit-pulse 1.1s ease-in-out infinite; animation-delay:0s;"></span>
+          <span style="width:5px; height:5px; border-radius:50%; background:oklch(0.55 0.02 70); display:inline-block; animation:tabit-pulse 1.1s ease-in-out infinite; animation-delay:0.15s;"></span>
+          <span style="width:5px; height:5px; border-radius:50%; background:oklch(0.55 0.02 70); display:inline-block; animation:tabit-pulse 1.1s ease-in-out infinite; animation-delay:0.3s;"></span>
+        </span>
+      </div>
+      <div style="width:220px; height:1.5px; background:oklch(0.88 0.015 250); position:relative; overflow:hidden; border-radius:2px;">
+        <div style="position:absolute; left:0; top:0; bottom:0; width:40%; background:oklch(0.70 0.10 25 / 0.7); animation:tabit-sweep 1.4s ease-in-out infinite;"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ CHORD SHEET ============ -->
+  <sc-if value="{{ isSheet }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Chord sheet" style="flex:1; padding:28px 5vw 48px; animation:tabit-fade-in 0.4s ease-out;">
+
+      <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:22px;">
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:26px; color:oklch(0.28 0.02 70);">tabIt</span>
+          <a href="#" onClick="{{ onBackClick }}" style="font-size:11.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:oklch(0.52 0.02 70); text-decoration:none; border-bottom:1px dashed oklch(0.55 0.02 70 / 0.6); padding-bottom:1px;">‹ new song</a>
+        </div>
+        <div style="font-size:12px; color:oklch(0.52 0.02 70); letter-spacing:0.02em;">{{ videoTitle }}</div>
+      </div>
+
+      <div style="display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; margin-bottom:30px;">
+
+        <div style="flex:none; width:300px; background:#000; border-radius:3px; overflow:hidden; box-shadow:0 6px 18px oklch(0.28 0.02 70 / 0.18);">
+          <div style="position:relative; width:100%; aspect-ratio:16/9;">
+            <div key="{{ mountKey }}" ref="{{ playerMountRef }}" style="position:absolute; inset:0;"></div>
+          </div>
+        </div>
+
+        <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:16px;">
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; flex-direction:column; gap:2px; padding:8px 14px; background:oklch(0.988 0.006 85); border-radius:2px;">
+              <span style="font-size:9.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Key</span>
+              <span style="font-family:'Fraunces',serif; font-weight:600; font-size:17px;">{{ keyLabel }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:2px; padding:8px 14px; background:oklch(0.988 0.006 85); border-radius:2px;">
+              <span style="font-size:9.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Tempo</span>
+              <span style="font-family:'Fraunces',serif; font-weight:600; font-size:17px;">{{ bpmLabel }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:2px; padding:8px 14px; background:oklch(0.988 0.006 85); border-radius:2px; flex:1; min-width:200px;">
+              <span style="font-size:9.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Scales to solo with</span>
+              <span style="font-size:13.5px; line-height:1.4;">{{ scalesLabel }}</span>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:9.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Transpose</span>
+            <button onClick="{{ onTransposeDown }}" aria-label="Transpose down" style="width:26px; height:26px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); background:oklch(0.988 0.006 85); color:oklch(0.28 0.02 70); font-size:15px; line-height:1; cursor:pointer;" style-hover="background:oklch(0.94 0.01 85);">–</button>
+            <span style="font-family:'Fraunces',serif; font-weight:600; font-size:15px; min-width:56px; text-align:center;">{{ transposeLabel }}</span>
+            <button onClick="{{ onTransposeUp }}" aria-label="Transpose up" style="width:26px; height:26px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); background:oklch(0.988 0.006 85); color:oklch(0.28 0.02 70); font-size:15px; line-height:1; cursor:pointer;" style-hover="background:oklch(0.94 0.01 85);">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:oklch(0.988 0.006 85); border-radius:4px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06); position:relative; overflow:hidden;">
+        <div style="position:absolute; left:52px; top:0; bottom:0; width:1.5px; background:oklch(0.70 0.10 25 / 0.5); z-index:1;"></div>
+
+        <sc-if value="{{ hasEditingChord }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeEditing }}" style="position:fixed; inset:0; z-index:15;"></div>
+        </sc-if>
+        <div ref="{{ sheetScrollRef }}" style="max-height:420px; overflow-y:auto; padding:26px 30px 26px 76px; scroll-behavior:smooth;">
+          <sc-for list="{{ rows }}" as="row" hint-placeholder-count="6">
+            <div
+              ref="{{ row.setRef }}"
+              style="display:grid; grid-template-columns:repeat(4, minmax(90px,1fr)); column-gap:22px; padding:14px 0; border-bottom:1px solid oklch(0.88 0.015 250);"
+            >
+              <sc-for list="{{ row.chords }}" as="chord" hint-placeholder-count="4">
+                <div style="position:relative; display:flex; align-items:center; justify-content:center; padding:10px 4px;">
+                  <sc-if value="{{ chord.isCurrent }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute; left:6%; right:6%; top:14%; bottom:18%; background:{{ highlightColor }}; border-radius:3px 8px 5px 9px; transform:rotate(-0.6deg); z-index:0; transition:opacity 200ms ease-out;"></div>
+                  </sc-if>
+                  <button
+                    onClick="{{ chord.onClick }}"
+                    style="position:relative; z-index:1; background:none; border:none; cursor:pointer; padding:0; font-family:'Fraunces',serif; font-weight:600; font-size:{{ chord.fontSize }}; color:{{ chord.textColor }}; border-bottom:{{ chord.underline }}; padding-bottom:3px; transition:color 200ms ease-out;"
+                  >{{ chord.label }}</button>
+                  <sc-if value="{{ chord.edited }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute; top:2px; right:14%; width:5px; height:5px; border-radius:50%; background:oklch(0.70 0.10 25); z-index:2;"></span>
+                  </sc-if>
+
+                  <sc-if value="{{ chord.isEditing }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:6px; z-index:20; background:oklch(0.988 0.006 85); border-radius:4px; box-shadow:0 4px 14px oklch(0.28 0.02 70 / 0.22); padding:12px 14px; width:220px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-size:9.5px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Fix this chord</span>
+                        <button onClick="{{ chord.onClose }}" style="border:none; background:none; color:oklch(0.52 0.02 70); font-size:14px; cursor:pointer; line-height:1;">×</button>
+                      </div>
+                      <div style="display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:10px;">
+                        <button onClick="{{ chord.onRootDown }}" style="width:24px; height:24px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); background:none; cursor:pointer; font-size:14px;">–</button>
+                        <span style="font-family:'Fraunces',serif; font-weight:600; font-size:20px; min-width:64px; text-align:center;">{{ chord.label }}</span>
+                        <button onClick="{{ chord.onRootUp }}" style="width:24px; height:24px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); background:none; cursor:pointer; font-size:14px;">+</button>
+                      </div>
+                      <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;">
+                        <sc-for list="{{ chord.qualityOptions }}" as="opt" hint-placeholder-count="5">
+                          <button onClick="{{ opt.onSelect }}" style="font-size:11px; padding:5px 8px; border-radius:2px; border:1px solid oklch(0.52 0.02 70 / 0.35); background:none; cursor:pointer; color:oklch(0.28 0.02 70);" style-hover="background:oklch(0.94 0.01 85);">{{ opt.label }}</button>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{ chord.edited }}" hint-placeholder-val="{{ false }}">
+                        <div style="text-align:center; margin-top:10px;">
+                          <button onClick="{{ chord.onReset }}" style="font-size:11px; color:oklch(0.52 0.02 70); background:none; border:none; text-decoration:underline; cursor:pointer;">reset to detected</button>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:baseline; gap:8px; margin-top:16px; font-size:13.5px; color:oklch(0.52 0.02 70);">
+        <span>Now: <strong style="color:oklch(0.28 0.02 70); font-family:'Fraunces',serif;">{{ currentLabel }}</strong></span>
+        <span style="color:oklch(0.88 0.015 250);">·</span>
+        <span>Next: <strong style="color:oklch(0.55 0.02 70); font-family:'Fraunces',serif;">{{ nextLabel }}</strong> in {{ nextInSeconds }}s</span>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+<style>
+@keyframes tabit-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+</style>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;highlightColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;oklch(0.90 0.12 92)&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;oklch(0.90 0.12 92)&quot;, &quot;oklch(0.88 0.10 70)&quot;, &quot;oklch(0.86 0.09 145)&quot;, &quot;oklch(0.87 0.08 25)&quot;], &quot;section&quot;: &quot;Chord sheet&quot;}, &quot;honestConfidence&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Chord sheet&quot;}}">
+const NOTE_ORDER = ['A','A#','B','C','C#','D','D#','E','F','F#','G','G#'];
+const QUALITY_SUFFIX = { maj:'', min:'m', dom7:'7', maj7:'maj7', min7:'m7', dim:'dim', aug:'aug', sus2:'sus2', sus4:'sus4' };
+const DEMO_URL = 'https://www.youtube.com/watch?v=4M9Puanhdac';
+
+class Component extends DCLogic {
+  state = {
+    stage: 'landing', // landing | analyzing | sheet
+    urlValue: DEMO_URL,
+    transpose: 0,
+    currentTime: 0,
+    editingIndex: null,
+    overrides: {},
+    mountKey: 0,
+  };
+
+  constructor(props) {
+    super(props);
+    this.playerMountRef = React.createRef();
+    this.sheetScrollRef = React.createRef();
+    this.player = null;
+    this.rafId = null;
+    this.lastTick = 0;
+    this.rowNodes = {};
+    this.chart = this.buildChart();
+  }
+
+  buildChart() {
+    const pattern = [
+      { root: 'A', quality: 'min', bass: 'A', confidence: 0.88 },
+      { root: 'F', quality: 'maj', bass: 'F', confidence: 0.82 },
+      { root: 'C', quality: 'maj', bass: 'C', confidence: 0.66 },
+      { root: 'G', quality: 'maj', bass: 'G', confidence: 0.79 },
+    ];
+    const durEach = 3.6;
+    const loops = 34;
+    const chords = [];
+    let t = 0.6;
+    for (let i = 0; i < loops * 4; i++) {
+      const p = pattern[i % 4];
+      chords.push({ ...p, start: t, end: t + durEach });
+      t += durEach;
+    }
+    return {
+      key: { tonic: 'A', mode: 'minor', confidence: 0.81 },
+      tempo: { bpm: 128 },
+      scales: [
+        { name: 'A minor pentatonic', notes: ['A', 'C', 'D', 'E', 'G'] },
+        { name: 'A natural minor', notes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+      ],
+      chords,
+      videoTitle: 'Solo Acoustic Guitar — Jason Shaw',
+      videoId: '4M9Puanhdac',
+    };
+  }
+
+  componentDidMount() {
+    // Deliberately does NOT rely on componentDidUpdate(prevProps, prevState) —
+    // this DCLogic runtime does not reliably pass a real prevState, so a single
+    // always-on poll loop (started once, for the component's whole life) is used
+    // instead: it checks current stage/ref/YT-API state each tick and is a no-op
+    // whenever the player already exists or the sheet isn't showing yet.
+    this.mountPollId = setInterval(() => {
+      if (this.state.stage !== 'sheet' || this.player) return;
+      this.maybeInitPlayer();
+    }, 200);
+    // stop the RAF playback-sync loop whenever we've left the sheet
+    this.stagePollId = setInterval(() => {
+      if (this.state.stage !== 'sheet' && this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }, 300);
+  }
+
+  componentWillUnmount() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    if (this.mountPollId) clearInterval(this.mountPollId);
+    if (this.stagePollId) clearInterval(this.stagePollId);
+  }
+
+  maybeInitPlayer() {
+    try {
+      if (this.player || !this.playerMountRef.current || !window.YT || !window.YT.Player) return;
+      this.player = new window.YT.Player(this.playerMountRef.current, {
+        videoId: this.chart.videoId,
+        playerVars: { modestbranding: 1, rel: 0 },
+        events: {
+          onReady: () => {
+            this.startTicking();
+          },
+        },
+      });
+    } catch (err) {
+      console.error('tabit player init failed', err);
+    }
+  }
+
+  startTicking() {
+    const tick = (ts) => {
+      if (!this.lastTick || ts - this.lastTick > 100) {
+        this.lastTick = ts;
+        if (this.player && this.player.getCurrentTime) {
+          const t = this.player.getCurrentTime() || 0;
+          if (Math.abs(t - this.state.currentTime) > 0.05) {
+            this.setState({ currentTime: t });
+          }
+        }
+      }
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+
+  transposeRoot(root, semi) {
+    if (!root) return root;
+    const idx = NOTE_ORDER.indexOf(root);
+    if (idx < 0) return root;
+    return NOTE_ORDER[(idx + semi + 1200) % 12];
+  }
+
+  formatLabel(root, quality, bass, semi) {
+    const r = this.transposeRoot(root, semi);
+    const suf = QUALITY_SUFFIX[quality] ?? quality;
+    const b = bass ? this.transposeRoot(bass, semi) : null;
+    let label = r + suf;
+    if (b && b !== r) label += '/' + b;
+    return label;
+  }
+
+  findCurrentIndex(chords, t) {
+    if (t <= chords[0].start) return 0;
+    for (let i = 0; i < chords.length; i++) {
+      if (t >= chords[i].start && t < chords[i].end) return i;
+    }
+    return chords.length - 1;
+  }
+
+  onUrlChange = (e) => this.setState({ urlValue: e.target.value });
+  onUrlKeyDown = (e) => { if (e.key === 'Enter') this.onAnalyzeClick(); };
+  onAnalyzeClick = () => {
+    this.player = null;
+    this.setState((s) => ({ stage: 'analyzing', mountKey: s.mountKey + 1 }));
+    setTimeout(() => this.setState({ stage: 'sheet' }), 1500);
+  };
+  onFileChosen = (e) => {
+    if (e.target.files && e.target.files.length) {
+      this.setState({ urlValue: e.target.files[0].name });
+    }
+    this.onAnalyzeClick();
+  };
+  onBackClick = (e) => {
+    e.preventDefault();
+    if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+    if (this.mountPollId) { clearInterval(this.mountPollId); this.mountPollId = null; }
+    if (this.player && this.player.destroy) {
+      try { this.player.destroy(); } catch (err) { /* ignore */ }
+      this.player = null;
+    }
+    this.lastTick = 0;
+    this.setState({ stage: 'landing', currentTime: 0, transpose: 0, overrides: {}, editingIndex: null });
+  };
+  onTransposeUp = () => this.setState((s) => ({ transpose: Math.min(6, s.transpose + 1) }));
+  onTransposeDown = () => this.setState((s) => ({ transpose: Math.max(-6, s.transpose - 1) }));
+
+  effectiveChord(i) {
+    const base = this.chart.chords[i];
+    const ov = this.state.overrides[i];
+    if (!ov) return base;
+    return { ...base, ...ov, confidence: 1 };
+  }
+  toggleEdit = (i) => this.setState((s) => ({ editingIndex: s.editingIndex === i ? null : i }));
+  closeEditing = () => this.setState({ editingIndex: null });
+  nudgeRoot = (i, delta) => {
+    const eff = this.effectiveChord(i);
+    const newRoot = this.transposeRoot(eff.root, delta);
+    const newBass = eff.bass === eff.root ? newRoot : eff.bass;
+    this.setState((s) => ({ overrides: { ...s.overrides, [i]: { root: newRoot, quality: eff.quality, bass: newBass } } }));
+  };
+  applyQuality = (i, quality) => {
+    const eff = this.effectiveChord(i);
+    this.setState((s) => ({
+      overrides: { ...s.overrides, [i]: { root: eff.root, quality, bass: eff.bass } },
+      editingIndex: null,
+    }));
+  };
+  clearOverride = (i) => this.setState((s) => {
+    const overrides = { ...s.overrides };
+    delete overrides[i];
+    return { overrides, editingIndex: null };
+  });
+
+  renderVals() {
+    const { stage, transpose, currentTime } = this.state;
+    const chords = this.chart.chords;
+    const currentIndex = this.findCurrentIndex(chords, currentTime);
+    const honest = this.props.honestConfidence ?? true;
+    const accent = this.props.highlightColor ?? 'oklch(0.90 0.12 92)';
+
+    const qualityChoices = ['maj', 'min', 'dom7', 'maj7', 'min7', 'sus2', 'sus4'];
+    const qualityDisplay = { maj: 'maj', min: 'min', dom7: '7', maj7: 'maj7', min7: 'm7', sus2: 'sus2', sus4: 'sus4' };
+
+    const decorated = chords.map((rawC, i) => {
+      const c = this.effectiveChord(i);
+      const isCurrent = i === currentIndex;
+      const isNext = i === currentIndex + 1;
+      const edited = !!this.state.overrides[i];
+      const low = honest && c.confidence < 0.75 && !edited;
+      let underline = '1.5px solid transparent';
+      let textColor = 'oklch(0.28 0.02 70)';
+      if (low) {
+        underline = '1.5px dotted oklch(0.52 0.02 70)';
+        textColor = 'oklch(0.52 0.02 70)';
+      }
+      if (isNext) {
+        underline = '2px solid oklch(0.55 0.02 70)';
+      }
+      return {
+        ...c,
+        label: this.formatLabel(c.root, c.quality, c.bass, transpose),
+        isCurrent,
+        edited,
+        isEditing: this.state.editingIndex === i,
+        onClick: () => this.toggleEdit(i),
+        onClose: this.closeEditing,
+        onRootUp: () => this.nudgeRoot(i, 1),
+        onRootDown: () => this.nudgeRoot(i, -1),
+        onReset: () => this.clearOverride(i),
+        qualityOptions: qualityChoices.map((q) => ({ label: qualityDisplay[q], onSelect: () => this.applyQuality(i, q) })),
+        fontSize: isCurrent ? '30px' : '26px',
+        textColor,
+        underline,
+      };
+    });
+
+    const rows = [];
+    for (let i = 0; i < decorated.length; i += 4) {
+      const rowIndex = i / 4;
+      rows.push({
+        chords: decorated.slice(i, i + 4),
+        setRef: (el) => { this.rowNodes[rowIndex] = el; },
+      });
+    }
+
+    // auto-scroll the sheet to keep current row in view
+    const curRowIndex = Math.floor(currentIndex / 4);
+    const rowEl = this.rowNodes[curRowIndex];
+    const container = this.sheetScrollRef.current;
+    if (rowEl && container) {
+      const target = rowEl.offsetTop - container.clientHeight / 2 + rowEl.clientHeight / 2;
+      if (Math.abs(container.scrollTop - target) > 8) {
+        container.scrollTop = target;
+      }
+    }
+
+    const nextIdx = Math.min(currentIndex + 1, decorated.length - 1);
+    const nextIn = Math.max(0, chords[nextIdx].start - currentTime);
+
+    return {
+      isLanding: stage === 'landing',
+      isAnalyzing: stage === 'analyzing',
+      isSheet: stage === 'sheet',
+      urlValue: this.state.urlValue,
+      onUrlChange: this.onUrlChange,
+      onUrlKeyDown: this.onUrlKeyDown,
+      onAnalyzeClick: this.onAnalyzeClick,
+      onBackClick: this.onBackClick,
+      onTransposeUp: this.onTransposeUp,
+      onTransposeDown: this.onTransposeDown,
+      onFileChosen: this.onFileChosen,
+      hasEditingChord: this.state.editingIndex !== null,
+      closeEditing: this.closeEditing,
+      transposeLabel: transpose === 0 ? 'no shift' : (transpose > 0 ? `+${transpose} st` : `${transpose} st`),
+      playerMountRef: this.playerMountRef,
+      mountKey: this.state.mountKey,
+      sheetScrollRef: this.sheetScrollRef,
+      videoTitle: this.chart.videoTitle,
+      keyLabel: `${this.transposeRoot(this.chart.key.tonic, transpose)} ${this.chart.key.mode}`,
+      bpmLabel: `${Math.round(this.chart.tempo.bpm)} bpm`,
+      scalesLabel: this.chart.scales.map(s => s.name).join(' · '),
+      rows,
+      highlightColor: accent,
+      currentLabel: decorated[currentIndex].label,
+      nextLabel: decorated[nextIdx].label,
+      nextInSeconds: nextIn.toFixed(1),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
