@@ -26,3 +26,20 @@ def test_put_skips_chart_without_video_id(tmp_path):
     cache.put({"source": {"kind": "file", "videoId": None, "duration": 1.0},
                "analysis": {"engineVersion": "0.1.0", "createdAt": "x"}})
     assert list(tmp_path.iterdir()) == []
+
+
+def test_get_rejects_hostile_video_id(tmp_path):
+    cache = ChartCache(str(tmp_path))
+    assert cache.get("../../etc/passwd", "0.1.0") is None
+    assert cache.get("..%2Fx", "0.1.0") is None
+
+
+def test_put_skips_hostile_ids(tmp_path):
+    cache = ChartCache(str(tmp_path))
+    cache.put({"source": {"kind": "youtube", "videoId": "../escape", "duration": 1.0},
+               "analysis": {"engineVersion": "0.1.0", "createdAt": "x"}})
+    cache.put({"source": {"kind": "youtube", "videoId": "abc123XYZ_-", "duration": 1.0},
+               "analysis": {"engineVersion": "0.1/../0", "createdAt": "x"}})
+    assert list(tmp_path.iterdir()) == []
+    # and nothing escaped the root either
+    assert not (tmp_path.parent / "escape@0.1.0.json").exists()
