@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / web
+node_modules/
+dist/
+build/
+.next/
+
+# Audio artifacts & model caches — NEVER commit source audio
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+/tmp_analysis/
+separated/
+.cache/
+*.pt
+*.onnx
+
+# but keep small test fixtures explicitly (override the audio ignore for tests/fixtures)
+!tests/fixtures/**/*.wav
+!tests/fixtures/**/*.lab
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
