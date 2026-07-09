@@ -1,0 +1,35 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: oklch(0.972 0.008 85);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: oklch(0.28 0.02 70);
+}
+a { color: oklch(0.42 0.09 250); text-decoration: underline; text-decoration-color: oklch(0.75 0.06 250); text-underline-offset: 2px; }
+a:hover { color: oklch(0.32 0.11 250); }
+::selection { background: oklch(0.90 0.12 92); }
+
+@keyframes tabit-pulse {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+@keyframes tabit-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tabit-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* hover/active states from the design's style-hover/style-active attrs */
+.btn-primary { transition: background 180ms ease-out, transform 180ms ease-out; }
+.btn-primary:hover { background: oklch(0.36 0.03 70) !important; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.drop-label { transition: border-color 180ms ease-out, background 180ms ease-out; }
+.drop-label:hover { border-color: oklch(0.55 0.02 70 / 0.8) !important; background: oklch(0.94 0.01 85 / 0.5); }
+.round-btn:hover { background: oklch(0.94 0.01 85) !important; }
+.quality-btn:hover { background: oklch(0.94 0.01 85); }
