@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
+from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from engine import __version__ as ENGINE_VERSION
 from api.cache import ChartCache
@@ -54,7 +55,7 @@ async def analyze_submit(request: Request):
     if content_type.startswith("multipart/form-data"):
         form = await request.form()
         file = form.get("file")
-        if file is None:
+        if not isinstance(file, StarletteUploadFile):
             raise HTTPException(status_code=422, detail="Provide a YouTube url or an audio file.")
 
         suffix = os.path.splitext(file.filename or "upload")[1] or ".bin"

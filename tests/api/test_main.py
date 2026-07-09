@@ -74,6 +74,12 @@ def test_analyze_rejects_missing_input(client):
     assert client.post("/analyze", json={}).status_code == 422
 
 
+def test_multipart_file_without_filename_is_422(client):
+    # a plain text form part named "file" (no filename) must not crash the endpoint
+    r = client.post("/analyze", files={"file": (None, "hello")})
+    assert r.status_code == 422
+
+
 def test_unknown_job_404(client):
     assert client.get("/analyze/nope").status_code == 404
 
