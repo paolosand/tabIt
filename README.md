@@ -37,18 +37,21 @@ most tools skip entirely.
 
 ## Progress
 
-### Sub-project 1 — MIR engine (current)
-- [ ] Task 0 — Project scaffolding + dependency smoke test
-- [ ] Task 1 — Chart schema (`schema.py`)
-- [ ] Task 2 — Scale suggestions (`scales.py`)
-- [ ] Task 3 — Audio ingest (`ingest.py`)
-- [ ] Task 4 — Beat/tempo tracking (`beats.py`)
-- [ ] Task 5 — Key detection (`key.py`)
-- [ ] Task 6 — Chord recognition (`chords.py`)
-- [ ] Task 7 — Source separation (`separate.py`)
-- [ ] Task 8 — Bass-note / slash-chord detection (`bass.py`)
-- [ ] Task 9 — Post-processing (`postprocess.py`)
-- [ ] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
+### Sub-project 1 — MIR engine ✅ complete
+
+`python -m engine.cli <youtube-url|audio-file> -o chart.json` runs the full pipeline end-to-end (~10s on a short clip, Apple Silicon).
+
+- [x] Task 0 — Project scaffolding + dependency smoke test
+- [x] Task 1 — Chart schema (`schema.py`)
+- [x] Task 2 — Scale suggestions (`scales.py`)
+- [x] Task 3 — Audio ingest (`ingest.py`)
+- [x] Task 4 — Beat/tempo tracking (`beats.py`)
+- [x] Task 5 — Key detection (`key.py`)
+- [x] Task 6 — Chord recognition (`chords.py`)
+- [x] Task 7 — Source separation (`separate.py`)
+- [x] Task 8 — Bass-note / slash-chord detection (`bass.py`)
+- [x] Task 9 — Post-processing (`postprocess.py`)
+- [x] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
 - [x] Task 11 — Accuracy harness (`mir_eval`) — measured **0.495** majmin weighted accuracy on a synthesized Am→F→C→G fixture (`tests/integration/test_accuracy.py`); a real-song accuracy floor is a documented follow-up (see task-11 report)
 
 ### Sub-project 2 — Web app (FastAPI + React)
