@@ -62,3 +62,21 @@ test('API unreachable -> error response, not a throw', async () => {
   const res = await handleGetChart('vid00000001');
   expect(res.status).toBe('error');
 });
+
+test('stale job: pollJobOnce throwing (e.g. API 404 after SW restart lost the in-memory JobStore) clears the job key so the next call resubmits instead of erroring forever', async () => {
+  await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
+  (api.pollJobOnce as Mock).mockRejectedValue(new Error('API 404'));
+
+  const res = await handleGetChart('vid00000001');
+  expect(res.status).toBe('error');
+  const stored = await chrome.storage.session.get('job:vid00000001');
+  expect(stored['job:vid00000001']).toBeUndefined();
+
+  // Next call falls through the normal idempotent path: no stale job left to re-poll.
+  (api.fetchCachedChart as Mock).mockResolvedValue(null);
+  (api.submitAnalysis as Mock).mockResolvedValue('job-2');
+  const res2 = await handleGetChart('vid00000001');
+  expect(res2).toEqual({ status: 'pending' });
+  expect(api.pollJobOnce).toHaveBeenCalledTimes(1);
+  expect(api.submitAnalysis).toHaveBeenCalledWith('vid00000001');
+});

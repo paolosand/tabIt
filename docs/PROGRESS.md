@@ -54,4 +54,4 @@ Plan: [`superpowers/plans/2026-07-09-tabit-extension.md`](superpowers/plans/2026
 - [x] Task 4 — Overlay state machine: collapsed bar → analyzing → sheet/error; page-`<video>` time hook
 - [x] Task 5 — The panel: web Sheet ported into the shadow root (sync, lookahead, transpose, ad-pause)
 - [x] Task 6 — Degraded mount fallback + live-stream guard
-- [x] Task 7 — Headful Playwright e2e on real YouTube + run instructions
+- [x] Task 7 — Full sweep + live headful Playwright e2e on real YouTube, 7/7 checks passed (cached sheet ~50 ms, marker tracked across a chord boundary, transpose incl. scales chip, collapse, SPA-nav teardown/remount, back-nav session cache ~47 ms) + README run instructions

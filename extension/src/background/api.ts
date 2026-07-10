@@ -15,7 +15,7 @@ export async function submitAnalysis(videoId: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${videoId}` }),
   });
-  if (!res.ok && res.status !== 202) throw new Error(`API ${res.status}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
   return (await res.json()).jobId;
 }
 

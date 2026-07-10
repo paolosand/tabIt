@@ -16,7 +16,18 @@ export async function handleGetChart(videoId: string): Promise<GetChartResponse>
 
     const jobId = await sessionGet<string>(`job:${videoId}`);
     if (jobId) {
-      const state = await pollJobOnce(jobId);
+      let state;
+      try {
+        state = await pollJobOnce(jobId);
+      } catch (e) {
+        // The in-memory JobStore can be lost to an API restart (e.g. a thrown
+        // `API 404`), unlike a resolved {status:'error'} which already clears the
+        // key below. Clear it here too so the next GET_CHART falls through the
+        // normal idempotent path (server cache check -> resubmit) instead of
+        // re-polling a dead job forever.
+        await chrome.storage.session.remove(`job:${videoId}`);
+        throw e;
+      }
       if (state.status === 'done') {
         await chrome.storage.session.set({ [`chart:${videoId}`]: state.chart });
         await chrome.storage.session.remove(`job:${videoId}`);

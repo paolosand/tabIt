@@ -28,10 +28,15 @@ export function useVideoTime(active: boolean): VideoTimeState {
         const video = document.querySelector('video');
         const t = video?.currentTime ?? 0;
         const ad = isAdShowing(document);
+        // While an ad is showing, the page's <video> element is the AD's clock, not
+        // the song's - hold the last pre-ad time so the marker doesn't jump to the
+        // ad's opening chords. `adShowing` itself still updates every tick so the
+        // UI can react immediately, and sync resumes automatically once the ad clears.
+        const reportedTime = ad ? lastTime : t;
         if (Math.abs(t - lastTime) > 0.05 || ad !== lastAd) {
-          lastTime = t;
+          if (!ad) lastTime = t;
           lastAd = ad;
-          setState({ time: t, adShowing: ad });
+          setState({ time: reportedTime, adShowing: ad });
         }
       }
       rafId = requestAnimationFrame(tick);
