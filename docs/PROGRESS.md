@@ -40,7 +40,7 @@ cache hit <10 ms).
 - [x] Task 10 — Fix-this-chord popover; edits persist locally and survive reload
 - [x] Task 11 — End-to-end verification + docs
 
-## Sub-project 3 — Chrome extension 🏗️ in progress
+## Sub-project 3 — Chrome extension ✅ complete
 
 MV3 thin client over the same API: a "♪ Get chords" bar injected below the YouTube
 player expands into the synced paper sheet (Shadow DOM, SPA-navigation-safe,
@@ -53,5 +53,5 @@ Plan: [`superpowers/plans/2026-07-09-tabit-extension.md`](superpowers/plans/2026
 - [x] Task 3 — Content shell: SPA navigation watcher, Shadow-DOM mount/teardown, stale-retry race fixed + regression-tested
 - [x] Task 4 — Overlay state machine: collapsed bar → analyzing → sheet/error; page-`<video>` time hook
 - [x] Task 5 — The panel: web Sheet ported into the shadow root (sync, lookahead, transpose, ad-pause)
-- [ ] Task 6 — Degraded mount fallback + live-stream guard
-- [ ] Task 7 — Headful Playwright e2e on real YouTube + run instructions
+- [x] Task 6 — Degraded mount fallback + live-stream guard
+- [x] Task 7 — Full sweep + live headful Playwright e2e on real YouTube, 7/7 checks passed (cached sheet ~50 ms, marker tracked across a chord boundary, transpose incl. scales chip, collapse, SPA-nav teardown/remount, back-nav session cache ~47 ms) + README run instructions

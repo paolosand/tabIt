@@ -10,6 +10,7 @@ await build({
   outfile: 'dist/content.js',
   jsx: 'automatic',
   define: { 'process.env.NODE_ENV': '"production"' },
+  minify: true,
   logLevel: 'info',
 });
 
@@ -18,6 +19,7 @@ await build({
   bundle: true,
   format: 'esm',             // MV3 module service worker
   outfile: 'dist/background.js',
+  minify: true,
   logLevel: 'info',
 });
 
