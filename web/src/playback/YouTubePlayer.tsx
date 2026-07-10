@@ -67,6 +67,7 @@ export default function YouTubePlayer({ videoId, onReady }: YouTubePlayerProps) 
         playerVars: { modestbranding: 1, rel: 0 },
         events: {
           onReady: (event) => {
+            if (cancelled) return;
             onReadyRef.current({
               getCurrentTime: () => event.target.getCurrentTime(),
             });
