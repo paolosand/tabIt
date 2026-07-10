@@ -35,3 +35,9 @@ separated/
 .DS_Store
 .idea/
 .vscode/
+
+# API chart cache (disk-backed job store; regenerated at runtime)
+/data/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
