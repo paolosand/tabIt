@@ -67,7 +67,7 @@ flowchart LR
 |---|---|---|
 | **MIR engine** (Python) | audio → chords + key + scales + beat grid → chart JSON | ✅ complete |
 | **Web app** (FastAPI + React) | paste URL / drop file → YouTube player + synced sheet | ✅ complete |
-| **Chrome extension** (MV3) | the same sheet overlaid below the player on youtube.com | 🏗️ in progress |
+| **Chrome extension** (MV3) | the same sheet overlaid below the player on youtube.com | ✅ complete |
 
 ## Quick start
 
@@ -103,15 +103,19 @@ The engine runs standalone if you just want the chart JSON:
 python -m engine.cli <youtube-url|audio-file> -o chart.json
 ```
 
-### Chrome extension (in progress)
+### Chrome extension
 
 ```bash
 cd extension && npm install && npm run build
 ```
 
-Then load `extension/dist` as an unpacked extension at `chrome://extensions` (with the
-API from step 1 running). A "♪ Get chords" bar appears below the YouTube player and
-expands into the synced sheet: Shadow-DOM isolated, SPA-navigation safe, ad-aware.
+Then load `extension/dist` as an unpacked extension at `chrome://extensions`
+(Developer mode → Load unpacked), with the API from step 1 running. Open a YouTube
+video: a "♪ Get chords" bar appears below the player and expands into the synced
+sheet — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
+real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
+marker tracks playback across chord boundaries; teardown/remount survives SPA
+navigation).
 
 ## Honest about accuracy
 
@@ -135,8 +139,8 @@ docs/        design specs, implementation plans, progress ledger
 
 ## Roadmap
 
-- [ ] Extension: degraded mount fallback + live-stream guard
-- [ ] Extension: headful Playwright e2e against real YouTube
+- [x] Extension: degraded mount fallback + live-stream guard
+- [x] Extension: headful Playwright e2e against real YouTube
 - [ ] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1

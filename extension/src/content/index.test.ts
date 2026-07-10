@@ -69,11 +69,34 @@ test('normal retry path still mounts once the slot appears', async () => {
   expect(renderOverlay).toHaveBeenCalledWith(expect.anything(), 'ccccccccccc');
 });
 
-test('retry gives up after the 10s cap and never mounts', async () => {
+test('retry gives up after the 10s cap and mounts a degraded fallback host instead', async () => {
   vi.useFakeTimers();
   main();
   onVideo!('ddddddddddd');
   // Slot never appears.
   await vi.advanceTimersByTimeAsync(11_000);
+  expect(renderOverlay).toHaveBeenCalledTimes(1);
+  expect(renderOverlay).toHaveBeenCalledWith(expect.anything(), 'ddddddddddd');
+  const host = document.getElementById('tabit-root');
+  expect(host).not.toBeNull();
+  expect(host!.classList.contains('tabit-fallback')).toBe(true);
+});
+
+test('skips mounting entirely when the page reports a live stream', async () => {
+  document.body.appendChild(Object.assign(document.createElement('div'), { id: 'below' }));
+  document.body.appendChild(Object.assign(document.createElement('div'), { className: 'ytp-live' }));
+  main();
+  onVideo!('ggggggggggg');
   expect(renderOverlay).not.toHaveBeenCalled();
+  expect(document.getElementById('tabit-root')).toBeNull();
+});
+
+test('live-stream guard also prevents the degraded fallback mount from firing later', async () => {
+  vi.useFakeTimers();
+  document.body.appendChild(Object.assign(document.createElement('div'), { className: 'ytp-live' }));
+  main();
+  onVideo!('hhhhhhhhhhh');
+  await vi.advanceTimersByTimeAsync(11_000);
+  expect(renderOverlay).not.toHaveBeenCalled();
+  expect(document.getElementById('tabit-root')).toBeNull();
 });

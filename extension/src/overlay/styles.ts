@@ -21,6 +21,17 @@ export const OVERLAY_CSS = `
   --tabit-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 }
 
+/* Degraded fallback (spec §4): applied to the host when no insertion slot was
+ * found within the 10s observer window, so the overlay still reaches the user
+ * pinned to the bottom of the viewport instead of never appearing. */
+:host(.tabit-fallback) {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
+
 * { box-sizing: border-box; }
 
 @keyframes tabit-pulse {
