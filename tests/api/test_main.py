@@ -74,6 +74,19 @@ def test_analyze_rejects_missing_input(client):
     assert client.post("/analyze", json={}).status_code == 422
 
 
+def test_analyze_rejects_non_youtube_url(client):
+    r = client.post("/analyze", json={"url": "/etc/passwd"})
+    assert r.status_code == 422
+    r2 = client.post("/analyze", json={"url": "https://example.com/watch?v=dQw4w9WgXcQ"})
+    assert r2.status_code == 422
+
+
+def test_analyze_rejects_oversized_upload(client, monkeypatch):
+    monkeypatch.setattr(m, "MAX_UPLOAD_BYTES", 4)
+    r = client.post("/analyze", files={"file": ("song.wav", b"0123456789", "audio/wav")})
+    assert r.status_code == 413
+
+
 def test_multipart_file_without_filename_is_422(client):
     # a plain text form part named "file" (no filename) must not crash the endpoint
     r = client.post("/analyze", files={"file": (None, "hello")})

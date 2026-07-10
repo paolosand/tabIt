@@ -23,6 +23,9 @@ app.add_middleware(
 cache = ChartCache(os.environ.get("TABIT_CACHE_DIR", "data/charts"))
 jobs = JobStore()
 
+MAX_UPLOAD_BYTES = 100 * 1024 * 1024  # 100 MB
+UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
+
 
 def _run_analysis(src: str) -> dict:
     """Run the engine on a URL or file path; returns chart as a plain dict.
@@ -60,8 +63,22 @@ async def analyze_submit(request: Request):
 
         suffix = os.path.splitext(file.filename or "upload")[1] or ".bin"
         fd, tmp = tempfile.mkstemp(suffix=suffix, prefix="tabit_upload_")
+        total = 0
+        too_large = False
         with os.fdopen(fd, "wb") as out:
-            out.write(await file.read())
+            while True:
+                chunk = await file.read(UPLOAD_CHUNK_BYTES)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_UPLOAD_BYTES:
+                    too_large = True
+                    break
+                out.write(chunk)
+        if too_large:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+            raise HTTPException(status_code=413, detail="Audio file too large (100 MB max).")
 
         def work():
             try:
@@ -88,10 +105,15 @@ async def analyze_submit(request: Request):
         raise HTTPException(status_code=422, detail="Provide a YouTube url or an audio file.")
 
     video_id = extract_video_id(body.url)
-    if video_id:
-        cached = cache.get(video_id, ENGINE_VERSION)
-        if cached:
-            return {"jobId": jobs.submit_done(cached)}
+    if video_id is None:
+        raise HTTPException(
+            status_code=422,
+            detail="That doesn't look like a YouTube link. Paste a youtube.com or youtu.be URL, or upload an audio file.",
+        )
+
+    cached = cache.get(video_id, ENGINE_VERSION)
+    if cached:
+        return {"jobId": jobs.submit_done(cached)}
 
     url = body.url
 
