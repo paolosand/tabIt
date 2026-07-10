@@ -32,4 +32,4 @@ a:hover { color: oklch(0.32 0.11 250); }
 .drop-label { transition: border-color 180ms ease-out, background 180ms ease-out; }
 .drop-label:hover { border-color: oklch(0.55 0.02 70 / 0.8) !important; background: oklch(0.94 0.01 85 / 0.5); }
 .round-btn:hover { background: oklch(0.94 0.01 85) !important; }
-.quality-btn:hover { background: oklch(0.94 0.01 85); }
+.quality-btn:hover { background: oklch(0.94 0.01 85) !important; }

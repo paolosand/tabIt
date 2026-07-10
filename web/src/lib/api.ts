@@ -3,7 +3,7 @@ import type { Chart, JobState } from './types';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function toJson(res: Response) {
-  if (!res.ok && res.status !== 202) throw new Error(`API ${res.status}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json();
 }
 

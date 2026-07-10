@@ -24,6 +24,13 @@ export function formatLabel(root: string, quality: string, bass: string, semi: n
   return b && b !== r ? `${r}${suffix}/${b}` : `${r}${suffix}`;
 }
 
+/** Transposes the leading tonic note of an engine scale name (e.g. "A minor pentatonic"). */
+export function transposeScaleName(name: string, semi: number): string {
+  const m = name.match(/^([A-G]#?)\s(.+)$/);
+  if (!m) return name;
+  return `${transposeRoot(m[1], semi)} ${m[2]}`;
+}
+
 /** Last segment whose start <= t (clamped to [0, length-1]). Gaps stay on the previous segment. */
 export function findCurrentIndex(chords: ChordSegment[], t: number): number {
   if (!chords.length) return 0;

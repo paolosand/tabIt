@@ -43,6 +43,14 @@ test('transpose relabels', async () => {
   expect(screen.getByRole('button', { name: 'Bm' })).toBeInTheDocument();
 });
 
+test('transpose relabels the scales chip too', async () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(0);
+  render(<Sheet chart={chart as never} mediaFile={null} onBack={() => {}} />);
+  expect(screen.getByText('A minor pentatonic')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  expect(screen.getByText('A# minor pentatonic')).toBeInTheDocument();
+});
+
 // NOTE on ordering: these two tests are intentionally NOT independent. The first
 // test clears localStorage and edits chord index 1 (F -> Fm7), persisting the
 // override under key `tabit:overrides:x`. The second test does NOT clear

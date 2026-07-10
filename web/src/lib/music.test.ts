@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { transposeRoot, formatLabel, findCurrentIndex } from './music';
+import { transposeRoot, formatLabel, findCurrentIndex, transposeScaleName } from './music';
 import type { ChordSegment } from './types';
 
 const seg = (start: number, end: number, root = 'A', quality = 'min', bass = 'A'): ChordSegment =>
@@ -27,6 +27,18 @@ describe('formatLabel', () => {
   test('no-chord renders as an em dash', () => {
     expect(formatLabel('N', 'N', 'N', 0)).toBe('—');
     expect(formatLabel('N', 'N', 'N', 3)).toBe('—');
+  });
+});
+
+describe('transposeScaleName', () => {
+  test('transposes the leading tonic', () => {
+    expect(transposeScaleName('A minor pentatonic', 2)).toBe('B minor pentatonic');
+  });
+  test('wraps sharps', () => {
+    expect(transposeScaleName('G# major', 1)).toBe('A major');
+  });
+  test('unparseable name passes through', () => {
+    expect(transposeScaleName('mystery scale', 2)).toBe('mystery scale');
   });
 });
 

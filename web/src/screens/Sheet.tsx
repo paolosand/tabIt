@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Chart, ChordSegment } from '../lib/types';
-import { findCurrentIndex, formatLabel, transposeRoot } from '../lib/music';
+import { findCurrentIndex, formatLabel, transposeRoot, transposeScaleName } from '../lib/music';
 import { chartKey, loadOverrides, saveOverrides, type Overrides } from '../lib/overrides';
 import YouTubePlayer from '../playback/YouTubePlayer';
 import AudioPlayer from '../playback/AudioPlayer';
@@ -116,14 +116,15 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     }
   }, [currentIndex]);
 
-  const nextIdx = Math.min(currentIndex + 1, decorated.length - 1);
-  const nextIn = Math.max(0, chords[nextIdx].start - time);
-  const currentLabel = decorated[currentIndex].label;
-  const nextLabel = decorated[nextIdx].label;
+  const hasChords = chords.length > 0;
+  const nextIdx = hasChords ? Math.min(currentIndex + 1, decorated.length - 1) : 0;
+  const nextIn = hasChords ? Math.max(0, chords[nextIdx].start - time) : 0;
+  const currentLabel = hasChords ? decorated[currentIndex].label : '—';
+  const nextLabel = hasChords ? decorated[nextIdx].label : '—';
   const transposeLabel = transpose === 0 ? 'no shift' : transpose > 0 ? `+${transpose} st` : `${transpose} st`;
   const keyLabel = `${transposeRoot(chart.key.tonic, transpose)} ${chart.key.mode}`;
   const bpmLabel = `${Math.round(chart.tempo.bpm)} bpm`;
-  const scalesLabel = chart.scales.map((s) => s.name).join(' · ');
+  const scalesLabel = chart.scales.map((s) => transposeScaleName(s.name, transpose)).join(' · ');
 
   const roundBtnStyle: CSSProperties = {
     width: 26,
@@ -453,25 +454,27 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 8,
-          marginTop: 16,
-          fontSize: 13.5,
-          color: 'oklch(0.52 0.02 70)',
-        }}
-      >
-        <span>
-          Now: <strong style={{ color: 'oklch(0.28 0.02 70)', fontFamily: "'Fraunces', serif" }}>{currentLabel}</strong>
-        </span>
-        <span style={{ color: 'oklch(0.88 0.015 250)' }}>·</span>
-        <span>
-          Next: <strong style={{ color: 'oklch(0.55 0.02 70)', fontFamily: "'Fraunces', serif" }}>{nextLabel}</strong> in{' '}
-          {nextIn.toFixed(1)}s
-        </span>
-      </div>
+      {hasChords && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 8,
+            marginTop: 16,
+            fontSize: 13.5,
+            color: 'oklch(0.52 0.02 70)',
+          }}
+        >
+          <span>
+            Now: <strong style={{ color: 'oklch(0.28 0.02 70)', fontFamily: "'Fraunces', serif" }}>{currentLabel}</strong>
+          </span>
+          <span style={{ color: 'oklch(0.88 0.015 250)' }}>·</span>
+          <span>
+            Next: <strong style={{ color: 'oklch(0.55 0.02 70)', fontFamily: "'Fraunces', serif" }}>{nextLabel}</strong> in{' '}
+            {nextIn.toFixed(1)}s
+          </span>
+        </div>
+      )}
     </div>
   );
 }
