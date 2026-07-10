@@ -128,14 +128,209 @@ export const OVERLAY_CSS = `
   line-height: 1.4;
 }
 
-.tabit-sheet-placeholder {
-  padding: 16px;
-  margin: 8px 0;
-  background: var(--tabit-paper);
-  border-radius: 3px;
-  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);
+/* Panel (Task 5) - ported from web/src/screens/Sheet.tsx. Values match 1:1; only the
+ * font stack differs ('Fraunces' -> --tabit-serif system stack, same substitution the
+ * rest of this file already makes - no custom webfont inside a content script). */
+.tabit-panel {
+  flex: 1;
+  padding: 28px 5vw 48px;
+  animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
-  animation: tabit-fade-in 0.3s ease-out;
 }
+
+.tabit-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.tabit-panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabit-panel-wordmark {
+  font-family: var(--tabit-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--tabit-ink);
+}
+
+.tabit-ad-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--tabit-muted);
+  background: oklch(0.94 0.01 85);
+  padding: 4px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.tabit-chips-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.tabit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tabit-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  background: var(--tabit-paper);
+  border-radius: 2px;
+}
+
+.tabit-chip-scales {
+  flex: 1;
+  min-width: 200px;
+}
+
+.tabit-chip-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tabit-muted);
+}
+
+.tabit-chip-value {
+  font-family: var(--tabit-serif);
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.tabit-chip-scales-value {
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.tabit-transpose-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabit-round-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid oklch(0.52 0.02 70 / 0.4);
+  background: var(--tabit-paper);
+  color: var(--tabit-ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: var(--tabit-sans);
+}
+.tabit-round-btn:hover { background: oklch(0.94 0.01 85); }
+
+.tabit-transpose-label {
+  font-family: var(--tabit-serif);
+  font-weight: 600;
+  font-size: 15px;
+  min-width: 56px;
+  text-align: center;
+}
+
+.tabit-sheet {
+  background: var(--tabit-paper);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
+  position: relative;
+  overflow: hidden;
+  transition: opacity 200ms ease-out;
+}
+.tabit-sheet-dim { opacity: 0.5; }
+
+.tabit-sheet-margin {
+  position: absolute;
+  left: 52px;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: oklch(0.70 0.10 25 / 0.5);
+  z-index: 1;
+}
+
+.tabit-sheet-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 26px 30px 26px 76px;
+  scroll-behavior: smooth;
+}
+
+.tabit-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  column-gap: 22px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tabit-border);
+}
+
+.tabit-chord-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+}
+
+.tabit-chord-marker {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 14%;
+  bottom: 18%;
+  background: oklch(0.90 0.12 92);
+  border-radius: 3px 8px 5px 9px;
+  transform: rotate(-0.6deg);
+  z-index: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.tabit-chord-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--tabit-serif);
+  font-weight: 600;
+  color: var(--tabit-ink);
+  border-bottom: 1.5px solid transparent;
+  padding-bottom: 3px;
+  transition: color 200ms ease-out;
+}
+.tabit-chord-label-n { color: var(--tabit-muted); }
+.tabit-chord-label-current { font-size: 30px; }
+.tabit-chord-label-normal { font-size: 26px; }
+.tabit-chord-underline-dim {
+  border-bottom: 1.5px dotted var(--tabit-muted);
+  color: var(--tabit-muted);
+}
+.tabit-chord-underline-next { border-bottom: 2px solid var(--tabit-dot); }
+
+.tabit-footer {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13.5px;
+  color: var(--tabit-muted);
+}
+.tabit-footer-strong { color: var(--tabit-ink); font-family: var(--tabit-serif); }
+.tabit-footer-next-strong { color: var(--tabit-dot); font-family: var(--tabit-serif); }
+.tabit-footer-dot { color: var(--tabit-border); }
 `;

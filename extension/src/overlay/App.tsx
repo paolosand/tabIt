@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import type { Chart } from '../../../web/src/lib/types';
 import type { GetChartRequest, GetChartResponse } from '../messages';
 import { Bar } from './Bar';
+import Panel from './Panel';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -68,12 +69,7 @@ export function App({ videoId }: AppProps) {
     case 'error':
       return <Bar variant="error" message={state.message} onRetry={startPolling} />;
     case 'sheet':
-      // Placeholder for Task 5, which swaps this for the real chord-sheet Panel.
-      return (
-        <div className="tabit-sheet-placeholder" data-state="sheet">
-          {state.chart.scales[0].name}
-        </div>
-      );
+      return <Panel chart={state.chart} onCollapse={() => setState({ kind: 'collapsed' })} />;
   }
 }
 

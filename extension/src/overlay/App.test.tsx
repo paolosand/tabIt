@@ -22,6 +22,9 @@ test('collapsed bar -> click -> done chart renders sheet', async () => {
   render(<App videoId="vid00000001" />);
   await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
   await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  // Confirms this is the real Panel (Task 5), not the old placeholder div: the
+  // sole chord ('A') is current at t=0 and carries the marker highlight.
+  expect(screen.getByTestId('marker').parentElement).toHaveTextContent('A');
 });
 
 test('error response shows retry', async () => {
