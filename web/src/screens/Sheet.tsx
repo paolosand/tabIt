@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { Chart } from '../lib/types';
+import type { Chart, ChordSegment } from '../lib/types';
 import { findCurrentIndex, formatLabel, transposeRoot } from '../lib/music';
+import { chartKey, loadOverrides, saveOverrides, type Overrides } from '../lib/overrides';
 import YouTubePlayer from '../playback/YouTubePlayer';
 import AudioPlayer from '../playback/AudioPlayer';
 import { usePlaybackTime, type PlaybackSource } from '../playback/usePlaybackTime';
+import EditPopover from './EditPopover';
 
 interface SheetProps {
   chart: Chart;
@@ -17,6 +19,8 @@ const HIGHLIGHT_COLOR = 'oklch(0.90 0.12 92)';
 export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   const [transpose, setTranspose] = useState(0);
   const [source, setSource] = useState<PlaybackSource | null>(null);
+  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(chartKey(chart)));
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const rowRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -24,9 +28,53 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   const chords = chart.chords;
   const currentIndex = findCurrentIndex(chords, time);
 
-  const decorated = chords.map((c, i) => {
+  // Override spread over the detected base chord; an edited chord's confidence
+  // is treated as 1 so it's never shown dimmed/low-confidence (design parity).
+  function effectiveChord(i: number): ChordSegment {
+    const base = chords[i];
+    const ov = overrides[i];
+    if (!ov) return base;
+    return { ...base, ...ov, confidence: 1 };
+  }
+
+  function persistOverrides(next: Overrides) {
+    setOverrides(next);
+    saveOverrides(chartKey(chart), next);
+  }
+
+  function toggleEdit(i: number) {
+    setEditingIndex((cur) => (cur === i ? null : i));
+  }
+
+  function closeEditing() {
+    setEditingIndex(null);
+  }
+
+  function nudgeRoot(i: number, delta: number) {
+    const eff = effectiveChord(i);
+    const newRoot = transposeRoot(eff.root, delta);
+    const newBass = eff.bass === eff.root ? newRoot : eff.bass;
+    persistOverrides({ ...overrides, [i]: { root: newRoot, quality: eff.quality, bass: newBass } });
+  }
+
+  function applyQuality(i: number, quality: string) {
+    const eff = effectiveChord(i);
+    persistOverrides({ ...overrides, [i]: { root: eff.root, quality, bass: eff.bass } });
+    setEditingIndex(null);
+  }
+
+  function clearOverride(i: number) {
+    const next = { ...overrides };
+    delete next[i];
+    persistOverrides(next);
+    setEditingIndex(null);
+  }
+
+  const decorated = chords.map((_, i) => {
+    const c = effectiveChord(i);
     const isCurrent = i === currentIndex;
     const isNext = i === currentIndex + 1;
+    const edited = !!overrides[i];
     const low = c.confidence < 0.75 && c.quality !== 'N';
     let underline = '1.5px solid transparent';
     let textColor = 'oklch(0.28 0.02 70)';
@@ -39,9 +87,12 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     }
     return {
       ...c,
+      index: i,
       label: formatLabel(c.root, c.quality, c.bass, transpose),
       isCurrent,
       isNext,
+      edited,
+      isEditing: editingIndex === i,
       fontSize: isCurrent ? 30 : 26,
       textColor,
       underline,
@@ -278,6 +329,9 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
             zIndex: 1,
           }}
         />
+        {editingIndex !== null && (
+          <div onClick={closeEditing} style={{ position: 'fixed', inset: 0, zIndex: 15 }} />
+        )}
         <div
           ref={scrollRef}
           style={{
@@ -346,6 +400,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
                       </span>
                     ) : (
                       <button
+                        onClick={() => toggleEdit(chord.index)}
                         style={{
                           position: 'relative',
                           zIndex: 1,
@@ -364,6 +419,31 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
                       >
                         {chord.label}
                       </button>
+                    )}
+                    {chord.edited && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: 2,
+                          right: '14%',
+                          width: 5,
+                          height: 5,
+                          borderRadius: '50%',
+                          background: 'oklch(0.70 0.10 25)',
+                          zIndex: 2,
+                        }}
+                      />
+                    )}
+                    {chord.isEditing && (
+                      <EditPopover
+                        label={chord.label}
+                        edited={chord.edited}
+                        onRootUp={() => nudgeRoot(chord.index, 1)}
+                        onRootDown={() => nudgeRoot(chord.index, -1)}
+                        onQuality={(quality) => applyQuality(chord.index, quality)}
+                        onReset={() => clearOverride(chord.index)}
+                        onClose={closeEditing}
+                      />
                     )}
                   </div>
                 );

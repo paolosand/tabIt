@@ -42,3 +42,40 @@ test('transpose relabels', async () => {
   // (index 0, at t=0) also relabels the "Now:" footer to the same text.
   expect(screen.getByRole('button', { name: 'Bm' })).toBeInTheDocument();
 });
+
+// NOTE on ordering: these two tests are intentionally NOT independent. The first
+// test clears localStorage and edits chord index 1 (F -> Fm7), persisting the
+// override under key `tabit:overrides:x`. The second test does NOT clear
+// localStorage, relying on vitest/jsdom sharing one localStorage instance across
+// tests in this file, so it mounts a fresh <Sheet> that loads that same override
+// on mount (via chartKey(chart) === 'x') and sees 'Fm7' already rendered. This
+// matches the brief's exact test structure verbatim. Kept as-is (not made
+// self-contained by seeding localStorage) because it also exercises the
+// load-on-mount path (loadOverrides), which a same-test seed-then-render would
+// exercise identically anyway - so there's no robustness downside, only a
+// documented coupling to test execution order (tests in a file run in
+// declaration order in vitest, so this is deterministic, not flaky).
+// Same ambiguity noted above for 'Bm' applies here: at t=0 the "Next:" footer
+// echoes the same label as chord index 1's grid button ('F', later 'Fm7'), so
+// plain getByText('F')/getByText('Fm7') (as written in the task brief) match
+// two elements and throw. Scoped to `getByRole('button', {...})` throughout,
+// matching the existing convention in 'transpose relabels' above. Behavior
+// under test is unchanged - this only disambiguates the query.
+test('editing a chord persists an override', async () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(0);
+  localStorage.clear();
+  render(<Sheet chart={chart as never} mediaFile={null} onBack={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: 'F' }));  // open popover
+  await userEvent.click(screen.getByRole('button', { name: 'm7' })); // change quality
+  expect(screen.getByRole('button', { name: 'Fm7' })).toBeInTheDocument();
+  expect(JSON.parse(localStorage.getItem('tabit:overrides:x')!)['1'].quality).toBe('min7');
+});
+
+test('reset restores the detected chord', async () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(0);
+  render(<Sheet chart={chart as never} mediaFile={null} onBack={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Fm7' }));
+  await userEvent.click(screen.getByRole('button', { name: /reset to detected/i }));
+  expect(screen.getByRole('button', { name: 'F' })).toBeInTheDocument();
+  expect(localStorage.getItem('tabit:overrides:x')).toBe('{}');
+});
