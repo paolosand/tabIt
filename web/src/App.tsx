@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Landing from './screens/Landing';
 import Analyzing from './screens/Analyzing';
+import Sheet from './screens/Sheet';
 import { analyzeUrl, analyzeFile, pollJob } from './lib/api';
 import type { Chart } from './lib/types';
 
@@ -30,6 +31,13 @@ export default function App() {
   const onSubmitUrl = (url: string) => run(() => analyzeUrl(url), null);
   const onSubmitFile = (file: File) => run(() => analyzeFile(file), file);
 
+  const onBack = () => {
+    setStage('landing');
+    setChart(null);
+    setMediaFile(null);
+    setError(null);
+  };
+
   return (
     <div
       style={{
@@ -51,11 +59,7 @@ export default function App() {
         />
       )}
       {stage === 'analyzing' && <Analyzing />}
-      {stage === 'sheet' && chart && (
-        <div data-screen-label="Chord sheet" data-has-media={mediaFile ? 'true' : 'false'}>
-          {chart.scales[0].name}
-        </div>
-      )}
+      {stage === 'sheet' && chart && <Sheet chart={chart} mediaFile={mediaFile} onBack={onBack} />}
     </div>
   );
 }
