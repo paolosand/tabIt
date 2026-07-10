@@ -100,5 +100,18 @@ cache hit <10 ms).
 - [x] Task 10 — Fix-this-chord popover; edits persist locally and survive reload
 - [x] Task 11 — End-to-end verification + docs (this section)
 
-### Sub-project 3 — Chrome extension
-- [ ] Later cycle
+### Sub-project 3 — Chrome extension 🏗️ in progress
+
+MV3 thin client over the same API: a "♪ Get chords" bar injected below the YouTube
+player expands into the synced paper sheet (Shadow DOM, SPA-navigation-safe,
+ad-aware). Design: [`docs/superpowers/specs/2026-07-09-tabit-extension-design.md`](docs/superpowers/specs/2026-07-09-tabit-extension-design.md) ·
+Plan: [`docs/superpowers/plans/2026-07-09-tabit-extension.md`](docs/superpowers/plans/2026-07-09-tabit-extension.md)
+
+- [x] Task 0 — esbuild MV3 scaffold; shared types/music helpers imported from `web/src/lib` (no copies)
+- [x] Task 1 — Message contract + watch-page utilities (videoId, ad detection, insertion selectors)
+- [x] Task 2 — Service worker: API orchestration, `chrome.storage.session` cache, SW-restart-safe polling
+- [x] Task 3 — Content shell: SPA navigation watcher, Shadow-DOM mount/teardown, stale-retry race fixed + regression-tested
+- [x] Task 4 — Overlay state machine: collapsed bar → analyzing → sheet/error; page-`<video>` time hook
+- [x] Task 5 — The panel: web Sheet ported into the shadow root (sync, lookahead, transpose, ad-pause)
+- [ ] Task 6 — Degraded mount fallback + live-stream guard
+- [ ] Task 7 — Headful Playwright e2e on real YouTube + run instructions
