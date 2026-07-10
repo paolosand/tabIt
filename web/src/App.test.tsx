@@ -37,3 +37,13 @@ test('analysis failure returns to landing with the error', async () => {
   await waitFor(() => expect(screen.getByText(/yt-dlp exploded/)).toBeInTheDocument());
   expect(screen.getByRole('button', { name: /find the chords/i })).toBeInTheDocument();
 });
+
+test('typed URL survives a failed analysis', async () => {
+  vi.spyOn(api, 'analyzeUrl').mockResolvedValue('j1');
+  vi.spyOn(api, 'pollJob').mockRejectedValue(new Error('boom'));
+  render(<App />);
+  await userEvent.type(screen.getByPlaceholderText(/youtube.com/), 'https://youtu.be/x');
+  await userEvent.click(screen.getByRole('button', { name: /find the chords/i }));
+  await waitFor(() => expect(screen.getByText(/boom/)).toBeInTheDocument());
+  expect(screen.getByPlaceholderText(/youtube.com/)).toHaveValue('https://youtu.be/x');
+});

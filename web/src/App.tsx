@@ -11,6 +11,7 @@ export default function App() {
   const [chart, setChart] = useState<Chart | null>(null);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [urlValue, setUrlValue] = useState('');
 
   async function run(submit: () => Promise<string>, file: File | null) {
     setError(null);
@@ -41,7 +42,13 @@ export default function App() {
       }}
     >
       {stage === 'landing' && (
-        <Landing onSubmitUrl={onSubmitUrl} onSubmitFile={onSubmitFile} error={error} />
+        <Landing
+          value={urlValue}
+          onChange={setUrlValue}
+          onSubmitUrl={onSubmitUrl}
+          onSubmitFile={onSubmitFile}
+          error={error}
+        />
       )}
       {stage === 'analyzing' && <Analyzing />}
       {stage === 'sheet' && chart && (

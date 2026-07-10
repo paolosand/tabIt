@@ -1,17 +1,16 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 
 interface LandingProps {
+  value: string;
+  onChange: (value: string) => void;
   onSubmitUrl: (url: string) => void;
   onSubmitFile: (file: File) => void;
   error?: string | null;
 }
 
-export default function Landing({ onSubmitUrl, onSubmitFile, error }: LandingProps) {
-  const [urlValue, setUrlValue] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+export default function Landing({ value, onChange, onSubmitUrl, onSubmitFile, error }: LandingProps) {
   const submit = () => {
-    const trimmed = urlValue.trim();
+    const trimmed = value.trim();
     if (trimmed) onSubmitUrl(trimmed);
   };
 
@@ -116,8 +115,8 @@ export default function Landing({ onSubmitUrl, onSubmitFile, error }: LandingPro
           </label>
           <input
             type="text"
-            value={urlValue}
-            onChange={(e) => setUrlValue(e.target.value)}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
             onKeyDown={onUrlKeyDown}
             placeholder="https://www.youtube.com/watch?v=..."
             style={{
@@ -188,7 +187,6 @@ export default function Landing({ onSubmitUrl, onSubmitFile, error }: LandingPro
           >
             <span>drop an audio file, or click to choose one</span>
             <input
-              ref={fileInputRef}
               type="file"
               accept="audio/*"
               onChange={onFileChosen}
