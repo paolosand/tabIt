@@ -316,10 +316,8 @@ export const OVERLAY_CSS = `
 .tabit-chord-label-n { color: var(--tabit-muted); }
 .tabit-chord-label-current { font-size: 30px; }
 .tabit-chord-label-normal { font-size: 26px; }
-.tabit-chord-underline-dim {
-  border-bottom: 1.5px dotted var(--tabit-muted);
-  color: var(--tabit-muted);
-}
+.tabit-chord-text-muted { color: var(--tabit-muted); }
+.tabit-chord-underline-dim { border-bottom: 1.5px dotted var(--tabit-muted); }
 .tabit-chord-underline-next { border-bottom: 2px solid var(--tabit-dot); }
 
 .tabit-footer {

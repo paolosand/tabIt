@@ -143,15 +143,23 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
               {row.chords.map((chord, ci) => {
                 const isN = chord.quality === 'N';
                 const sizeClass = chord.isCurrent ? 'tabit-chord-label-current' : 'tabit-chord-label-normal';
-                const underlineClass = chord.isNext
-                  ? 'tabit-chord-underline-next'
-                  : chord.low
-                    ? 'tabit-chord-underline-dim'
-                    : '';
+                // Mirrors web/src/screens/Sheet.tsx: `low` sets both muted text color and a
+                // dotted underline; `isNext` then overwrites ONLY the underline, so a
+                // low-confidence next chord stays muted with a solid next-underline. N
+                // chords render via a separate branch there with no decoration at all.
+                const textClass = !isN && chord.low ? 'tabit-chord-text-muted' : '';
+                const underlineClass = isN
+                  ? ''
+                  : chord.isNext
+                    ? 'tabit-chord-underline-next'
+                    : chord.low
+                      ? 'tabit-chord-underline-dim'
+                      : '';
                 const labelClass = [
                   'tabit-chord-label',
                   sizeClass,
                   isN ? 'tabit-chord-label-n' : '',
+                  textClass,
                   underlineClass,
                 ]
                   .filter(Boolean)

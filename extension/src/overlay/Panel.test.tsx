@@ -59,3 +59,24 @@ test('collapse button calls onCollapse', async () => {
   await userEvent.click(screen.getByRole('button', { name: /collapse/i }));
   expect(onCollapse).toHaveBeenCalledOnce();
 });
+
+test('low-confidence next chord keeps muted text with next underline', () => {
+  // time=5 is inside F (idx1, current); C (idx2, conf 0.6) is next and low-confidence.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  // "C" also appears in the footer's "Next:" strong; scope to the grid chord label.
+  const c = screen.getAllByText('C').find((el) => el.className.includes('tabit-chord-label'))!;
+  expect(c.className).toContain('tabit-chord-text-muted');
+  expect(c.className).toContain('tabit-chord-underline-next');
+  expect(c.className).not.toContain('tabit-chord-underline-dim');
+});
+
+test('N chord never gets decoration classes', () => {
+  // time=13 is inside G (idx3, current); N (idx4) is next.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 13, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  // Two "—" render (grid cell + footer "Next:"); scope to the grid chord label.
+  const dash = screen.getAllByText('—').find((el) => el.className.includes('tabit-chord-label'))!;
+  expect(dash.className).not.toContain('underline');
+  expect(dash.className).not.toContain('muted');
+});
