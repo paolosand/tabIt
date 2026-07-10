@@ -8,6 +8,7 @@ import '@testing-library/jest-dom';
       _data: {} as Record<string, unknown>,
       async get(key: string) { return { [key]: (this as { _data: Record<string, unknown> })._data[key] }; },
       async set(items: Record<string, unknown>) { Object.assign((this as { _data: Record<string, unknown> })._data, items); },
+      async remove(key: string) { delete (this as { _data: Record<string, unknown> })._data[key]; },
     },
   },
 };
