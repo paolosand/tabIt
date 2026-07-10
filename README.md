@@ -1,117 +1,161 @@
-# tabIt
+<div align="center">
 
-Turn any song into a synced, play-along guitar chord sheet — detect the **chords**,
-**key**, and suggested **scales**, and follow along karaoke-style with playback.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+  <img src="docs/assets/logo-light.svg" alt="tabIt" width="340">
+</picture>
 
-End goal: a Chrome extension that overlays this on YouTube. First deliverables: a Python
-MIR engine that turns audio into a "chord chart" JSON, and a React web app that renders it
-synced to the YouTube IFrame player.
+**paste a song, follow the chords, play along**
 
-> Portfolio / learning project. Success = correctness + a demo worth showing off.
-> Honest about the accuracy ceiling (~72% on 7ths; even human experts agree only ~54% on
-> complex chords) — the UI surfaces per-chord confidence rather than pretending.
+Turn any song into a synced, play-along guitar chord sheet: chords, key, suggested
+scales, even slash chords, followed karaoke-style as the music plays.
 
-## Architecture (three layers)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white) ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-fadc7d)
+
+</div>
+
+<img src="docs/assets/sheet-playing.png" alt="tabIt following Three Little Birds: the synced chord sheet with the current chord highlighted in amber, the next chord underlined in pencil, and key, tempo, and scale suggestions above" width="100%">
+
+<p align="center"><sub>A real run, not a mockup. Amber highlighter marks the chord playing <em>now</em>; the pencil underline marks what's <em>next</em>; a dotted underline means the engine isn't sure and says so.</sub></p>
+
+## Why this exists
+
+Play-along chord sites are cluttered, ad-heavy, and only cover songs someone bothered to
+transcribe. tabIt transcribes the song for you: paste a YouTube URL (or drop an audio
+file) and it detects the chords, key, tempo, and scales to solo with, then follows along
+with playback like a karaoke prompter. No accounts, no clutter, paste and go.
+
+- **Karaoke-style following.** The current chord is always obvious at a glance; the next
+  chord is flagged before it arrives, so your hands are ready.
+- **Slash chords.** The chord model runs on the drums-removed harmonic mix while a pitch
+  tracker follows the isolated bass stem; the two are reconciled to emit inversions like
+  `A/C#`. Most tools skip this entirely.
+- **Honest confidence.** Chord detection is imperfect (state of the art is ~72% on
+  7th chords; human experts only agree ~54% on complex ones). Low-confidence chords are
+  visibly softer with a dotted underline, never hidden. Click any chord to correct it;
+  edits persist locally.
+- **Practice-friendly.** Key, tempo, and scale chips at the top; one-tap transpose;
+  auto-scroll that keeps the current line in view.
+- **Fast after the first time.** Cold analysis takes 1 to 3 minutes (download, source
+  separation, detection). Every repeat of the same song is served instantly from a disk
+  cache.
+
+## How it works
+
+Three layers share one contract: the **chart JSON**. The web app and the Chrome
+extension are both just renderers of it.
+
+```mermaid
+flowchart LR
+    IN["YouTube URL<br/>or audio file"] --> ING[ingest]
+    ING --> SEP["Demucs<br/>source separation"]
+    SEP -- harmonic mix --> CH["crema<br/>chord model"]
+    SEP -- bass stem --> BA["CREPE<br/>bass tracking"]
+    ING --> BE["librosa<br/>beats + tempo"]
+    ING --> KEY["Essentia<br/>key detection"]
+    CH --> REC["reconcile<br/>slash chords"]
+    BA --> REC
+    REC --> POST["post-process"]
+    BE --> POST
+    KEY --> POST
+    POST --> JSON[("chart JSON")]
+    JSON --> WEB["React web app"]
+    JSON --> EXT["Chrome extension<br/>(overlay on youtube.com)"]
+```
 
 | Layer | What | Status |
 |---|---|---|
-| **1 — MIR engine** (Python) | audio → chords + key + scales + beat grid → chart JSON | ✅ complete |
-| **2 — Web app** (React + FastAPI) | paste URL / drop file → YouTube player + synced sheet | ✅ complete |
-| **3 — Chrome extension** (MV3) | overlay the sheet on youtube.com; thin client over the same API | 🔮 later cycle |
+| **MIR engine** (Python) | audio → chords + key + scales + beat grid → chart JSON | ✅ complete |
+| **Web app** (FastAPI + React) | paste URL / drop file → YouTube player + synced sheet | ✅ complete |
+| **Chrome extension** (MV3) | the same sheet overlaid below the player on youtube.com | 🏗️ in progress |
 
-The **chart JSON is the shared contract** — the web app and the future extension are both
-just renderers of it.
+## Quick start
 
-## Engine pipeline
+### 1. Engine + API
 
-`ingest → separate (Demucs) → beats (librosa) + key (Essentia) + chords (crema) + bass (crepe) → post-process → chart JSON`
+Requires Python 3.11. Plain `pip install -e ".[dev]"` is **not sufficient**: crema's
+legacy build needs an old `setuptools`, so the build step is constrained separately.
 
-The "push the bounds" bit: run the chord model on the harmonic (drums-removed) mix **and**
-track the isolated bass stem in parallel, then reconcile to emit slash chords (`C/G`) — which
-most tools skip entirely.
-
-### Install (engine)
-
-Plain `pip install -e ".[dev]"` is **not sufficient** — crema's legacy build needs an old
-`setuptools`, so the build step must be constrained separately:
-
-```
+```bash
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]" --build-constraint constraints-build.txt
 ```
 
-### Run the web app
+### 2. Web app
 
-```
-# terminal 1 — API
+```bash
+# terminal 1: API
 source .venv/bin/activate
 uvicorn api.main:app --port 8000
 
-# terminal 2 — web
+# terminal 2: web
 cd web && npm install && npm run dev   # http://localhost:5173
 ```
 
-Paste a YouTube URL (or drop an audio file) on the landing page. First analysis of a
-song is cold (~1–3 min: download → Demucs separation → chord/key/beat detection);
-repeat submissions of the same video are served instantly from the disk cache
-(`data/charts/`, keyed by videoId + engine version).
+Paste a YouTube URL or drop an audio file on the landing page. Analyzed charts are
+cached in `data/charts/`, keyed by video ID and engine version.
 
-## Docs
+### CLI only
 
-- **Design spec:** [`docs/superpowers/specs/2026-07-09-tabit-design.md`](docs/superpowers/specs/2026-07-09-tabit-design.md)
-- **Engine implementation plan:** [`docs/superpowers/plans/2026-07-09-tabit-engine.md`](docs/superpowers/plans/2026-07-09-tabit-engine.md)
+The engine runs standalone if you just want the chart JSON:
 
-## Progress
+```bash
+python -m engine.cli <youtube-url|audio-file> -o chart.json
+```
 
-### Sub-project 1 — MIR engine ✅ complete
+### Chrome extension (in progress)
 
-`python -m engine.cli <youtube-url|audio-file> -o chart.json` runs the full pipeline end-to-end (~10s on a short clip, Apple Silicon).
+```bash
+cd extension && npm install && npm run build
+```
 
-- [x] Task 0 — Project scaffolding + dependency smoke test
-- [x] Task 1 — Chart schema (`schema.py`)
-- [x] Task 2 — Scale suggestions (`scales.py`)
-- [x] Task 3 — Audio ingest (`ingest.py`)
-- [x] Task 4 — Beat/tempo tracking (`beats.py`)
-- [x] Task 5 — Key detection (`key.py`)
-- [x] Task 6 — Chord recognition (`chords.py`)
-- [x] Task 7 — Source separation (`separate.py`)
-- [x] Task 8 — Bass-note / slash-chord detection (`bass.py`)
-- [x] Task 9 — Post-processing (`postprocess.py`)
-- [x] Task 10 — Pipeline + CLI (`pipeline.py`, `cli.py`)
-- [x] Task 11 — Accuracy harness (`mir_eval`) — measured **0.495** majmin weighted accuracy on a **synthetic**, programmatically-generated Am→F→C→G fixture (`tests/integration/test_accuracy.py`), asserted as a regression floor (`>= 0.4`) for that fixture only. **This is not a real-music accuracy claim** — crema is trained on real recordings, so a synthesized-tone clip is out-of-distribution and this number says nothing about accuracy on an actual song. A real-song accuracy floor (licensed/self-recorded, hand-labeled) remains a documented follow-up (see task-11 report)
+Then load `extension/dist` as an unpacked extension at `chrome://extensions` (with the
+API from step 1 running). A "♪ Get chords" bar appears below the YouTube player and
+expands into the synced sheet: Shadow-DOM isolated, SPA-navigation safe, ad-aware.
 
-### Sub-project 2 — Web app (FastAPI + React) ✅ complete
+## Honest about accuracy
 
-Paste URL / drop file → analyzing screen → synced chord sheet with YouTube (or local
-`<audio>`) playback. Verified end-to-end against the real engine on a real song
-(Three Little Birds → key **A major** 0.94, A/D/E chord family; cold analysis ~2.5 min,
-cache hit <10 ms).
+This is a portfolio and learning project, and it doesn't pretend otherwise. The
+measured regression floor (0.495 weighted majmin accuracy via `mir_eval`) comes from a
+**synthetic** Am→F→C→G fixture, which is out-of-distribution for a model trained on
+real recordings, so it says nothing about accuracy on an actual song. A hand-labeled
+real-song accuracy floor is on the roadmap. What the product does instead of promising
+precision: it shows per-chord confidence and makes corrections one click away.
 
-- [x] Task 0 — API scaffolding + `/health` endpoint (`api/main.py`)
-- [x] Task 1 — videoId parsing + chart disk cache (`api/videoid.py`, `api/cache.py`)
-- [x] Task 2 — Async job store, single-worker executor (`api/jobs.py`)
-- [x] Task 3 — Analyze endpoints: submit URL/file, poll job, cached-chart fast path
-- [x] Task 4 — Web scaffolding: Vite + React + TS, design tokens, `/api` dev proxy
-- [x] Task 5 — Chart types + music utils (transpose, label formatting) mirroring `engine/schema.py`
-- [x] Task 6 — API client with job polling + persistent chord-override store (localStorage)
-- [x] Task 7 — App state machine + Landing/Analyzing screens (URL + file input, error states)
-- [x] Task 8 — Playback layer: YouTube IFrame + local `<audio>` behind one `PlaybackSource`
-- [x] Task 9 — Sheet screen: beat-synced highlight, next-chord lookahead, auto-scroll, key/tempo/scale chips, transpose, confidence dimming
-- [x] Task 10 — Fix-this-chord popover; edits persist locally and survive reload
-- [x] Task 11 — End-to-end verification + docs (this section)
+## Project layout
 
-### Sub-project 3 — Chrome extension 🏗️ in progress
+```
+engine/      Python MIR pipeline: audio in, chart JSON out
+api/         FastAPI wrapper: analyze endpoints, job store, disk cache
+web/         Vite + React app: player + synced chord sheet
+extension/   Chrome MV3 extension: the sheet overlaid on youtube.com
+data/charts/ cached analyses (videoId @ engine version)
+docs/        design specs, implementation plans, progress ledger
+```
 
-MV3 thin client over the same API: a "♪ Get chords" bar injected below the YouTube
-player expands into the synced paper sheet (Shadow DOM, SPA-navigation-safe,
-ad-aware). Design: [`docs/superpowers/specs/2026-07-09-tabit-extension-design.md`](docs/superpowers/specs/2026-07-09-tabit-extension-design.md) ·
-Plan: [`docs/superpowers/plans/2026-07-09-tabit-extension.md`](docs/superpowers/plans/2026-07-09-tabit-extension.md)
+## Roadmap
 
-- [x] Task 0 — esbuild MV3 scaffold; shared types/music helpers imported from `web/src/lib` (no copies)
-- [x] Task 1 — Message contract + watch-page utilities (videoId, ad detection, insertion selectors)
-- [x] Task 2 — Service worker: API orchestration, `chrome.storage.session` cache, SW-restart-safe polling
-- [x] Task 3 — Content shell: SPA navigation watcher, Shadow-DOM mount/teardown, stale-retry race fixed + regression-tested
-- [x] Task 4 — Overlay state machine: collapsed bar → analyzing → sheet/error; page-`<video>` time hook
-- [x] Task 5 — The panel: web Sheet ported into the shadow root (sync, lookahead, transpose, ad-pause)
-- [ ] Task 6 — Degraded mount fallback + live-stream guard
-- [ ] Task 7 — Headful Playwright e2e on real YouTube + run instructions
+- [ ] Extension: degraded mount fallback + live-stream guard
+- [ ] Extension: headful Playwright e2e against real YouTube
+- [ ] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
+- [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
+- [ ] Song sections (verse/chorus) via allin1
+
+The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
+design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/).
+
+## Built with
+
+| | |
+|---|---|
+| [Demucs](https://github.com/facebookresearch/demucs) | source separation (harmonic mix + bass stem) |
+| [crema](https://github.com/bmcfee/crema) | chord recognition |
+| [librosa](https://librosa.org) | beat and tempo tracking |
+| [Essentia](https://essentia.upf.edu) | key detection |
+| [CREPE](https://github.com/marl/crepe) | bass pitch tracking |
+| [mir_eval](https://github.com/mir-evaluation/mir_eval) | accuracy harness |
+| [FastAPI](https://fastapi.tiangolo.com) · [React 19](https://react.dev) · [Vite](https://vite.dev) · [esbuild](https://esbuild.github.io) | the app around the engine |
+
+## License
+
+[MIT](LICENSE) © Paolo Sandejas
