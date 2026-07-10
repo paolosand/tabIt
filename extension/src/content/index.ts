@@ -16,8 +16,12 @@ function teardown() {
 }
 
 function mountFor(videoId: string) {
-  const tryMount = (slot: Element) => {
-    const { shadowRoot, unmount } = mountOverlay(slot);
+  // Best-effort heuristic (verified in e2e): don't mount over a live stream, where
+  // there's no finished transcript/chord data to show yet.
+  if (document.querySelector('.ytp-live') !== null) return;
+
+  const tryMount = (slot: Element, fallback = false) => {
+    const { shadowRoot, unmount } = mountOverlay(slot, { fallback });
     const stopApp = renderOverlay(shadowRoot, videoId);
     current = {
       unmount: () => {
@@ -44,6 +48,9 @@ function mountFor(videoId: string) {
   const timer = setTimeout(() => {
     obs.disconnect();
     cancelPending = null;
+    // Degraded fallback (spec §4): no slot ever appeared, so mount pinned to the
+    // bottom of the viewport instead of giving up silently.
+    tryMount(document.body, true);
   }, 10_000);
   cancelPending = () => {
     obs.disconnect();
