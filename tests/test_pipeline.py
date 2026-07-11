@@ -14,7 +14,11 @@ def test_analyze_local_file_end_to_end(tone_440_wav, tmp_path, monkeypatch):
     import engine.pipeline as p
     monkeypatch.setattr(p, "separate", lambda w, o: {"harmonic": w, "bass": w})
     monkeypatch.setattr(p, "harmonic_mix", lambda stems, o: tone_440_wav)
-    monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 1.0, 2.0]))
+    # Fine-grained beat grid so each 1-second chord segment is >= 2 local
+    # beats long and merge_short (pipeline order: ... -> merge_short -> ...)
+    # doesn't absorb one chord into the other; this test is about pipeline
+    # wiring, not merge_short's own behavior (see test_postprocess.py).
+    monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 0.5, 1.0, 1.5, 2.0]))
     monkeypatch.setattr(p, "detect_key", lambda w: __import__(
         "engine.schema", fromlist=["Key"]).Key(tonic="A", mode="minor", confidence=0.7))
     monkeypatch.setattr(p, "detect_bass_notes", lambda w, segs: [(s.root, 1.0) for s in segs])

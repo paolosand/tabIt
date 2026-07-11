@@ -11,6 +11,7 @@ from engine.chords import CremaChordModel, raw_to_segments
 from engine.scales import suggest_scales
 from engine.postprocess import (
     snap_to_beats, merge_adjacent, reconcile_bass, apply_key_prior,
+    simplify_quality, merge_short,
 )
 from engine.schema import Analysis, Chart, Tempo
 
@@ -35,6 +36,9 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
         bass_src = stems.get("bass", ingested.wav_path)
         segs = reconcile_bass(segs, detect_bass_notes(bass_src, segs))
         segs = apply_key_prior(segs, key)
+        segs = simplify_quality(segs)
+        segs = merge_short(segs, beats)
+        segs = merge_adjacent(segs)
 
         return Chart(
             source=ingested.source,

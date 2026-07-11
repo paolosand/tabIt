@@ -1,11 +1,12 @@
 from engine.schema import ChordSegment, Key
 from engine.postprocess import (
     snap_to_beats, merge_adjacent, reconcile_bass, apply_key_prior,
+    simplify_quality, merge_short,
 )
 from engine.schema import format_label
 
 
-def _seg(start, end, root="C", quality="maj", bass="C", conf=0.8):
+def _seg(start=0.0, end=1.0, root="C", quality="maj", bass="C", conf=0.8):
     from engine.schema import format_label
     return ChordSegment(start=start, end=end, label=format_label(root, quality, bass),
                         root=root, quality=quality, bass=bass, confidence=conf)
@@ -100,3 +101,46 @@ def test_apply_key_prior_lowers_out_of_key_confidence():
     segs = [_seg(0.0, 1.0, "C#", "maj", "C#", conf=0.8)]
     out = apply_key_prior(segs, Key(tonic="C", mode="major", confidence=0.9))
     assert out[0].confidence < 0.8
+
+
+def test_low_confidence_exotic_simplifies_high_survives():
+    lo = _seg(root="A#", quality="dim7", conf=0.4)
+    hi = _seg(root="A#", quality="dim7", conf=0.9, start=2.0, end=4.0)
+    out = simplify_quality([lo, hi])
+    assert (out[0].quality, out[0].label) == ("min", "A#m")
+    assert out[1].quality == "dim7"
+
+
+def test_trusted_quality_never_simplifies():
+    out = simplify_quality([_seg(root="D", quality="maj7", conf=0.1)])
+    assert out[0].quality == "maj7"
+
+
+def test_simplify_recomputes_label_and_keeps_valid_bass():
+    seg = _seg(root="A", quality="sus4", bass="E", conf=0.4)  # E is a sus4 tone AND a maj tone
+    out = simplify_quality([seg])
+    assert (out[0].quality, out[0].label) == ("maj", "A/E")
+
+
+def test_simplify_drops_bass_that_left_the_chord():
+    seg = _seg(root="A", quality="sus2", bass="B", conf=0.4)  # B is a sus2 tone, not a maj tone
+    out = simplify_quality([seg])
+    assert (out[0].quality, out[0].bass, out[0].label) == ("maj", "A", "A")
+
+
+def test_merge_short_absorbs_by_shared_tones():
+    beats = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    segs = [_seg(root="C", quality="maj", start=0.0, end=3.0),
+            _seg(root="E", quality="min", start=3.0, end=4.0),   # 1 beat: short
+            _seg(root="F", quality="maj", start=4.0, end=6.0)]
+    out = merge_short(segs, beats)
+    # Em shares {E,G} with C-maj but only {} with F-maj -> absorbed backward into C
+    assert len(out) == 2 and out[0].end == 4.0 and out[0].root == "C"
+
+
+def test_merge_short_never_touches_N():
+    beats = [0.0, 1.0, 2.0, 3.0, 4.0]
+    segs = [_seg(root="N", quality="N", start=0.0, end=1.0),
+            _seg(root="C", quality="maj", start=1.0, end=4.0)]
+    out = merge_short(segs, beats)
+    assert out[0].quality == "N" and len(out) == 2

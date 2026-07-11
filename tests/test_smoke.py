@@ -10,4 +10,4 @@ def test_heavy_deps_import(mod):
 
 def test_engine_imports():
     import engine
-    assert engine.__version__ == "0.1.0"
+    assert engine.__version__ == "0.2.0"
