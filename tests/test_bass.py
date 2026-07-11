@@ -19,7 +19,9 @@ def test_detect_bass_notes_length_matches_segments(tone_440_wav):
                          quality="maj", bass="A", confidence=0.9)]
     out = detect_bass_notes(tone_440_wav, segs)
     assert len(out) == 1
-    assert out[0] in NOTES
+    pc, conf = out[0]
+    assert pc in NOTES
+    assert conf is None or isinstance(conf, float)
 
 
 def test_detect_bass_notes_low_confidence_falls_back_to_crema_bass(monkeypatch):
@@ -53,4 +55,4 @@ def test_detect_bass_notes_low_confidence_falls_back_to_crema_bass(monkeypatch):
     segs = [ChordSegment(start=0.0, end=1.0, label="C/G", root="C",
                          quality="maj", bass="G", confidence=0.8)]
     out = detect_bass_notes("unused.wav", segs)
-    assert out == ["G"]
+    assert out == [("G", None)]

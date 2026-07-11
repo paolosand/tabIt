@@ -17,7 +17,7 @@ def test_analyze_local_file_end_to_end(tone_440_wav, tmp_path, monkeypatch):
     monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 1.0, 2.0]))
     monkeypatch.setattr(p, "detect_key", lambda w: __import__(
         "engine.schema", fromlist=["Key"]).Key(tonic="A", mode="minor", confidence=0.7))
-    monkeypatch.setattr(p, "detect_bass_notes", lambda w, segs: [s.root for s in segs])
+    monkeypatch.setattr(p, "detect_bass_notes", lambda w, segs: [(s.root, 1.0) for s in segs])
 
     chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
                     workdir=str(tmp_path), chord_model=FakeChordModel())

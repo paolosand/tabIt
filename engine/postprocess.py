@@ -35,13 +35,30 @@ def merge_adjacent(segs: list[ChordSegment]) -> list[ChordSegment]:
     return out
 
 
-def reconcile_bass(segs: list[ChordSegment], bass_notes: list[str]) -> list[ChordSegment]:
+BASS_CONF_MIN = 0.5
+
+
+def reconcile_bass(segs: list[ChordSegment], bass_reads: list[tuple[str, float | None]]) -> list[ChordSegment]:
+    """Attach CREPE bass as a slash ONLY when confident AND a chord tone.
+
+    conf None means the read is the segment's own (crema) bass -- kept untouched, so
+    crema's slash chords survive low-confidence CREPE (invariant from cd9772f).
+    """
+    from engine.notes import chord_tone_classes
+
     out = []
-    for s, bass in zip(segs, bass_notes):
-        b = normalize_note(bass)
+    for s, (pc, conf) in zip(segs, bass_reads):
+        if conf is None:
+            out.append(s.model_copy())
+            continue
+        b = normalize_note(pc)
+        if conf >= BASS_CONF_MIN and b in chord_tone_classes(s.root, s.quality):
+            new_bass = b
+        else:
+            new_bass = s.root
         out.append(s.model_copy(update={
-            "bass": b,
-            "label": format_label(s.root, s.quality, b),
+            "bass": new_bass,
+            "label": format_label(s.root, s.quality, new_bass),
         }))
     return out
 
