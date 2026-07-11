@@ -80,3 +80,95 @@ test('N chord never gets decoration classes', () => {
   expect(dash.className).not.toContain('underline');
   expect(dash.className).not.toContain('muted');
 });
+
+// Beats fixture: chart with a real beat grid (0.5s beats over the 20s chart)
+const beatChart = { ...chart, beats: Array.from({ length: 40 }, (_, i) => i * 0.5) };
+
+test('default view is the ribbon; toggle swaps to the full sheet and back', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  expect(screen.getByTestId('ribbon')).toBeInTheDocument();
+  expect(screen.queryByTestId('marker')).toBeNull(); // sheet not rendered
+  await userEvent.click(screen.getByRole('button', { name: /show full sheet/i }));
+  expect(screen.getByTestId('marker')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /show beat ribbon/i }));
+  expect(screen.getByTestId('ribbon')).toBeInTheDocument();
+});
+
+test('empty beats forces the sheet and hides the toggle', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />); // fixture has beats: []
+  expect(screen.queryByTestId('ribbon')).toBeNull();
+  expect(screen.getByTestId('marker')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /show/i })).toBeNull();
+});
+
+test('footer counts beats: next-in and beat N / M', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false }); // in F (4-8s), beat 11 of grid
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: C in 6 beats'); // beats at 5.5..8.0
+  expect(footer).toHaveTextContent('beat 3 / 8');          // F spans beats 8-15, t=5 is beats[10]
+});
+
+test('footer says "next beat" instead of "in 0/1 beats" when the change is imminent', () => {
+  // t=7.6 is inside F (4-8s); next chord C starts at 8.0, one beat away on the 0.5s grid.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 7.6, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: C next beat');
+  expect(footer).not.toHaveTextContent(/in [01] beats/);
+});
+
+test('footer falls back to seconds without beats', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  expect(screen.getByText(/Now:/).closest('.tabit-footer')).toHaveTextContent(/in 3\.0s/);
+});
+
+test('transpose relabels ribbon chord labels', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  expect(screen.getByTestId('ribbon')).toHaveTextContent('Bm'); // Am +2
+});
+
+test('toggling to the full sheet mid-song scrolls to the current row, not the top', async () => {
+  // jsdom reports offsetTop/clientHeight as 0 for all elements by default, which would
+  // make the scroll-target math a no-op regardless of whether the effect re-runs on
+  // toggle. Stub both getters so the target is a nonzero, observable value.
+  const offsetTopSpy = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockReturnValue(500);
+  const clientHeightSpy = vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(80);
+  try {
+    vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 10, adShowing: false }); // inside C (idx2)
+    render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+    // starts on the ribbon (default view); toggle to the full sheet
+    await userEvent.click(screen.getByRole('button', { name: /show full sheet/i }));
+    const scrollEl = document.querySelector('.tabit-sheet-scroll') as HTMLDivElement;
+    // target = rowEl.offsetTop(500) - container.clientHeight/2(40) + rowEl.clientHeight/2(40) = 500
+    expect(scrollEl.scrollTop).toBe(500);
+  } finally {
+    offsetTopSpy.mockRestore();
+    clientHeightSpy.mockRestore();
+  }
+});
+
+test('no beat count shown before the current chord\'s first beat', () => {
+  // beats start at t=1.0, so at t=0.2 (inside the first chord, Am 0-4s) no beat of
+  // the grid has started yet within that chord; beatWithinChord returns 0.
+  const introChart = { ...chart, beats: Array.from({ length: 38 }, (_, i) => 1 + i * 0.5) };
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0.2, adShowing: false });
+  render(<Panel chart={introChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer.textContent).not.toMatch(/beat \d+ \/ \d+/);
+});
+
+test('last chord footer shows "to the end" with no beat countdown', () => {
+  // time=19 is inside the last chord (N, 16-20s), so there is no next chord.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 19, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: — (to the end)');
+  expect(footer).not.toHaveTextContent(/in \d+ beats/);
+});

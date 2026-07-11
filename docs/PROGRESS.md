@@ -55,3 +55,4 @@ Plan: [`superpowers/plans/2026-07-09-tabit-extension.md`](superpowers/plans/2026
 - [x] Task 5 — The panel: web Sheet ported into the shadow root (sync, lookahead, transpose, ad-pause)
 - [x] Task 6 — Degraded mount fallback + live-stream guard
 - [x] Task 7 — Full sweep + live headful Playwright e2e on real YouTube, 7/7 checks passed (cached sheet ~50 ms, marker tracked across a chord boundary, transpose incl. scales chip, collapse, SPA-nav teardown/remount, back-nav session cache ~47 ms) + README run instructions
+- [x] Beat ribbon compact view (spec 2026-07-10): beat-grid strip default, full sheet behind a toggle — live-verified to fit under the player at 1440×900 with no page scroll

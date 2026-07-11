@@ -144,10 +144,22 @@ export const OVERLAY_CSS = `
  * rest of this file already makes - no custom webfont inside a content script). */
 .tabit-panel {
   flex: 1;
-  padding: 28px 5vw 48px;
+  padding: 10px 5vw 12px; /* desk margin around the panel card; the card carries the paper */
   animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
+}
+
+/* One paper card around the WHOLE panel (header + ribbon/sheet + footer + toggle), per
+ * the approved mockup, so header chips, footer and toggle never render ink-on-dark on
+ * dark-theme host pages. Same paper/radius/shadow tokens the ribbon card carried; the
+ * sheet view keeps its own .tabit-sheet card inside this one (card-in-card reads as the
+ * web app's page-on-desk aesthetic — same radius, so flush corners coincide). */
+.tabit-panel-card {
+  background: var(--tabit-paper);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
+  padding-bottom: 8px; /* bottom inset when the toggle is absent (no-beats charts) */
 }
 
 .tabit-panel-header {
@@ -163,6 +175,7 @@ export const OVERLAY_CSS = `
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
 .tabit-panel-wordmark {
@@ -184,57 +197,10 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-chips-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 30px;
-}
-
-.tabit-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.tabit-chip {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 14px;
-  background: var(--tabit-paper);
-  border-radius: 2px;
-}
-
-.tabit-chip-scales {
-  flex: 1;
-  min-width: 200px;
-}
-
-.tabit-chip-label {
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--tabit-muted);
-}
-
-.tabit-chip-value {
-  font-family: var(--tabit-serif);
-  font-weight: 600;
-  font-size: 17px;
-}
-
-.tabit-chip-scales-value {
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.tabit-transpose-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 8px 14px; }
+.tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
+.tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
+.tabit-inline-chip-scales { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .tabit-round-btn {
   width: 26px;
@@ -279,7 +245,7 @@ export const OVERLAY_CSS = `
 }
 
 .tabit-sheet-scroll {
-  max-height: 420px;
+  max-height: min(420px, 38vh);
   overflow-y: auto;
   padding: 26px 30px 26px 76px;
   scroll-behavior: smooth;
@@ -336,10 +302,63 @@ export const OVERLAY_CSS = `
   align-items: baseline;
   gap: 8px;
   margin-top: 16px;
+  padding: 0 14px; /* inset inside the panel card (was previously the panel's 5vw) */
   font-size: 13.5px;
   color: var(--tabit-muted);
 }
 .tabit-footer-strong { color: var(--tabit-ink); font-family: var(--tabit-serif); }
 .tabit-footer-next-strong { color: var(--tabit-dot); font-family: var(--tabit-serif); }
 .tabit-footer-dot { color: var(--tabit-border); }
+.tabit-footer-beatcount { margin-left: auto; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+
+.tabit-view-toggle {
+  display: block;
+  width: 100%;
+  padding: 2px 0 8px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: oklch(0.5 0.02 60);
+  cursor: pointer;
+  text-align: center;
+}
+.tabit-view-toggle:hover { color: oklch(0.3 0.02 60); }
+
+/* --- beat ribbon --- */
+/* Layout + ad-dim wrapper for the ribbon area. The paper background/radius/shadow
+ * moved up to .tabit-panel-card (the whole panel is one card per the mockup); this
+ * keeps the ribbon's horizontal inset (mirrors .tabit-sheet-scroll's right padding so
+ * the two views align) and the 200ms opacity transition so .tabit-sheet-dim fades the
+ * ribbon area only — header/footer stay full-opacity during ads, same as sheet view. */
+.tabit-ribbon-card {
+  padding: 0 30px;
+  transition: opacity 200ms ease-out;
+}
+.tabit-ribbon { position: relative; overflow: hidden; height: 86px; padding-top: 12px; }
+.tabit-ribbon-track {
+  position: relative; height: 64px;
+  transition: transform 200ms linear;
+}
+@media (prefers-reduced-motion: reduce) { .tabit-ribbon-track { transition: none; } }
+.tabit-beat {
+  position: absolute; top: 0; width: 44px; height: 64px;
+  border-left: 1px solid oklch(0.93 0.008 90);
+}
+.tabit-beat-bar { border-left: 2px solid oklch(0.82 0.012 90); }
+.tabit-beat-done { background: oklch(0.965 0.012 90); }
+.tabit-beat-now { background: oklch(0.87 0.14 85); border-radius: 4px; }
+.tabit-beat-chord {
+  position: absolute; left: 6px; top: 10px; z-index: 2;
+  font-family: var(--tabit-serif); font-weight: 600;
+  font-size: 21px; color: oklch(0.25 0.02 60); white-space: nowrap;
+}
+.tabit-beat-chord-muted { color: oklch(0.62 0.015 60); }
+.tabit-beat-pips { position: absolute; bottom: 6px; left: 8px; display: flex; gap: 5px; z-index: 2; }
+.tabit-beat-pip { width: 5px; height: 5px; border-radius: 50%; background: oklch(0.85 0.02 85); }
+.tabit-beat-pip-hit { background: oklch(0.55 0.12 70); }
+.tabit-ribbon-fade {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 70px; pointer-events: none;
+  background: linear-gradient(to right, transparent, oklch(0.985 0.008 90));
+}
 `;

@@ -115,7 +115,9 @@ video: a "♪ Get chords" bar appears below the player and expands into the sync
 sheet — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
 real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
 marker tracks playback across chord boundaries; teardown/remount survives SPA
-navigation).
+navigation). The expanded view is a Chordify-style beat ribbon — one cell per
+detected beat, so you can see the next chord change coming — with the full paper
+sheet one click away.
 
 ## Honest about accuracy
 
