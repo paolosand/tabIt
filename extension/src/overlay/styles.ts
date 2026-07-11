@@ -42,9 +42,8 @@ export const OVERLAY_CSS = `
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes tabit-sweep {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
+@keyframes tabit-spin {
+  to { transform: rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
@@ -104,33 +103,44 @@ export const OVERLAY_CSS = `
 }
 .tabit-btn-secondary:hover { background: oklch(0.94 0.01 85); }
 
-.tabit-loading-body {
+.tabit-checklist {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
-
-.tabit-sweep-track {
-  position: relative;
-  overflow: hidden;
-  width: 120px;
-  height: 1.5px;
-  border-radius: 2px;
-  background: var(--tabit-border);
-}
-.tabit-sweep-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 40%;
-  background: oklch(0.70 0.10 25 / 0.7);
-  animation: tabit-sweep 1.4s ease-in-out infinite;
-}
-
-.tabit-hint {
+.tabit-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: var(--tabit-muted);
-  letter-spacing: 0.02em;
   white-space: nowrap;
+  transition: color 0.3s;
+}
+.tabit-check-done { color: oklch(0.45 0.02 70); }
+.tabit-check-active { color: var(--tabit-ink); font-weight: 600; }
+.tabit-check-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  flex: none;
+  border: 1.5px solid oklch(0.85 0.015 85);
+  color: transparent;
+  transition: border-color 0.3s, background 0.3s, color 0.3s;
+}
+.tabit-check-done .tabit-check-icon {
+  background: var(--tabit-accent);
+  border-color: var(--tabit-accent);
+  color: var(--tabit-paper);
+}
+.tabit-check-active .tabit-check-icon {
+  border-color: var(--tabit-accent);
+  border-top-color: transparent;
+  animation: tabit-spin 0.9s linear infinite;
 }
 
 .tabit-bar-error .tabit-error-message {
