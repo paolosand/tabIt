@@ -100,135 +100,142 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
 
   return (
     <div data-screen-label="Chord sheet" className="tabit-panel">
-      <div className="tabit-panel-header tabit-panel-header-compact">
-        <span className="tabit-panel-wordmark">tabIt</span>
-        <span className="tabit-inline-chip">Key <b>{keyLabel}</b></span>
-        <span className="tabit-inline-chip">{bpmLabel}</span>
-        <span className="tabit-inline-chip tabit-inline-chip-scales">Solo: <b>{scalesLabel}</b></span>
-        <div className="tabit-panel-header-right">
-          {adShowing && (
-            <span className="tabit-ad-tag" data-testid="ad-tag">
-              ad playing…
-            </span>
-          )}
-          <button
-            type="button"
-            className="tabit-round-btn"
-            onClick={() => setTranspose((t) => Math.max(-6, t - 1))}
-            aria-label="Transpose down"
-          >
-            –
-          </button>
-          <span className="tabit-transpose-label">{transposeLabel}</span>
-          <button
-            type="button"
-            className="tabit-round-btn"
-            onClick={() => setTranspose((t) => Math.min(6, t + 1))}
-            aria-label="Transpose up"
-          >
-            +
-          </button>
-          <button type="button" className="tabit-round-btn" aria-label="Collapse" onClick={onCollapse}>
-            ▴
-          </button>
-        </div>
-      </div>
-
-      {view === 'ribbon' ? (
-        <div className={`tabit-ribbon-card${adShowing ? ' tabit-sheet-dim' : ''}`}>
-          <Ribbon
-            beats={chart.beats}
-            chords={decorated.map((d) => ({ start: d.start, end: d.end, label: d.label, quality: d.quality, low: d.low }))}
-            currentBeat={currentBeat}
-            currentChordIndex={currentIndex}
-          />
-        </div>
-      ) : (
-        <div className={`tabit-sheet${adShowing ? ' tabit-sheet-dim' : ''}`}>
-          <div className="tabit-sheet-margin" />
-          <div ref={scrollRef} className="tabit-sheet-scroll">
-            {rows.map((row) => (
-              <div
-                key={row.rowIndex}
-                ref={(el) => {
-                  rowRefs.current[row.rowIndex] = el;
-                }}
-                className="tabit-row"
-              >
-                {row.chords.map((chord, ci) => {
-                  const isN = chord.quality === 'N';
-                  const sizeClass = chord.isCurrent ? 'tabit-chord-label-current' : 'tabit-chord-label-normal';
-                  // Mirrors web/src/screens/Sheet.tsx: `low` sets both muted text color and a
-                  // dotted underline; `isNext` then overwrites ONLY the underline, so a
-                  // low-confidence next chord stays muted with a solid next-underline. N
-                  // chords render via a separate branch there with no decoration at all.
-                  const textClass = !isN && chord.low ? 'tabit-chord-text-muted' : '';
-                  const underlineClass = isN
-                    ? ''
-                    : chord.isNext
-                      ? 'tabit-chord-underline-next'
-                      : chord.low
-                        ? 'tabit-chord-underline-dim'
-                        : '';
-                  const labelClass = [
-                    'tabit-chord-label',
-                    sizeClass,
-                    isN ? 'tabit-chord-label-n' : '',
-                    textClass,
-                    underlineClass,
-                  ]
-                    .filter(Boolean)
-                    .join(' ');
-                  return (
-                    <div key={ci} className="tabit-chord-cell">
-                      {chord.isCurrent && <div data-testid="marker" className="tabit-chord-marker" />}
-                      <span className={labelClass}>{chord.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+      {/* One paper card wraps header + view + footer + toggle (see .tabit-panel-card):
+          on dark-theme hosts the ink-colored header/footer text needs paper behind it,
+          not the page background. */}
+      <div className="tabit-panel-card">
+        <div className="tabit-panel-header tabit-panel-header-compact">
+          <span className="tabit-panel-wordmark">tabIt</span>
+          <span className="tabit-inline-chip">Key <b>{keyLabel}</b></span>
+          <span className="tabit-inline-chip">{bpmLabel}</span>
+          <span className="tabit-inline-chip tabit-inline-chip-scales">Solo: <b>{scalesLabel}</b></span>
+          <div className="tabit-panel-header-right">
+            {adShowing && (
+              <span className="tabit-ad-tag" data-testid="ad-tag">
+                ad playing…
+              </span>
+            )}
+            <button
+              type="button"
+              className="tabit-round-btn"
+              onClick={() => setTranspose((t) => Math.max(-6, t - 1))}
+              aria-label="Transpose down"
+            >
+              –
+            </button>
+            <span className="tabit-transpose-label">{transposeLabel}</span>
+            <button
+              type="button"
+              className="tabit-round-btn"
+              onClick={() => setTranspose((t) => Math.min(6, t + 1))}
+              aria-label="Transpose up"
+            >
+              +
+            </button>
+            <button type="button" className="tabit-round-btn" aria-label="Collapse" onClick={onCollapse}>
+              ▴
+            </button>
           </div>
         </div>
-      )}
 
-      {hasChords && (
-        <div className="tabit-footer">
-          <span>
-            Now: <strong className="tabit-footer-strong">{currentLabel}</strong>
-          </span>
-          <span className="tabit-footer-dot">·</span>
-          <span>
-            {isLast ? (
-              <>Next: — (to the end)</>
-            ) : hasBeats ? (
-              <>
-                Next: <strong className="tabit-footer-next-strong">{nextLabel}</strong> in {nextInBeats} beats
-              </>
-            ) : (
-              <>
-                Next: <strong className="tabit-footer-next-strong">{nextLabel}</strong> in {nextIn.toFixed(1)}s
-              </>
-            )}
-          </span>
-          {hasBeats && beatM > 0 && beatN > 0 && (
-            <span className="tabit-footer-beatcount">
-              beat {beatN} / {beatM}
+        {view === 'ribbon' ? (
+          <div className={`tabit-ribbon-card${adShowing ? ' tabit-sheet-dim' : ''}`}>
+            <Ribbon
+              beats={chart.beats}
+              chords={decorated.map((d) => ({ start: d.start, end: d.end, label: d.label, quality: d.quality, low: d.low }))}
+              currentBeat={currentBeat}
+              currentChordIndex={currentIndex}
+            />
+          </div>
+        ) : (
+          <div className={`tabit-sheet${adShowing ? ' tabit-sheet-dim' : ''}`}>
+            <div className="tabit-sheet-margin" />
+            <div ref={scrollRef} className="tabit-sheet-scroll">
+              {rows.map((row) => (
+                <div
+                  key={row.rowIndex}
+                  ref={(el) => {
+                    rowRefs.current[row.rowIndex] = el;
+                  }}
+                  className="tabit-row"
+                >
+                  {row.chords.map((chord, ci) => {
+                    const isN = chord.quality === 'N';
+                    const sizeClass = chord.isCurrent ? 'tabit-chord-label-current' : 'tabit-chord-label-normal';
+                    // Mirrors web/src/screens/Sheet.tsx: `low` sets both muted text color and a
+                    // dotted underline; `isNext` then overwrites ONLY the underline, so a
+                    // low-confidence next chord stays muted with a solid next-underline. N
+                    // chords render via a separate branch there with no decoration at all.
+                    const textClass = !isN && chord.low ? 'tabit-chord-text-muted' : '';
+                    const underlineClass = isN
+                      ? ''
+                      : chord.isNext
+                        ? 'tabit-chord-underline-next'
+                        : chord.low
+                          ? 'tabit-chord-underline-dim'
+                          : '';
+                    const labelClass = [
+                      'tabit-chord-label',
+                      sizeClass,
+                      isN ? 'tabit-chord-label-n' : '',
+                      textClass,
+                      underlineClass,
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+                    return (
+                      <div key={ci} className="tabit-chord-cell">
+                        {chord.isCurrent && <div data-testid="marker" className="tabit-chord-marker" />}
+                        <span className={labelClass}>{chord.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {hasChords && (
+          <div className="tabit-footer">
+            <span>
+              Now: <strong className="tabit-footer-strong">{currentLabel}</strong>
             </span>
-          )}
-        </div>
-      )}
+            <span className="tabit-footer-dot">·</span>
+            <span>
+              {isLast ? (
+                <>Next: — (to the end)</>
+              ) : hasBeats ? (
+                <>
+                  {/* <=1 beat away reads "next beat" — never "in 0 beats" / "in 1 beats" */}
+                  Next: <strong className="tabit-footer-next-strong">{nextLabel}</strong>{' '}
+                  {nextInBeats <= 1 ? 'next beat' : `in ${nextInBeats} beats`}
+                </>
+              ) : (
+                <>
+                  Next: <strong className="tabit-footer-next-strong">{nextLabel}</strong> in {nextIn.toFixed(1)}s
+                </>
+              )}
+            </span>
+            {hasBeats && beatM > 0 && beatN > 0 && (
+              <span className="tabit-footer-beatcount">
+                beat {beatN} / {beatM}
+              </span>
+            )}
+          </div>
+        )}
 
-      {hasBeats && (
-        <button
-          type="button"
-          className="tabit-view-toggle"
-          aria-label={view === 'ribbon' ? 'Show full sheet' : 'Show beat ribbon'}
-          onClick={() => setView((v) => (v === 'ribbon' ? 'sheet' : 'ribbon'))}
-        >
-          {view === 'ribbon' ? '⌄ full sheet' : '⌃ beat ribbon'}
-        </button>
-      )}
+        {hasBeats && (
+          <button
+            type="button"
+            className="tabit-view-toggle"
+            aria-label={view === 'ribbon' ? 'Show full sheet' : 'Show beat ribbon'}
+            onClick={() => setView((v) => (v === 'ribbon' ? 'sheet' : 'ribbon'))}
+          >
+            {view === 'ribbon' ? '⌄ full sheet' : '⌃ beat ribbon'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

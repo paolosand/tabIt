@@ -111,6 +111,15 @@ test('footer counts beats: next-in and beat N / M', () => {
   expect(footer).toHaveTextContent('beat 3 / 8');          // F spans beats 8-15, t=5 is beats[10]
 });
 
+test('footer says "next beat" instead of "in 0/1 beats" when the change is imminent', () => {
+  // t=7.6 is inside F (4-8s); next chord C starts at 8.0, one beat away on the 0.5s grid.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 7.6, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: C next beat');
+  expect(footer).not.toHaveTextContent(/in [01] beats/);
+});
+
 test('footer falls back to seconds without beats', () => {
   vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
   render(<Panel chart={chart as never} onCollapse={() => {}} />);

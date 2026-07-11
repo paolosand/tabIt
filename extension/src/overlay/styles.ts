@@ -144,10 +144,22 @@ export const OVERLAY_CSS = `
  * rest of this file already makes - no custom webfont inside a content script). */
 .tabit-panel {
   flex: 1;
-  padding: 10px 5vw 12px; /* compact: header/footer/toggle carry their own spacing */
+  padding: 10px 5vw 12px; /* desk margin around the panel card; the card carries the paper */
   animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
+}
+
+/* One paper card around the WHOLE panel (header + ribbon/sheet + footer + toggle), per
+ * the approved mockup, so header chips, footer and toggle never render ink-on-dark on
+ * dark-theme host pages. Same paper/radius/shadow tokens the ribbon card carried; the
+ * sheet view keeps its own .tabit-sheet card inside this one (card-in-card reads as the
+ * web app's page-on-desk aesthetic — same radius, so flush corners coincide). */
+.tabit-panel-card {
+  background: var(--tabit-paper);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
+  padding-bottom: 8px; /* bottom inset when the toggle is absent (no-beats charts) */
 }
 
 .tabit-panel-header {
@@ -290,6 +302,7 @@ export const OVERLAY_CSS = `
   align-items: baseline;
   gap: 8px;
   margin-top: 16px;
+  padding: 0 14px; /* inset inside the panel card (was previously the panel's 5vw) */
   font-size: 13.5px;
   color: var(--tabit-muted);
 }
@@ -313,15 +326,12 @@ export const OVERLAY_CSS = `
 .tabit-view-toggle:hover { color: oklch(0.3 0.02 60); }
 
 /* --- beat ribbon --- */
-/* Paper card framing the ribbon, matching .tabit-sheet's background/radius/shadow
- * (and its 200ms opacity transition, so ad dim/undim fades on the ribbon the same
- * way it does on the sheet) so the ribbon reads on top of the host page's own
- * background instead of sitting transparent against it. Horizontal padding mirrors
- * .tabit-sheet-scroll's right-side inset so both views align. */
+/* Layout + ad-dim wrapper for the ribbon area. The paper background/radius/shadow
+ * moved up to .tabit-panel-card (the whole panel is one card per the mockup); this
+ * keeps the ribbon's horizontal inset (mirrors .tabit-sheet-scroll's right padding so
+ * the two views align) and the 200ms opacity transition so .tabit-sheet-dim fades the
+ * ribbon area only — header/footer stay full-opacity during ads, same as sheet view. */
 .tabit-ribbon-card {
-  background: var(--tabit-paper);
-  border-radius: 4px;
-  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
   padding: 0 30px;
   transition: opacity 200ms ease-out;
 }
