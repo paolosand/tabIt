@@ -26,18 +26,21 @@ def _to_mono_wav(in_path: str, out_path: str, sample_rate: int) -> None:
 
 
 def _download_audio(url: str, workdir: str) -> tuple[str, dict]:
-    """Download bestaudio via yt-dlp; return (downloaded_path, info_dict)."""
+    """Download bestaudio + metadata via a single yt-dlp call;
+    return (downloaded_path, info_dict)."""
     out_tmpl = os.path.join(workdir, "src.%(ext)s")
     subprocess.run(
-        ["yt-dlp", "-f", "bestaudio", "--no-playlist", "-o", out_tmpl, url],
+        ["yt-dlp", "-f", "bestaudio", "--no-playlist", "--write-info-json",
+         "-o", out_tmpl, url],
         check=True, capture_output=True,
     )
-    info = json.loads(subprocess.run(
-        ["yt-dlp", "-J", "--no-playlist", url],
-        check=True, capture_output=True, text=True,
-    ).stdout)
+    info_path = os.path.join(workdir, "src.info.json")
+    with open(info_path) as f:
+        info = json.load(f)
+    os.remove(info_path)
     downloaded = next(
-        os.path.join(workdir, f) for f in os.listdir(workdir) if f.startswith("src.")
+        os.path.join(workdir, f) for f in os.listdir(workdir)
+        if f.startswith("src.") and not f.endswith(".info.json")
     )
     return downloaded, info
 

@@ -4,6 +4,46 @@ from engine.bass import _hz_to_pitch_class
 from engine.notes import NOTES
 
 
+def test_predict_bass_pitch_requests_small_capacity(monkeypatch):
+    """CREPE 'small' is 8x faster than 'full' with ~92% pitch-class agreement
+    on confident frames; the confidence gate downstream absorbs the rest."""
+    import crepe
+    import librosa
+    from engine.bass import predict_bass_pitch
+
+    seen = {}
+
+    def fake_load(path, sr=16000, mono=True):
+        return np.zeros(1600, dtype=np.float32), sr
+
+    def fake_predict(y, sr, viterbi=True, step_size=50, model_capacity="full", **kwargs):
+        seen["capacity"] = model_capacity
+        return np.array([0.0]), np.array([110.0]), np.array([0.9]), None
+
+    monkeypatch.setattr(librosa, "load", fake_load)
+    monkeypatch.setattr(crepe, "predict", fake_predict)
+
+    times, freqs, conf = predict_bass_pitch("unused.wav")
+    assert seen["capacity"] == "small"
+    assert len(times) == len(freqs) == len(conf) == 1
+
+
+def test_window_bass_notes_is_pure_windowing():
+    """Windowing a precomputed pitch track must not touch CREPE, so the bulk
+    prediction can run concurrently with the chord model in the pipeline."""
+    from engine.bass import window_bass_notes
+    from engine.schema import ChordSegment
+
+    times = np.array([0.0, 0.25, 0.5, 0.75])
+    freqs = np.array([110.0, 110.0, 110.0, 220.0])  # A2 x3, A3 (median 110 = A)
+    conf = np.array([0.9, 0.9, 0.9, 0.9])
+    segs = [ChordSegment(start=0.0, end=1.0, label="A", root="A",
+                         quality="maj", bass="A", confidence=0.9)]
+
+    out = window_bass_notes((times, freqs, conf), segs)
+    assert out == [("A", 0.9)]
+
+
 def test_hz_to_pitch_class_a440():
     assert _hz_to_pitch_class(440.0) == "A"
     assert _hz_to_pitch_class(261.63) == "C"      # middle C
@@ -40,7 +80,7 @@ def test_detect_bass_notes_low_confidence_falls_back_to_crema_bass(monkeypatch):
     def fake_load(path, sr=16000, mono=True):
         return np.zeros(1600, dtype=np.float32), sr
 
-    def fake_predict(y, sr, viterbi=True, step_size=50):
+    def fake_predict(y, sr, viterbi=True, step_size=50, **kwargs):
         # Confidence always below the 0.5 threshold used by detect_bass_notes,
         # regardless of what pitch CREPE thinks it hears.
         times = np.array([0.0, 0.5])
@@ -76,7 +116,7 @@ def test_detect_bass_notes_sparse_confident_frames_read_low_confidence(monkeypat
     def fake_load(path, sr=16000, mono=True):
         return np.zeros(1600, dtype=np.float32), sr
 
-    def fake_predict(y, sr, viterbi=True, step_size=50):
+    def fake_predict(y, sr, viterbi=True, step_size=50, **kwargs):
         times = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
         # Only the first two frames are confident (>0.5); the other eight aren't.
         freqs = np.array([440.0, 440.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0])

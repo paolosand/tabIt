@@ -46,9 +46,11 @@ itself, so you can play along to practically anything.
   edits persist locally.
 - **Practice-friendly.** Key, tempo, and scale chips at the top; one-tap transpose;
   auto-scroll that keeps the current line in view.
-- **Fast after the first time.** Cold analysis takes 1 to 3 minutes (download, source
-  separation, detection). Every repeat of the same song is served instantly from a disk
-  cache.
+- **Fast after the first time.** Cold analysis takes well under a minute on an
+  Apple-Silicon Mac (~36s of compute for a 3.5-minute song: GPU source separation,
+  detection stages running in parallel, models kept warm) plus the download; a few
+  minutes on CPU-only machines. Every repeat of the same song is served instantly
+  from a disk cache.
 
 ## The web app: the whole chart on paper
 

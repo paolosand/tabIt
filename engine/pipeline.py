@@ -1,12 +1,13 @@
 import shutil
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 from engine import __version__
 from engine.ingest import ingest
 from engine.separate import separate, harmonic_mix
 from engine.beats import track_beats
 from engine.key import detect_key
-from engine.bass import detect_bass_notes
+from engine.bass import predict_bass_pitch, window_bass_notes
 from engine.chords import CremaChordModel, raw_to_segments
 from engine.scales import suggest_scales
 from engine.postprocess import (
@@ -22,20 +23,35 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
     workdir = workdir or tempfile.mkdtemp(prefix="tabit_")
     chord_model = chord_model or CremaChordModel()
     try:
+        # crepe (worker thread) and crema (main thread) both resolve
+        # tensorflow.keras lazily on first use, and TF's LazyLoader is not
+        # thread-safe -- concurrent first access can raise ModuleNotFoundError.
+        # Materialize it once on this thread before any worker starts.
+        import tensorflow.keras  # noqa: F401
+
         ingested = ingest(src, workdir)
-        stems = separate(ingested.wav_path, workdir)
-        harm = harmonic_mix(stems, workdir)
+        # Stage graph: key needs only the original wav, so it overlaps
+        # separation; the bulk bass pitch track and beat tracking overlap the
+        # chord model (which stays on this thread). The underlying model
+        # libraries (torch, TF, numpy) release the GIL during inference.
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            key_fut = pool.submit(detect_key, ingested.wav_path)
+            stems = separate(ingested.wav_path, workdir)
+            harm = harmonic_mix(stems, workdir)
 
-        bpm, beats = track_beats(harm)
-        key = detect_key(ingested.wav_path)
-        raws = chord_model.predict(harm)
+            bass_src = stems.get("bass", ingested.wav_path)
+            bass_fut = pool.submit(predict_bass_pitch, bass_src)
+            beats_fut = pool.submit(track_beats, harm)
+            raws = chord_model.predict(harm)
 
-        segs = raw_to_segments(raws)
-        segs = snap_to_beats(segs, beats)
-        segs = merge_adjacent(segs)
+            bpm, beats = beats_fut.result()
+            key = key_fut.result()
 
-        bass_src = stems.get("bass", ingested.wav_path)
-        segs = reconcile_bass(segs, detect_bass_notes(bass_src, segs))
+            segs = raw_to_segments(raws)
+            segs = snap_to_beats(segs, beats)
+            segs = merge_adjacent(segs)
+
+            segs = reconcile_bass(segs, window_bass_notes(bass_fut.result(), segs))
         segs = apply_key_prior(segs, key)
         # Runs after apply_key_prior on purpose -- the x0.7 out-of-key dock widens
         # simplification for out-of-key exotics, and the threshold reads the same

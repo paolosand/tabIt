@@ -1,10 +1,33 @@
+import json
 import os
 import shutil
+import subprocess
 
 import soundfile as sf
 
 import engine.ingest as ingest_mod
 from engine.ingest import ingest, _is_url
+
+
+def test_download_audio_makes_single_ytdlp_call(tmp_path, monkeypatch):
+    """Download and metadata must come from ONE yt-dlp invocation; the old
+    second `-J` call was a full extra YouTube metadata round trip (~2s)."""
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        (tmp_path / "src.webm").write_bytes(b"fake-audio")
+        (tmp_path / "src.info.json").write_text(
+            json.dumps({"id": "abc", "title": "T", "duration": 123.0}))
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+
+    downloaded, info = ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+    assert len(calls) == 1
+    assert info["id"] == "abc" and info["duration"] == 123.0
+    assert downloaded.endswith("src.webm")  # never the info json
 
 
 def test_is_url():
