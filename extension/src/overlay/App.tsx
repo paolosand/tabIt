@@ -9,7 +9,7 @@ const POLL_INTERVAL_MS = 3000;
 
 type State =
   | { kind: 'collapsed' }
-  | { kind: 'loading' }
+  | { kind: 'loading'; step?: string }
   | { kind: 'sheet'; chart: Chart }
   | { kind: 'error'; message: string };
 
@@ -47,6 +47,7 @@ export function App({ videoId }: AppProps) {
         } else if (response.status === 'error') {
           setState({ kind: 'error', message: response.error });
         } else {
+          setState({ kind: 'loading', step: response.step });
           timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
         }
       })
@@ -65,7 +66,7 @@ export function App({ videoId }: AppProps) {
     case 'collapsed':
       return <Bar variant="collapsed" onGetChords={startPolling} />;
     case 'loading':
-      return <Bar variant="loading" />;
+      return <Bar variant="loading" step={state.step} />;
     case 'error':
       return <Bar variant="error" message={state.message} onRetry={startPolling} />;
     case 'sheet':

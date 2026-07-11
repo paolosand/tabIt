@@ -47,3 +47,23 @@ test('pending keeps polling until done', async () => {
   expect(send).toHaveBeenCalledTimes(2);
   vi.useRealTimers();
 });
+
+test('pending step from the background reaches the checklist', async () => {
+  vi.useFakeTimers();
+  const send = chrome.runtime.sendMessage as Mock;
+  send
+    .mockResolvedValueOnce({ status: 'pending', step: 'separate' })
+    .mockResolvedValueOnce({ status: 'done', chart: CHART });
+  render(<App videoId="vid00000001" />);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  await user.click(screen.getByRole('button', { name: /get chords/i }));
+
+  await waitFor(() =>
+    expect(screen.getByText('Separate instruments')).toHaveAttribute('aria-current', 'step'),
+  );
+  expect(screen.getByText('Fetch audio')).toHaveClass('tabit-check-done');
+
+  await vi.advanceTimersByTimeAsync(3100);
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  vi.useRealTimers();
+});
