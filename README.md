@@ -21,11 +21,15 @@ followed karaoke-style as the music plays.
 
 ## Why this exists
 
-Play-along chord sites are cluttered, ad-heavy, and only cover songs someone bothered to
-transcribe. tabIt transcribes the song for you, right where you're already listening:
-open a YouTube video, click the "♪ Get chords" bar that appears under the player, and
-the chords embed themselves beneath the video. No separate site, no copy-pasting a URL,
-no accounts.
+It started with a familiar moment: you're watching a video, the song grabs you, and you
+want to play along right now. tabIt lives inside that moment. Click the "♪ Get chords"
+bar under any YouTube video and the chords embed themselves right there, synced to
+playback, guitar still in hand.
+
+The other half is coverage. Chord sites can only offer what someone has transcribed,
+and plenty of what you'd love to play has no tab anywhere: an unreleased song, a live
+version, a friend's demo, your own recordings. tabIt detects the chords from the audio
+itself, so you can play along to practically anything.
 
 - **Lives under the video.** The Chrome extension expands into a beat ribbon: one cell
   per detected beat, an amber sweep on the moment, the next change always visible before
