@@ -48,6 +48,8 @@ class Tempo(BaseModel):
 
 class Meter(BaseModel):
     beatsPerBar: int
+    # Margin over the runner-up hypothesis, not a probability -- systematically
+    # small because candidate grids nest; rescale before ever surfacing in UI.
     confidence: float
 
 

@@ -32,3 +32,8 @@ def test_analyze_local_file_end_to_end(tone_440_wav, tmp_path, monkeypatch):
     assert chart.tempo.bpm == 120.0
     assert [c.label for c in chart.chords] == ["Am", "F"]
     assert any("pentatonic" in s.name for s in chart.scales)
+    # Meter is always wired up; the stub's degenerate 2-chord/5-beat input has
+    # too few beats and changes for detect_meter to report anything, so the
+    # ribbon should fall back to %4 rather than carry a leftover downbeat list.
+    assert chart.meter is not None
+    assert chart.downbeats == []

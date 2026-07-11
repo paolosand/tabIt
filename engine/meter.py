@@ -39,4 +39,9 @@ def detect_meter(beats: list[float], change_times: list[float]) -> tuple[Meter, 
     best_score, k, p = best
     second_score = second[0]
     confidence = round(max(0.0, min(1.0, best_score - second_score)), 4) if best_score > 0 else 0.0
-    return Meter(beatsPerBar=k, confidence=confidence), list(beats[p::k])
+    # Zero confidence (either because the best adjusted score is <= 0, or
+    # because it ties the runner-up) means we have no real evidence for any
+    # grid -- don't hand back an authoritative-looking downbeat list in that
+    # case; let the caller fall back to %4.
+    downbeats = list(beats[p::k]) if confidence > 0.0 else []
+    return Meter(beatsPerBar=k, confidence=confidence), downbeats

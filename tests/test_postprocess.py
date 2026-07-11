@@ -3,7 +3,6 @@ from engine.postprocess import (
     snap_to_beats, merge_adjacent, reconcile_bass, apply_key_prior,
     simplify_quality, merge_short,
 )
-from engine.schema import format_label
 
 
 def _seg(start=0.0, end=1.0, root="C", quality="maj", bass="C", conf=0.8):

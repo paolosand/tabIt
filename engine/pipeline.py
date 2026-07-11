@@ -37,6 +37,9 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
         bass_src = stems.get("bass", ingested.wav_path)
         segs = reconcile_bass(segs, detect_bass_notes(bass_src, segs))
         segs = apply_key_prior(segs, key)
+        # Runs after apply_key_prior on purpose -- the x0.7 out-of-key dock widens
+        # simplification for out-of-key exotics, and the threshold reads the same
+        # confidence the UI dims on.
         segs = simplify_quality(segs)
         segs = merge_short(segs, beats)
         segs = merge_adjacent(segs)
