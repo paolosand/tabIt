@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { chordBeatSpan, beatWithinChord } from '../../../web/src/lib/beats';
 
 export interface RibbonChord {
@@ -15,8 +15,27 @@ const CELL = 44;         // px, must match .tabit-beat min-width in styles.ts
 const LEAD_CELLS = 8;    // keep "now" ~1/3 from the left edge
 const WINDOW = 30;       // cells rendered either side of now
 
+/**
+ * Clamp the track slide so it never scrolls past the last beat cell.
+ * When viewWidth is 0 (container unmeasured, e.g. jsdom), the upper bound
+ * degrades to trackWidth so behavior matches the unclamped original.
+ */
+export function clampTx(offset: number, trackWidth: number, viewWidth: number): number {
+  return Math.max(0, Math.min(offset, Math.max(0, trackWidth - viewWidth)));
+}
+
 /** Windowed beat-grid strip. Pure renderer: Panel computes time-derived indices. */
 export default function Ribbon({ beats, chords, currentBeat, currentChordIndex }: RibbonProps) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const [viewWidth, setViewWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const measure = () => setViewWidth(wrapRef.current?.clientWidth ?? 0);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   // beat index -> chord index (memoized; -1 where no chord covers the beat)
   const beatChord = useMemo(() => {
     const map = new Array<number>(beats.length).fill(-1);
@@ -34,7 +53,7 @@ export default function Ribbon({ beats, chords, currentBeat, currentChordIndex }
   const curSpan = current ? chordBeatSpan(beats, current) : { firstBeat: -1, beatCount: 0 };
   const curWithin = current ? beatWithinChord(beats, current, beats[currentBeat] ?? -Infinity) : 0;
   const offset = currentBeat <= 0 ? 0 : (currentBeat - LEAD_CELLS) * CELL;
-  const tx = Math.max(0, offset);
+  const tx = clampTx(offset, beats.length * CELL, viewWidth);
 
   const cells = [];
   for (let b = from; b < to; b++) {
@@ -67,7 +86,7 @@ export default function Ribbon({ beats, chords, currentBeat, currentChordIndex }
   }
 
   return (
-    <div className="tabit-ribbon" data-testid="ribbon">
+    <div className="tabit-ribbon" data-testid="ribbon" ref={wrapRef}>
       <div
         className="tabit-ribbon-track"
         style={{ width: beats.length * CELL, transform: `translateX(${-tx}px)` }}

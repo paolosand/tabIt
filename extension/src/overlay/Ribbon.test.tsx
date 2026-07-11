@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { expect, test } from 'vitest';
-import Ribbon from './Ribbon';
+import Ribbon, { clampTx } from './Ribbon';
 
 // 16 beats at 1s intervals starting t=0; four 4-beat chords.
 const beats = Array.from({ length: 16 }, (_, i) => i);
@@ -62,4 +62,21 @@ test('windows the render: far-away beats get no cell', () => {
     <Ribbon beats={many} chords={[{ start: 0, end: 400, label: 'A', quality: 'maj', low: false }]} currentBeat={200} currentChordIndex={0} />,
   ).container;
   expect(c.querySelectorAll('.tabit-beat').length).toBeLessThan(100);
+});
+
+test('clampTx passes mid-song offsets through unchanged', () => {
+  expect(clampTx(1000, 4400, 800)).toBe(1000);
+});
+
+test('clampTx clamps at song end so the track never slides past the last cell', () => {
+  expect(clampTx(10000, 4400, 800)).toBe(3600); // trackWidth - viewWidth
+});
+
+test('clampTx degrades to trackWidth bound when viewWidth is 0 (unmeasured)', () => {
+  expect(clampTx(10000, 4400, 0)).toBe(4400);
+  expect(clampTx(1000, 4400, 0)).toBe(1000);
+});
+
+test('clampTx floors negative offsets at 0', () => {
+  expect(clampTx(-500, 4400, 800)).toBe(0);
 });
