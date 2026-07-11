@@ -112,3 +112,30 @@ def test_beats_tracked_on_full_mix_not_harmonic_mix(tone_440_wav, tmp_path, monk
             workdir=str(tmp_path), chord_model=FakeChordModel())
 
     assert tracked_on == [str(tmp_path / "audio.wav")]
+
+
+def test_analyze_reports_steps_in_order(tone_440_wav, tmp_path, monkeypatch):
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+
+    steps = []
+    analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
+            workdir=str(tmp_path), chord_model=FakeChordModel(),
+            on_step=steps.append)
+
+    assert steps == ["ingest", "separate", "chords", "finalize"]
+
+
+def test_analyze_survives_broken_step_callback(tone_440_wav, tmp_path, monkeypatch):
+    """A UI-side bug in the progress callback must never break an analysis."""
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+
+    def bad_callback(step):
+        raise RuntimeError("ui bug")
+
+    chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
+                    workdir=str(tmp_path), chord_model=FakeChordModel(),
+                    on_step=bad_callback)
+
+    assert [c.label for c in chart.chords] == ["Am", "F"]

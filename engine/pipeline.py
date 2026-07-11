@@ -18,11 +18,24 @@ from engine.meter import detect_meter
 from engine.schema import Analysis, Chart, Tempo
 
 
-def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False) -> Chart:
+def _report(on_step, step):
+    """Invoke the progress callback defensively: a bug in the listener must
+    never break an analysis run."""
+    if on_step is None:
+        return
+    try:
+        on_step(step)
+    except Exception:
+        pass
+
+
+def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False,
+            on_step=None) -> Chart:
     own_workdir = workdir is None
     workdir = workdir or tempfile.mkdtemp(prefix="tabit_")
     chord_model = chord_model or CremaChordModel()
     try:
+        _report(on_step, "ingest")
         # crepe (worker thread) and crema (main thread) both resolve
         # tensorflow.keras lazily on first use, and TF's LazyLoader is not
         # thread-safe -- concurrent first access can raise ModuleNotFoundError.
@@ -40,11 +53,13 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
             # without drums the onset evidence is weak and librosa's 120-BPM
             # prior double-times slow songs (true ~60 reported as ~120).
             beats_fut = pool.submit(track_beats, ingested.wav_path)
+            _report(on_step, "separate")
             stems = separate(ingested.wav_path, workdir)
             harm = harmonic_mix(stems, workdir)
 
             bass_src = stems.get("bass", ingested.wav_path)
             bass_fut = pool.submit(predict_bass_pitch, bass_src)
+            _report(on_step, "chords")
             raws = chord_model.predict(harm)
 
             bpm, beats = beats_fut.result()
@@ -55,6 +70,7 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
             segs = merge_adjacent(segs)
 
             segs = reconcile_bass(segs, window_bass_notes(bass_fut.result(), segs))
+        _report(on_step, "finalize")
         segs = apply_key_prior(segs, key)
         # Runs after apply_key_prior on purpose -- the x0.7 out-of-key dock widens
         # simplification for out-of-key exotics, and the threshold reads the same
