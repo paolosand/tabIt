@@ -71,14 +71,15 @@ MAX_UPLOAD_BYTES = 100 * 1024 * 1024  # 100 MB
 UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
 
 
-def _run_analysis(src: str) -> dict:
+def _run_analysis(src: str, on_step=None) -> dict:
     """Run the engine on a URL or file path; returns chart as a plain dict.
     Module-level so tests can monkeypatch it."""
     import engine.pipeline
 
     created_at = datetime.now(timezone.utc).isoformat()
     return engine.pipeline.analyze(
-        src, created_at=created_at, chord_model=_get_chord_model()
+        src, created_at=created_at, chord_model=_get_chord_model(),
+        on_step=on_step,
     ).model_dump()
 
 
@@ -126,9 +127,9 @@ async def analyze_submit(request: Request):
                 os.remove(tmp)
             raise HTTPException(status_code=413, detail="Audio file too large (100 MB max).")
 
-        def work():
+        def work(job_id: str):
             try:
-                chart = _run_analysis(tmp)
+                chart = _run_analysis(tmp, on_step=lambda s: jobs.set_step(job_id, s))
                 cache.put(chart)
                 return chart
             finally:
@@ -163,8 +164,8 @@ async def analyze_submit(request: Request):
 
     url = body.url
 
-    def work():
-        chart = _run_analysis(url)
+    def work(job_id: str):
+        chart = _run_analysis(url, on_step=lambda s: jobs.set_step(job_id, s))
         cache.put(chart)
         return chart
 

@@ -81,7 +81,7 @@ def test_health():
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
     monkeypatch.setattr(m, "jobs", m.JobStore())
-    monkeypatch.setattr(m, "_run_analysis", lambda src: FAKE_CHART)
+    monkeypatch.setattr(m, "_run_analysis", lambda src, on_step=None: FAKE_CHART)
     return TestClient(app)
 
 
@@ -152,10 +152,33 @@ def test_unknown_chart_404(client):
 
 
 def test_analysis_error_surfaces(client, monkeypatch):
-    def boom(src):
+    def boom(src, on_step=None):
         raise RuntimeError("yt-dlp exploded")
     monkeypatch.setattr(m, "_run_analysis", boom)
     r = client.post("/analyze", json={"url": "https://youtu.be/zzzzzzzzzzz"})
     body = _poll_done(client, r.json()["jobId"])
     assert body["status"] == "error"
     assert "yt-dlp" in body["error"]
+
+
+def test_pending_job_exposes_pipeline_step(client, monkeypatch):
+    release = threading.Event()
+
+    def fake_run(src, on_step=None):
+        on_step("separate")
+        release.wait(timeout=5)
+        return FAKE_CHART
+
+    monkeypatch.setattr(m, "_run_analysis", fake_run)
+    r = client.post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
+    job_id = r.json()["jobId"]
+
+    deadline = time.time() + 5
+    body = client.get(f"/analyze/{job_id}").json()
+    while body.get("step") != "separate" and time.time() < deadline:
+        time.sleep(0.01)
+        body = client.get(f"/analyze/{job_id}").json()
+    assert body == {"status": "pending", "step": "separate"}
+
+    release.set()
+    assert _poll_done(client, job_id)["status"] == "done"

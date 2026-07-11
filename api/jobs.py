@@ -16,19 +16,28 @@ class JobStore:
         with self._lock:
             self._jobs[job_id] = value
 
-    def submit(self, fn: Callable[[], dict]) -> str:
+    def submit(self, fn: Callable[[str], dict]) -> str:
+        """Run fn on the worker; fn receives the job id so it can report
+        progress via set_step before submit() has even returned."""
         job_id = uuid.uuid4().hex
         self._set(job_id, {"status": "pending"})
 
         def run():
             try:
-                chart = fn()
+                chart = fn(job_id)
                 self._set(job_id, {"status": "done", "chart": chart})
             except Exception as exc:  # surfaced to the client, not swallowed
                 self._set(job_id, {"status": "error", "error": str(exc)})
 
         self._executor.submit(run)
         return job_id
+
+    def set_step(self, job_id: str, step: str) -> None:
+        """Record pipeline progress on a pending job; no-op once resolved."""
+        with self._lock:
+            job = self._jobs.get(job_id)
+            if job is not None and job["status"] == "pending":
+                self._jobs[job_id] = {"status": "pending", "step": step}
 
     def submit_done(self, chart: dict) -> str:
         job_id = uuid.uuid4().hex
