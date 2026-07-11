@@ -163,6 +163,7 @@ export const OVERLAY_CSS = `
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
 .tabit-panel-wordmark {
@@ -184,10 +185,10 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-panel-header-compact { display: flex; align-items: center; gap: 14px; padding: 8px 14px; }
+.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding: 8px 14px; }
 .tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
 .tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
-.tabit-inline-chip-scales { overflow: hidden; text-overflow: ellipsis; }
+.tabit-inline-chip-scales { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .tabit-round-btn {
   width: 26px;

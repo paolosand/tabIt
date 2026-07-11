@@ -124,3 +124,12 @@ test('transpose relabels ribbon chord labels', async () => {
   await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
   expect(screen.getByTestId('ribbon')).toHaveTextContent('Bm'); // Am +2
 });
+
+test('last chord footer shows "to the end" with no beat countdown', () => {
+  // time=19 is inside the last chord (N, 16-20s), so there is no next chord.
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 19, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: — (to the end)');
+  expect(footer).not.toHaveTextContent(/in \d+ beats/);
+});
