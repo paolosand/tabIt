@@ -37,7 +37,7 @@ export async function handleGetChart(videoId: string): Promise<GetChartResponse>
         await chrome.storage.session.remove(`job:${videoId}`);
         return { status: 'error', error: state.error };
       }
-      return { status: 'pending' };
+      return { status: 'pending', step: state.step };
     }
 
     const chart = await fetchCachedChart(videoId);

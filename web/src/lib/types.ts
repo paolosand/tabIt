@@ -14,6 +14,6 @@ export interface Chart {
   meter?: { beatsPerBar: number; confidence: number }; downbeats?: number[];
 }
 export type JobState =
-  | { status: 'pending' }
+  | { status: 'pending'; step?: string }
   | { status: 'done'; chart: Chart }
   | { status: 'error'; error: string };
