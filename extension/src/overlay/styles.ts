@@ -144,7 +144,7 @@ export const OVERLAY_CSS = `
  * rest of this file already makes - no custom webfont inside a content script). */
 .tabit-panel {
   flex: 1;
-  padding: 28px 5vw 48px;
+  padding: 10px 5vw 12px; /* compact: header/footer/toggle carry their own spacing */
   animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
