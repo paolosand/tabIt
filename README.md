@@ -15,9 +15,9 @@ followed karaoke-style as the music plays.
 
 </div>
 
-<img src="docs/assets/extension-youtube.png" alt="The tabIt Chrome extension on youtube.com: a beat ribbon embedded directly below the video player, showing the current chord Gmaj7/D# swept in amber, the next chord C7 two beats away, and key, tempo, and scale chips" width="100%">
+<img src="docs/assets/extension-demo.gif" alt="Live demo of the tabIt Chrome extension on youtube.com: clicking the Get chords bar under the video expands a beat ribbon that sweeps chord to chord in time with the song, showing the current chord, the next chord, and key, tempo, and scale chips" width="100%">
 
-<p align="center"><sub>tabIt on youtube.com, mid-song. No separate site: the extension embeds the chords directly under the video you're already watching. The amber cell sweeps beat by beat; <strong>Gmaj7/D#</strong> is playing now and <strong>C7</strong> lands in two beats.</sub></p>
+<p align="center"><sub>A real recording on youtube.com. No separate site: click the "♪ Get chords" bar under the video you're already watching and the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
 
 ## Why this exists
 
