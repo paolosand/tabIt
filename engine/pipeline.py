@@ -13,6 +13,7 @@ from engine.postprocess import (
     snap_to_beats, merge_adjacent, reconcile_bass, apply_key_prior,
     simplify_quality, merge_short,
 )
+from engine.meter import detect_meter
 from engine.schema import Analysis, Chart, Tempo
 
 
@@ -40,6 +41,9 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
         segs = merge_short(segs, beats)
         segs = merge_adjacent(segs)
 
+        change_times = [s.start for s in segs[1:]]
+        meter, downbeats = detect_meter(beats, change_times)
+
         return Chart(
             source=ingested.source,
             analysis=Analysis(engineVersion=__version__, createdAt=created_at),
@@ -48,6 +52,8 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
             tempo=Tempo(bpm=bpm),
             beats=beats,
             chords=segs,
+            meter=meter,
+            downbeats=downbeats,
         )
     finally:
         if not keep_audio and own_workdir:
