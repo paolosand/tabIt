@@ -7,24 +7,30 @@
 
 **paste a song, follow the chords, play along**
 
-Turn any song into a synced, play-along guitar chord sheet: chords, key, suggested
-scales, even slash chords, followed karaoke-style as the music plays.
+Turn any song into a synced, play-along guitar chord sheet, embedded right under the
+YouTube video you're watching: chords, key, suggested scales, even slash chords,
+followed karaoke-style as the music plays.
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white) ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-fadc7d)
 
 </div>
 
-<img src="docs/assets/sheet-playing.png" alt="tabIt following Three Little Birds: the synced chord sheet with the current chord highlighted in amber, the next chord underlined in pencil, and key, tempo, and scale suggestions above" width="100%">
+<img src="docs/assets/extension-youtube.png" alt="The tabIt Chrome extension on youtube.com: a beat ribbon embedded directly below the video player, showing the current chord Gmaj7/D# swept in amber, the next chord C7 two beats away, and key, tempo, and scale chips" width="100%">
 
-<p align="center"><sub>A real run, not a mockup. Amber highlighter marks the chord playing <em>now</em>; the pencil underline marks what's <em>next</em>; a dotted underline means the engine isn't sure and says so.</sub></p>
+<p align="center"><sub>tabIt on youtube.com, mid-song. No separate site: the extension embeds the chords directly under the video you're already watching. The amber cell sweeps beat by beat; <strong>Gmaj7/D#</strong> is playing now and <strong>C7</strong> lands in two beats.</sub></p>
 
 ## Why this exists
 
 Play-along chord sites are cluttered, ad-heavy, and only cover songs someone bothered to
-transcribe. tabIt transcribes the song for you: paste a YouTube URL (or drop an audio
-file) and it detects the chords, key, tempo, and scales to solo with, then follows along
-with playback like a karaoke prompter. No accounts, no clutter, paste and go.
+transcribe. tabIt transcribes the song for you, right where you're already listening:
+open a YouTube video, click the "♪ Get chords" bar that appears under the player, and
+the chords embed themselves beneath the video. No separate site, no copy-pasting a URL,
+no accounts.
 
+- **Lives under the video.** The Chrome extension expands into a beat ribbon: one cell
+  per detected beat, an amber sweep on the moment, the next change always visible before
+  it arrives. Ad-aware (it pauses with the ad), SPA-navigation safe, and the full paper
+  sheet is one click away.
 - **Karaoke-style following.** The current chord is always obvious at a glance; the next
   chord is flagged before it arrives, so your hands are ready.
 - **Slash chords.** The chord model runs on the drums-removed harmonic mix while a pitch
@@ -39,6 +45,15 @@ with playback like a karaoke prompter. No accounts, no clutter, paste and go.
 - **Fast after the first time.** Cold analysis takes 1 to 3 minutes (download, source
   separation, detection). Every repeat of the same song is served instantly from a disk
   cache.
+
+## The web app: the whole chart on paper
+
+Prefer the full chart, or have a local audio file instead of a YouTube link? The web
+app renders the entire song as a songbook-style sheet, synced to playback the same way.
+
+<img src="docs/assets/sheet-playing.png" alt="tabIt web app following Three Little Birds: the full chord sheet with the current chord highlighted in amber, the next chord underlined in pencil, and key, tempo, and scale suggestions above" width="100%">
+
+<p align="center"><sub>A real run, not a mockup. Amber highlighter marks the chord playing <em>now</em>; the pencil underline marks what's <em>next</em>; a dotted underline means the engine isn't sure and says so.</sub></p>
 
 ## How it works
 
@@ -81,14 +96,31 @@ python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]" --build-constraint constraints-build.txt
 ```
 
-### 2. Web app
+### 2. Chrome extension
+
+With the API from step 1 running:
 
 ```bash
 # terminal 1: API
 source .venv/bin/activate
 uvicorn api.main:app --port 8000
 
-# terminal 2: web
+# terminal 2: build the extension
+cd extension && npm install && npm run build
+```
+
+Load `extension/dist` as an unpacked extension at `chrome://extensions`
+(Developer mode → Load unpacked), then open any YouTube video and click the
+"♪ Get chords" bar that appears below the player. It expands into the beat
+ribbon — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
+real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
+marker tracks playback across chord boundaries; teardown/remount survives SPA
+navigation).
+
+### 3. Web app
+
+```bash
+# with the API running (terminal 1 above)
 cd web && npm install && npm run dev   # http://localhost:5173
 ```
 
@@ -102,22 +134,6 @@ The engine runs standalone if you just want the chart JSON:
 ```bash
 python -m engine.cli <youtube-url|audio-file> -o chart.json
 ```
-
-### Chrome extension
-
-```bash
-cd extension && npm install && npm run build
-```
-
-Then load `extension/dist` as an unpacked extension at `chrome://extensions`
-(Developer mode → Load unpacked), with the API from step 1 running. Open a YouTube
-video: a "♪ Get chords" bar appears below the player and expands into the synced
-sheet — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
-real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
-marker tracks playback across chord boundaries; teardown/remount survives SPA
-navigation). The expanded view is a Chordify-style beat ribbon — one cell per
-detected beat, so you can see the next chord change coming — with the full paper
-sheet one click away.
 
 ## Honest about accuracy
 
@@ -146,6 +162,8 @@ docs/        design specs, implementation plans, progress ledger
 - [ ] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1
+- [ ] Animated demo in this README (screen-recorded GIF/MP4 of the ribbon sweeping in time)
+- [ ] Package the extension for the Chrome Web Store; deploy the API + web app
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
 design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/).
