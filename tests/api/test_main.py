@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import api.main as m
-from api.main import app
+from api.main import ENGINE_VERSION, app
 
 
 def test_chord_model_is_a_process_singleton(monkeypatch):
@@ -60,7 +60,7 @@ def test_startup_warms_models_in_background(monkeypatch):
 FAKE_CHART = {
     "schemaVersion": 1,
     "source": {"kind": "youtube", "videoId": "dQw4w9WgXcQ", "title": "t", "duration": 2.0},
-    "analysis": {"engineVersion": "0.2.0", "createdAt": "2026-07-09T00:00:00Z"},
+    "analysis": {"engineVersion": ENGINE_VERSION, "createdAt": "2026-07-09T00:00:00Z"},
     "key": {"tonic": "A", "mode": "minor", "confidence": 0.8},
     "scales": [], "tempo": {"bpm": 120.0}, "beats": [], "sections": [],
     "chords": [{"start": 0.0, "end": 2.0, "label": "Am", "root": "A",
