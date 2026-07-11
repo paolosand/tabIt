@@ -1,3 +1,4 @@
+import threading
 import time
 
 import pytest
@@ -5,6 +6,55 @@ from fastapi.testclient import TestClient
 
 import api.main as m
 from api.main import app
+
+
+def test_chord_model_is_a_process_singleton(monkeypatch):
+    """Model weights must load once per process, not once per analysis job."""
+    created = []
+
+    class FakeModel:
+        def __init__(self):
+            created.append(1)
+
+    monkeypatch.setattr(m, "CremaChordModel", FakeModel)
+    monkeypatch.setattr(m, "_chord_model", None)
+
+    a = m._get_chord_model()
+    b = m._get_chord_model()
+    assert a is b
+    assert len(created) == 1
+
+
+def test_run_analysis_uses_shared_chord_model(monkeypatch):
+    sentinel = object()
+    monkeypatch.setattr(m, "_get_chord_model", lambda: sentinel)
+
+    seen = {}
+    import engine.pipeline
+
+    class FakeChart:
+        def model_dump(self):
+            return {"ok": True}
+
+    def fake_analyze(src, *, created_at, chord_model=None, **kwargs):
+        seen["chord_model"] = chord_model
+        return FakeChart()
+
+    monkeypatch.setattr(engine.pipeline, "analyze", fake_analyze)
+
+    assert m._run_analysis("whatever") == {"ok": True}
+    assert seen["chord_model"] is sentinel
+
+
+def test_startup_warms_models_in_background(monkeypatch):
+    """First request shouldn't pay model-load latency: server startup kicks off
+    a background warmup (and must not block serving while it runs)."""
+    warmed = threading.Event()
+    monkeypatch.setattr(m, "_warm_models", lambda: warmed.set())
+
+    with TestClient(app) as client:
+        assert client.get("/health").status_code == 200  # serving before warm
+        assert warmed.wait(2.0)
 
 
 FAKE_CHART = {

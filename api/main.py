@@ -1,5 +1,8 @@
+import logging
 import os
 import tempfile
+import threading
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, Request
@@ -8,11 +11,52 @@ from pydantic import BaseModel, ValidationError
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from engine import __version__ as ENGINE_VERSION
+from engine.chords import CremaChordModel
 from api.cache import ChartCache
 from api.jobs import JobStore
 from api.videoid import extract_video_id
 
-app = FastAPI(title="tabIt API")
+logger = logging.getLogger(__name__)
+
+_chord_model = None
+_chord_model_lock = threading.Lock()
+
+
+def _get_chord_model():
+    """Process-wide chord model: weights load once, not once per job."""
+    global _chord_model
+    with _chord_model_lock:
+        if _chord_model is None:
+            _chord_model = CremaChordModel()
+        return _chord_model
+
+
+def _warm_models() -> None:
+    """Preload every model the pipeline needs so the first job doesn't pay
+    import/model-load latency (~7s). Failures are non-fatal: the job path
+    loads lazily anyway."""
+    try:
+        _get_chord_model()
+        import crema.analyze  # noqa: F401  (keras model builds at import)
+
+        from engine.separate import _get_separator, _pick_device
+        _get_separator("htdemucs", _pick_device())
+
+        from crepe.core import build_and_load_model
+        build_and_load_model("small")
+        logger.info("model warmup complete")
+    except Exception:
+        logger.warning("model warmup failed; models will load on first job",
+                       exc_info=True)
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    threading.Thread(target=lambda: _warm_models(), daemon=True).start()
+    yield
+
+
+app = FastAPI(title="tabIt API", lifespan=_lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -30,10 +74,12 @@ UPLOAD_CHUNK_BYTES = 1024 * 1024  # 1 MB
 def _run_analysis(src: str) -> dict:
     """Run the engine on a URL or file path; returns chart as a plain dict.
     Module-level so tests can monkeypatch it."""
-    from engine.pipeline import analyze
+    import engine.pipeline
 
     created_at = datetime.now(timezone.utc).isoformat()
-    return analyze(src, created_at=created_at).model_dump()
+    return engine.pipeline.analyze(
+        src, created_at=created_at, chord_model=_get_chord_model()
+    ).model_dump()
 
 
 class AnalyzeBody(BaseModel):
