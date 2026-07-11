@@ -90,3 +90,25 @@ def test_analyze_overlaps_independent_stages(tone_440_wav, tmp_path, monkeypatch
     assert overlap == {"key_during_separation": True, "bass_during_chords": True}
     assert chart.key.tonic == "A"
     assert [c.label for c in chart.chords] == ["Am", "F"]
+
+
+def test_beats_tracked_on_full_mix_not_harmonic_mix(tone_440_wav, tmp_path, monkeypatch):
+    # Beat tracking must see the original full mix: the drum-less harmonic mix
+    # has weak onset evidence, so librosa's 120-BPM prior double-times slow
+    # songs (Anything He Was: 60 true -> 120 on the harmonic mix).
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    monkeypatch.setattr(p, "harmonic_mix", lambda stems, o: "/sentinel/harmonic_mix.wav")
+
+    tracked_on = []
+
+    def fake_track_beats(w):
+        tracked_on.append(w)
+        return 120.0, [0.0, 0.5, 1.0, 1.5, 2.0]
+
+    monkeypatch.setattr(p, "track_beats", fake_track_beats)
+
+    analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
+            workdir=str(tmp_path), chord_model=FakeChordModel())
+
+    assert tracked_on == [str(tmp_path / "audio.wav")]
