@@ -185,7 +185,7 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding: 8px 14px; }
+.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 8px 14px; }
 .tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
 .tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
 .tabit-inline-chip-scales { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -313,6 +313,18 @@ export const OVERLAY_CSS = `
 .tabit-view-toggle:hover { color: oklch(0.3 0.02 60); }
 
 /* --- beat ribbon --- */
+/* Paper card framing the ribbon, matching .tabit-sheet's background/radius/shadow
+ * (and its 200ms opacity transition, so ad dim/undim fades on the ribbon the same
+ * way it does on the sheet) so the ribbon reads on top of the host page's own
+ * background instead of sitting transparent against it. Horizontal padding mirrors
+ * .tabit-sheet-scroll's right-side inset so both views align. */
+.tabit-ribbon-card {
+  background: var(--tabit-paper);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
+  padding: 0 30px;
+  transition: opacity 200ms ease-out;
+}
 .tabit-ribbon { position: relative; overflow: hidden; height: 86px; padding-top: 12px; }
 .tabit-ribbon-track {
   position: relative; height: 64px;
@@ -328,6 +340,7 @@ export const OVERLAY_CSS = `
 .tabit-beat-now { background: oklch(0.87 0.14 85); border-radius: 4px; }
 .tabit-beat-chord {
   position: absolute; left: 6px; top: 10px; z-index: 2;
+  font-family: var(--tabit-serif); font-weight: 600;
   font-size: 21px; color: oklch(0.25 0.02 60); white-space: nowrap;
 }
 .tabit-beat-chord-muted { color: oklch(0.62 0.015 60); }

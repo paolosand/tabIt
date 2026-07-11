@@ -125,6 +125,36 @@ test('transpose relabels ribbon chord labels', async () => {
   expect(screen.getByTestId('ribbon')).toHaveTextContent('Bm'); // Am +2
 });
 
+test('toggling to the full sheet mid-song scrolls to the current row, not the top', async () => {
+  // jsdom reports offsetTop/clientHeight as 0 for all elements by default, which would
+  // make the scroll-target math a no-op regardless of whether the effect re-runs on
+  // toggle. Stub both getters so the target is a nonzero, observable value.
+  const offsetTopSpy = vi.spyOn(HTMLElement.prototype, 'offsetTop', 'get').mockReturnValue(500);
+  const clientHeightSpy = vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(80);
+  try {
+    vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 10, adShowing: false }); // inside C (idx2)
+    render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+    // starts on the ribbon (default view); toggle to the full sheet
+    await userEvent.click(screen.getByRole('button', { name: /show full sheet/i }));
+    const scrollEl = document.querySelector('.tabit-sheet-scroll') as HTMLDivElement;
+    // target = rowEl.offsetTop(500) - container.clientHeight/2(40) + rowEl.clientHeight/2(40) = 500
+    expect(scrollEl.scrollTop).toBe(500);
+  } finally {
+    offsetTopSpy.mockRestore();
+    clientHeightSpy.mockRestore();
+  }
+});
+
+test('no beat count shown before the current chord\'s first beat', () => {
+  // beats start at t=1.0, so at t=0.2 (inside the first chord, Am 0-4s) no beat of
+  // the grid has started yet within that chord; beatWithinChord returns 0.
+  const introChart = { ...chart, beats: Array.from({ length: 38 }, (_, i) => 1 + i * 0.5) };
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0.2, adShowing: false });
+  render(<Panel chart={introChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer.textContent).not.toMatch(/beat \d+ \/ \d+/);
+});
+
 test('last chord footer shows "to the end" with no beat countdown', () => {
   // time=19 is inside the last chord (N, 16-20s), so there is no next chord.
   vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 19, adShowing: false });

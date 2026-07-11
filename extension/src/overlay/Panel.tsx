@@ -62,6 +62,13 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
     rows.push({ chords: decorated.slice(i, i + 4), rowIndex: i / 4 });
   }
 
+  const hasBeats = chart.beats.length > 0;
+  const [view, setView] = useState<'ribbon' | 'sheet'>(hasBeats ? 'ribbon' : 'sheet');
+
+  // Deps include `view`: the ribbon is the default view, so toggling to the sheet
+  // mounts its scroll container/rows for the first time without currentIndex having
+  // changed. Without `view` here, that toggle would leave the sheet scrolled to the
+  // top instead of the current row.
   useEffect(() => {
     const curRowIndex = Math.floor(currentIndex / 4);
     const rowEl = rowRefs.current[curRowIndex];
@@ -72,7 +79,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
         container.scrollTop = target;
       }
     }
-  }, [currentIndex]);
+  }, [currentIndex, view]);
 
   const hasChords = chords.length > 0;
   const nextIdx = hasChords ? Math.min(currentIndex + 1, decorated.length - 1) : 0;
@@ -84,8 +91,6 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
   const bpmLabel = `${Math.round(chart.tempo.bpm)} bpm`;
   const scalesLabel = chart.scales.map((s) => transposeScaleName(s.name, transpose)).join(' · ');
 
-  const hasBeats = chart.beats.length > 0;
-  const [view, setView] = useState<'ribbon' | 'sheet'>(hasBeats ? 'ribbon' : 'sheet');
   const currentBeat = hasBeats ? beatIndexAt(chart.beats, time) : -1;
   const nextStart = hasChords ? chords[nextIdx].start : 0;
   const nextInBeats = hasBeats && hasChords ? beatsUntil(chart.beats, time, nextStart) : 0;
@@ -130,7 +135,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
       </div>
 
       {view === 'ribbon' ? (
-        <div className={adShowing ? 'tabit-sheet-dim' : ''}>
+        <div className={`tabit-ribbon-card${adShowing ? ' tabit-sheet-dim' : ''}`}>
           <Ribbon
             beats={chart.beats}
             chords={decorated.map((d) => ({ start: d.start, end: d.end, label: d.label, quality: d.quality, low: d.low }))}
@@ -206,7 +211,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
               </>
             )}
           </span>
-          {hasBeats && beatM > 0 && (
+          {hasBeats && beatM > 0 && beatN > 0 && (
             <span className="tabit-footer-beatcount">
               beat {beatN} / {beatM}
             </span>
