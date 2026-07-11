@@ -342,4 +342,31 @@ export const OVERLAY_CSS = `
 .tabit-footer-strong { color: var(--tabit-ink); font-family: var(--tabit-serif); }
 .tabit-footer-next-strong { color: var(--tabit-dot); font-family: var(--tabit-serif); }
 .tabit-footer-dot { color: var(--tabit-border); }
+
+/* --- beat ribbon --- */
+.tabit-ribbon { position: relative; overflow: hidden; height: 86px; padding-top: 12px; }
+.tabit-ribbon-track {
+  position: relative; height: 64px;
+  transition: transform 200ms linear;
+}
+@media (prefers-reduced-motion: reduce) { .tabit-ribbon-track { transition: none; } }
+.tabit-beat {
+  position: absolute; top: 0; width: 44px; height: 64px;
+  border-left: 1px solid oklch(0.93 0.008 90);
+}
+.tabit-beat-bar { border-left: 2px solid oklch(0.82 0.012 90); }
+.tabit-beat-done { background: oklch(0.965 0.012 90); }
+.tabit-beat-now { background: oklch(0.87 0.14 85); border-radius: 4px; }
+.tabit-beat-chord {
+  position: absolute; left: 6px; top: 10px; z-index: 2;
+  font-size: 21px; color: oklch(0.25 0.02 60); white-space: nowrap;
+}
+.tabit-beat-chord-muted { color: oklch(0.62 0.015 60); }
+.tabit-beat-pips { position: absolute; bottom: 6px; left: 8px; display: flex; gap: 5px; z-index: 2; }
+.tabit-beat-pip { width: 5px; height: 5px; border-radius: 50%; background: oklch(0.85 0.02 85); }
+.tabit-beat-pip-hit { background: oklch(0.55 0.12 70); }
+.tabit-ribbon-fade {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 70px; pointer-events: none;
+  background: linear-gradient(to right, transparent, oklch(0.985 0.008 90));
+}
 `;
