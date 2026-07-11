@@ -80,3 +80,47 @@ test('N chord never gets decoration classes', () => {
   expect(dash.className).not.toContain('underline');
   expect(dash.className).not.toContain('muted');
 });
+
+// Beats fixture: chart with a real beat grid (0.5s beats over the 20s chart)
+const beatChart = { ...chart, beats: Array.from({ length: 40 }, (_, i) => i * 0.5) };
+
+test('default view is the ribbon; toggle swaps to the full sheet and back', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  expect(screen.getByTestId('ribbon')).toBeInTheDocument();
+  expect(screen.queryByTestId('marker')).toBeNull(); // sheet not rendered
+  await userEvent.click(screen.getByRole('button', { name: /show full sheet/i }));
+  expect(screen.getByTestId('marker')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /show beat ribbon/i }));
+  expect(screen.getByTestId('ribbon')).toBeInTheDocument();
+});
+
+test('empty beats forces the sheet and hides the toggle', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />); // fixture has beats: []
+  expect(screen.queryByTestId('ribbon')).toBeNull();
+  expect(screen.getByTestId('marker')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /show/i })).toBeNull();
+});
+
+test('footer counts beats: next-in and beat N / M', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false }); // in F (4-8s), beat 11 of grid
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  const footer = screen.getByText(/Now:/).closest('.tabit-footer')!;
+  expect(footer).toHaveTextContent('Next: C in 6 beats'); // beats at 5.5..8.0
+  expect(footer).toHaveTextContent('beat 3 / 8');          // F spans beats 8-15, t=5 is beats[10]
+});
+
+test('footer falls back to seconds without beats', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 5, adShowing: false });
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  expect(screen.getByText(/Now:/).closest('.tabit-footer')).toHaveTextContent(/in 3\.0s/);
+});
+
+test('transpose relabels ribbon chord labels', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0, adShowing: false });
+  render(<Panel chart={beatChart as never} onCollapse={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  expect(screen.getByTestId('ribbon')).toHaveTextContent('Bm'); // Am +2
+});

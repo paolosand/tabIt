@@ -184,57 +184,10 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-chips-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 30px;
-}
-
-.tabit-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.tabit-chip {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 14px;
-  background: var(--tabit-paper);
-  border-radius: 2px;
-}
-
-.tabit-chip-scales {
-  flex: 1;
-  min-width: 200px;
-}
-
-.tabit-chip-label {
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--tabit-muted);
-}
-
-.tabit-chip-value {
-  font-family: var(--tabit-serif);
-  font-weight: 600;
-  font-size: 17px;
-}
-
-.tabit-chip-scales-value {
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.tabit-transpose-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.tabit-panel-header-compact { display: flex; align-items: center; gap: 14px; padding: 8px 14px; }
+.tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
+.tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
+.tabit-inline-chip-scales { overflow: hidden; text-overflow: ellipsis; }
 
 .tabit-round-btn {
   width: 26px;
@@ -279,7 +232,7 @@ export const OVERLAY_CSS = `
 }
 
 .tabit-sheet-scroll {
-  max-height: 420px;
+  max-height: min(420px, 38vh);
   overflow-y: auto;
   padding: 26px 30px 26px 76px;
   scroll-behavior: smooth;
@@ -342,6 +295,21 @@ export const OVERLAY_CSS = `
 .tabit-footer-strong { color: var(--tabit-ink); font-family: var(--tabit-serif); }
 .tabit-footer-next-strong { color: var(--tabit-dot); font-family: var(--tabit-serif); }
 .tabit-footer-dot { color: var(--tabit-border); }
+.tabit-footer-beatcount { margin-left: auto; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+
+.tabit-view-toggle {
+  display: block;
+  width: 100%;
+  padding: 2px 0 8px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: oklch(0.5 0.02 60);
+  cursor: pointer;
+  text-align: center;
+}
+.tabit-view-toggle:hover { color: oklch(0.3 0.02 60); }
 
 /* --- beat ribbon --- */
 .tabit-ribbon { position: relative; overflow: hidden; height: 86px; padding-top: 12px; }
