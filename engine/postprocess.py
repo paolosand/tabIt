@@ -43,6 +43,8 @@ def reconcile_bass(segs: list[ChordSegment], bass_reads: list[tuple[str, float |
 
     conf None means the read is the segment's own (crema) bass -- kept untouched, so
     crema's slash chords survive low-confidence CREPE (invariant from cd9772f).
+    A failed gate is likewise a no-op on the segment's existing (crema) bass:
+    gating only ever refuses CREPE's annotation, it never rewrites crema's.
     """
     from engine.notes import chord_tone_classes
 
@@ -55,7 +57,7 @@ def reconcile_bass(segs: list[ChordSegment], bass_reads: list[tuple[str, float |
         if conf >= BASS_CONF_MIN and b in chord_tone_classes(s.root, s.quality):
             new_bass = b
         else:
-            new_bass = s.root
+            new_bass = s.bass
         out.append(s.model_copy(update={
             "bass": new_bass,
             "label": format_label(s.root, s.quality, new_bass),

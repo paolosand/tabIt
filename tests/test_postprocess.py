@@ -73,6 +73,21 @@ def test_low_confidence_crepe_bass_is_gated():
     assert out[0].bass == "C" and out[0].label == "C"
 
 
+def test_failed_gate_preserves_crema_slash_non_chord_tone():
+    # Spec: gating only ever removes the bass annotation tabIt added, never
+    # rewrites crema's. A confident but non-chord-tone CREPE read must leave
+    # crema's own C/E slash untouched.
+    segs = [_seg(0.0, 2.0, "C", "maj", "E")]  # crema's own C/E
+    out = reconcile_bass(segs, [("F#", 0.9)])  # confident, not a C-major tone
+    assert out[0].bass == "E" and out[0].label == "C/E"
+
+
+def test_failed_gate_preserves_crema_slash_low_confidence():
+    segs = [_seg(0.0, 2.0, "C", "maj", "E")]  # crema's own C/E
+    out = reconcile_bass(segs, [("G", 0.3)])  # chord tone, but low confidence
+    assert out[0].bass == "E" and out[0].label == "C/E"
+
+
 def test_crema_slash_preserved_when_crepe_has_nothing():
     segs = [_seg(0.0, 2.0, "C", "maj", "E")]  # crema's own C/E
     out = reconcile_bass(segs, [("E", None)])  # None = fallback, not CREPE
