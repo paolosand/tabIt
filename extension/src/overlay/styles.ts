@@ -144,7 +144,7 @@ export const OVERLAY_CSS = `
  * rest of this file already makes - no custom webfont inside a content script). */
 .tabit-panel {
   flex: 1;
-  padding: 10px 0 12px; /* desk margin around the panel card; the card carries the paper */
+  padding: 8px 0 8px; /* desk margin around the panel card; the card carries the paper */
   animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
@@ -159,7 +159,7 @@ export const OVERLAY_CSS = `
   background: var(--tabit-paper);
   border-radius: 4px;
   box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06);
-  padding-bottom: 8px; /* bottom inset when the toggle is absent (no-beats charts) */
+  padding-bottom: 4px; /* bottom inset when the toggle is absent (no-beats charts) */
 }
 
 .tabit-panel-header {
@@ -197,7 +197,7 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 6px 14px; }
+.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 6px 14px; margin-bottom: 4px; /* overrides .tabit-panel-header's 22px (web-port leftover) */ }
 .tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
 .tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
 .tabit-inline-chip-scales { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -301,7 +301,7 @@ export const OVERLAY_CSS = `
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 6px;
   padding: 0 14px; /* inset inside the panel card (was previously the panel's 5vw) */
   font-size: 13.5px;
   color: var(--tabit-muted);
@@ -314,7 +314,7 @@ export const OVERLAY_CSS = `
 .tabit-view-toggle {
   display: block;
   width: 100%;
-  padding: 2px 0 6px;
+  padding: 2px 0 4px;
   border: none;
   background: none;
   font: inherit;
@@ -335,7 +335,7 @@ export const OVERLAY_CSS = `
   padding: 0 30px;
   transition: opacity 200ms ease-out;
 }
-.tabit-ribbon { position: relative; overflow: hidden; height: 64px; padding-top: 12px; }
+.tabit-ribbon { position: relative; overflow: hidden; height: 56px; padding-top: 8px; /* border-box: 48px track + 8px padding */ }
 .tabit-ribbon-track {
   position: relative; height: 48px;
   transition: transform 200ms linear;
