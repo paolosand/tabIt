@@ -147,7 +147,8 @@ def reconcile_bass(segs: list[ChordSegment], bass_reads: list[tuple[str, float |
         if conf >= BASS_CONF_MIN and b in chord_tone_classes(s.root, s.quality):
             new_bass = b
         else:
-            new_bass = s.root
+            new_bass = s.bass  # failed gate is a NO-OP: crema's own bass survives (spec:
+                               # "gating never rewrites crema's"; amended during Task 0)
         out.append(s.model_copy(update={
             "bass": new_bass,
             "label": format_label(s.root, s.quality, new_bass),
