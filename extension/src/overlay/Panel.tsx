@@ -145,6 +145,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
               chords={decorated.map((d) => ({ start: d.start, end: d.end, label: d.label, quality: d.quality, low: d.low }))}
               currentBeat={currentBeat}
               currentChordIndex={currentIndex}
+              downbeats={chart.downbeats}
             />
           </div>
         ) : (

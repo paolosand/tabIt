@@ -144,7 +144,7 @@ export const OVERLAY_CSS = `
  * rest of this file already makes - no custom webfont inside a content script). */
 .tabit-panel {
   flex: 1;
-  padding: 10px 5vw 12px; /* desk margin around the panel card; the card carries the paper */
+  padding: 10px 0 12px; /* desk margin around the panel card; the card carries the paper */
   animation: tabit-fade-in 0.4s ease-out;
   font-family: var(--tabit-sans);
   color: var(--tabit-ink);
@@ -197,7 +197,7 @@ export const OVERLAY_CSS = `
   white-space: nowrap;
 }
 
-.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 8px 14px; }
+.tabit-panel-header-compact { display: flex; align-items: center; justify-content: flex-start; flex-wrap: nowrap; gap: 14px; padding: 6px 14px; }
 .tabit-inline-chip { font-size: 12px; color: oklch(0.4 0.02 60); white-space: nowrap; }
 .tabit-inline-chip b { color: oklch(0.25 0.02 60); font-weight: 600; }
 .tabit-inline-chip-scales { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -314,7 +314,7 @@ export const OVERLAY_CSS = `
 .tabit-view-toggle {
   display: block;
   width: 100%;
-  padding: 2px 0 8px;
+  padding: 2px 0 6px;
   border: none;
   background: none;
   font: inherit;
@@ -335,26 +335,26 @@ export const OVERLAY_CSS = `
   padding: 0 30px;
   transition: opacity 200ms ease-out;
 }
-.tabit-ribbon { position: relative; overflow: hidden; height: 86px; padding-top: 12px; }
+.tabit-ribbon { position: relative; overflow: hidden; height: 64px; padding-top: 12px; }
 .tabit-ribbon-track {
-  position: relative; height: 64px;
+  position: relative; height: 48px;
   transition: transform 200ms linear;
 }
 @media (prefers-reduced-motion: reduce) { .tabit-ribbon-track { transition: none; } }
 .tabit-beat {
-  position: absolute; top: 0; width: 44px; height: 64px;
+  position: absolute; top: 0; width: 44px; height: 48px;
   border-left: 1px solid oklch(0.93 0.008 90);
 }
 .tabit-beat-bar { border-left: 2px solid oklch(0.82 0.012 90); }
 .tabit-beat-done { background: oklch(0.965 0.012 90); }
 .tabit-beat-now { background: oklch(0.87 0.14 85); border-radius: 4px; }
 .tabit-beat-chord {
-  position: absolute; left: 6px; top: 10px; z-index: 2;
+  position: absolute; left: 6px; top: 6px; z-index: 2;
   font-family: var(--tabit-serif); font-weight: 600;
-  font-size: 21px; color: oklch(0.25 0.02 60); white-space: nowrap;
+  font-size: 19px; color: oklch(0.25 0.02 60); white-space: nowrap;
 }
 .tabit-beat-chord-muted { color: oklch(0.62 0.015 60); }
-.tabit-beat-pips { position: absolute; bottom: 6px; left: 8px; display: flex; gap: 5px; z-index: 2; }
+.tabit-beat-pips { position: absolute; bottom: 4px; left: 8px; display: flex; gap: 5px; z-index: 2; }
 .tabit-beat-pip { width: 5px; height: 5px; border-radius: 50%; background: oklch(0.85 0.02 85); }
 .tabit-beat-pip-hit { background: oklch(0.55 0.12 70); }
 .tabit-ribbon-fade {

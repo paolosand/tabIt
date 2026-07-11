@@ -9,6 +9,7 @@ export interface RibbonProps {
   chords: RibbonChord[];
   currentBeat: number;
   currentChordIndex: number;
+  downbeats?: number[];
 }
 
 const CELL = 44;         // px, must match .tabit-beat width in styles.ts
@@ -27,9 +28,10 @@ export function clampTx(offset: number, trackWidth: number, viewWidth: number): 
 /** Windowed beat-grid strip: a renderer with internal viewport-width measurement
  *  (so the window can widen past WINDOW on wide viewports); time-derived indices
  *  (currentBeat, currentChordIndex) still come from Panel. */
-export default function Ribbon({ beats, chords, currentBeat, currentChordIndex }: RibbonProps) {
+export default function Ribbon({ beats, chords, currentBeat, currentChordIndex, downbeats }: RibbonProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [viewWidth, setViewWidth] = useState(0);
+  const downbeatSet = useMemo(() => new Set(downbeats ?? []), [downbeats]);
 
   useLayoutEffect(() => {
     const measure = () => setViewWidth(wrapRef.current?.clientWidth ?? 0);
@@ -70,7 +72,7 @@ export default function Ribbon({ beats, chords, currentBeat, currentChordIndex }
     const showLabel = !!chord && isFirstOfChord && chord.quality !== 'N';
     const cls = [
       'tabit-beat',
-      b % 4 === 0 ? 'tabit-beat-bar' : '',
+      (downbeatSet.size > 0 ? downbeatSet.has(beats[b]) : b % 4 === 0) ? 'tabit-beat-bar' : '',
       b === currentBeat ? 'tabit-beat-now' : '',
       ci === currentChordIndex && b < currentBeat ? 'tabit-beat-done' : '',
     ].filter(Boolean).join(' ');
