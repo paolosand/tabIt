@@ -41,3 +41,4 @@ separated/
 
 # Playwright MCP session artifacts
 .playwright-mcp/
+.superpowers/
