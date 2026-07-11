@@ -80,3 +80,21 @@ test('clampTx degrades to trackWidth bound when viewWidth is 0 (unmeasured)', ()
 test('clampTx floors negative offsets at 0', () => {
   expect(clampTx(-500, 4400, 800)).toBe(0);
 });
+
+test('bar lines follow downbeats when provided (3/4)', () => {
+  const c = render(
+    <Ribbon beats={beats} chords={chords} currentBeat={0} currentChordIndex={0}
+            downbeats={[0, 3, 6, 9, 12, 15]} />,
+  ).container;
+  const cells = c.querySelectorAll('.tabit-beat');
+  expect(cells[0].className).toContain('tabit-beat-bar');
+  expect(cells[3].className).toContain('tabit-beat-bar');
+  expect(cells[4].className).not.toContain('tabit-beat-bar');
+});
+
+test('empty downbeats falls back to every 4th beat', () => {
+  const c = render(
+    <Ribbon beats={beats} chords={chords} currentBeat={0} currentChordIndex={0} downbeats={[]} />,
+  ).container;
+  expect(c.querySelectorAll('.tabit-beat')[4].className).toContain('tabit-beat-bar');
+});

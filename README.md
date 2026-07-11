@@ -142,7 +142,11 @@ measured regression floor (0.495 weighted majmin accuracy via `mir_eval`) comes 
 **synthetic** Am→F→C→G fixture, which is out-of-distribution for a model trained on
 real recordings, so it says nothing about accuracy on an actual song. A hand-labeled
 real-song accuracy floor is on the roadmap. What the product does instead of promising
-precision: it shows per-chord confidence and makes corrections one click away.
+precision: it shows per-chord confidence and makes corrections one click away. Since
+engine 0.2.0, a conservatism pass also keeps the noise down: slash chords appear only
+when the detected bass is confident *and* a chord tone, low-confidence exotic qualities
+simplify to plain triads, sub-2-beat flicker segments merge away, and a meter detector
+(chord changes land on downbeats) gives the chart real bar lines instead of assuming 4/4.
 
 ## Project layout
 

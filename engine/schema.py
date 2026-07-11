@@ -46,6 +46,13 @@ class Tempo(BaseModel):
     bpm: float
 
 
+class Meter(BaseModel):
+    beatsPerBar: int
+    # Margin over the runner-up hypothesis, not a probability -- systematically
+    # small because candidate grids nest; rescale before ever surfacing in UI.
+    confidence: float
+
+
 class ChordSegment(BaseModel):
     start: float
     end: float
@@ -66,3 +73,5 @@ class Chart(BaseModel):
     beats: list[float]
     sections: list = Field(default_factory=list)
     chords: list[ChordSegment]
+    meter: Meter | None = None
+    downbeats: list[float] = Field(default_factory=list)

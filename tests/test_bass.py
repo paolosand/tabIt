@@ -19,7 +19,9 @@ def test_detect_bass_notes_length_matches_segments(tone_440_wav):
                          quality="maj", bass="A", confidence=0.9)]
     out = detect_bass_notes(tone_440_wav, segs)
     assert len(out) == 1
-    assert out[0] in NOTES
+    pc, conf = out[0]
+    assert pc in NOTES
+    assert conf is None or isinstance(conf, float)
 
 
 def test_detect_bass_notes_low_confidence_falls_back_to_crema_bass(monkeypatch):
@@ -53,4 +55,40 @@ def test_detect_bass_notes_low_confidence_falls_back_to_crema_bass(monkeypatch):
     segs = [ChordSegment(start=0.0, end=1.0, label="C/G", root="C",
                          quality="maj", bass="G", confidence=0.8)]
     out = detect_bass_notes("unused.wav", segs)
-    assert out == ["G"]
+    assert out == [("G", None)]
+
+
+def test_detect_bass_notes_sparse_confident_frames_read_low_confidence(monkeypatch):
+    """Regression test for the vacuous confidence gate: detect_bass_notes must not
+    mask frames to conf > 0.5 and then report the median of that already-filtered
+    set (a median of values all > 0.5 is always > 0.5, so BASS_CONF_MIN = 0.5 in
+    reconcile_bass could never fail on real output). A segment with only a couple
+    of high-confidence CREPE frames amid many low-confidence ones must still read
+    as low confidence overall -- the pitch estimate comes from the confident-frame
+    subset, but the reported confidence is the median over the WHOLE segment
+    window, so sparse confident frames don't launder a mostly-unconfident read.
+    """
+    import crepe
+    import librosa
+    from engine.bass import detect_bass_notes
+    from engine.schema import ChordSegment
+
+    def fake_load(path, sr=16000, mono=True):
+        return np.zeros(1600, dtype=np.float32), sr
+
+    def fake_predict(y, sr, viterbi=True, step_size=50):
+        times = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+        # Only the first two frames are confident (>0.5); the other eight aren't.
+        freqs = np.array([440.0, 440.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
+        conf = np.array([0.9, 0.9, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+        return times, freqs, conf, None
+
+    monkeypatch.setattr(librosa, "load", fake_load)
+    monkeypatch.setattr(crepe, "predict", fake_predict)
+
+    segs = [ChordSegment(start=0.0, end=1.0, label="A", root="A",
+                         quality="maj", bass="A", confidence=0.9)]
+    out = detect_bass_notes("unused.wav", segs)
+    pc, conf = out[0]
+    assert pc == "A"          # pitch still comes from the confident-frame subset
+    assert conf < 0.5         # but reported confidence is over the whole window

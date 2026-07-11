@@ -11,6 +11,7 @@ export interface Chart {
   schemaVersion: number; source: Source; analysis: Analysis;
   key: Key; scales: Scale[]; tempo: Tempo;
   beats: number[]; sections: unknown[]; chords: ChordSegment[];
+  meter?: { beatsPerBar: number; confidence: number }; downbeats?: number[];
 }
 export type JobState =
   | { status: 'pending' }

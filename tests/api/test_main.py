@@ -10,7 +10,7 @@ from api.main import app
 FAKE_CHART = {
     "schemaVersion": 1,
     "source": {"kind": "youtube", "videoId": "dQw4w9WgXcQ", "title": "t", "duration": 2.0},
-    "analysis": {"engineVersion": "0.1.0", "createdAt": "2026-07-09T00:00:00Z"},
+    "analysis": {"engineVersion": "0.2.0", "createdAt": "2026-07-09T00:00:00Z"},
     "key": {"tonic": "A", "mode": "minor", "confidence": 0.8},
     "scales": [], "tempo": {"bpm": 120.0}, "beats": [], "sections": [],
     "chords": [{"start": 0.0, "end": 2.0, "label": "Am", "root": "A",
