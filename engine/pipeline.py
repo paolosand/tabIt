@@ -30,18 +30,21 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
         import tensorflow.keras  # noqa: F401
 
         ingested = ingest(src, workdir)
-        # Stage graph: key needs only the original wav, so it overlaps
-        # separation; the bulk bass pitch track and beat tracking overlap the
+        # Stage graph: key and beat tracking need only the original wav, so
+        # they overlap separation; the bulk bass pitch track overlaps the
         # chord model (which stays on this thread). The underlying model
         # libraries (torch, TF, numpy) release the GIL during inference.
         with ThreadPoolExecutor(max_workers=3) as pool:
             key_fut = pool.submit(detect_key, ingested.wav_path)
+            # Track beats on the full mix, not the drum-less harmonic mix:
+            # without drums the onset evidence is weak and librosa's 120-BPM
+            # prior double-times slow songs (true ~60 reported as ~120).
+            beats_fut = pool.submit(track_beats, ingested.wav_path)
             stems = separate(ingested.wav_path, workdir)
             harm = harmonic_mix(stems, workdir)
 
             bass_src = stems.get("bass", ingested.wav_path)
             bass_fut = pool.submit(predict_bass_pitch, bass_src)
-            beats_fut = pool.submit(track_beats, harm)
             raws = chord_model.predict(harm)
 
             bpm, beats = beats_fut.result()
