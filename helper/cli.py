@@ -4,6 +4,7 @@ Stdlib only: the CLI must work without pulling FastAPI into the import path.
 Heavy imports (warmup) stay inside their subcommand functions.
 """
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -37,7 +38,10 @@ def _cmd_logs(args: argparse.Namespace) -> int:
         print(f"no log file yet at {paths.LOG_FILE}")
         return 1
     if args.follow:
-        subprocess.run(["tail", "-f", str(paths.LOG_FILE)])
+        try:
+            subprocess.run(["tail", "-f", str(paths.LOG_FILE)])
+        except KeyboardInterrupt:
+            pass
         return 0
     subprocess.run(["tail", "-n", str(args.lines), str(paths.LOG_FILE)])
     return 0
@@ -82,10 +86,26 @@ def _cmd_warmup(args: argparse.Namespace) -> int:
 def _cmd_uninstall(args: argparse.Namespace) -> int:
     launchd.uninstall_agent()
     print("launchd agent removed")
+
+    if paths.TABIT_SYMLINK.is_symlink():
+        try:
+            target = os.path.realpath(paths.TABIT_SYMLINK)
+            env_dir = os.path.realpath(paths.ENV_DIR)
+        except OSError:
+            target = env_dir = None
+        if target is not None and (target == env_dir or target.startswith(env_dir + os.sep)):
+            paths.TABIT_SYMLINK.unlink()
+            print(f"removed {paths.TABIT_SYMLINK}")
+
     for d in (paths.ENV_DIR, paths.BIN_DIR):
         if d.exists():
             shutil.rmtree(d)
             print(f"removed {d}")
+
+    if paths.LOG_DIR.exists():
+        shutil.rmtree(paths.LOG_DIR)
+        print(f"removed {paths.LOG_DIR}")
+
     if paths.CHARTS_DIR.exists():
         if args.purge:
             answer = "y"
@@ -101,6 +121,14 @@ def _cmd_uninstall(args: argparse.Namespace) -> int:
             print(f"removed {paths.CHARTS_DIR}")
         else:
             print(f"kept {paths.CHARTS_DIR}")
+
+    if paths.APP_SUPPORT.exists():
+        try:
+            paths.APP_SUPPORT.rmdir()
+            print(f"removed {paths.APP_SUPPORT}")
+        except OSError:
+            pass  # not empty (e.g. charts kept) — leave it in place
+
     print("tabIt helper uninstalled")
     return 0
 
@@ -143,6 +171,6 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         return args.func(args)
-    except (RuntimeError, FileNotFoundError) as exc:
+    except (RuntimeError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

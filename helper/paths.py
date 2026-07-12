@@ -9,5 +9,6 @@ LOG_DIR = Path.home() / "Library" / "Logs" / "tabIt"
 LOG_FILE = LOG_DIR / "helper.log"
 AGENT_LABEL = "com.tabit.helper"
 AGENT_PLIST = Path.home() / "Library" / "LaunchAgents" / f"{AGENT_LABEL}.plist"
+TABIT_SYMLINK = Path.home() / ".local" / "bin" / "tabit"
 PORT = 8000
 HEALTH_URL = f"http://127.0.0.1:{PORT}/health"

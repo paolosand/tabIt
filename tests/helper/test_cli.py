@@ -44,6 +44,23 @@ def test_status_foreign_service_on_port(monkeypatch, capsys):
     assert "isn't the tabIt helper" in capsys.readouterr().out
 
 
+def test_logs_follow_swallows_keyboard_interrupt(tmp_path, monkeypatch, capsys):
+    from helper import paths
+
+    log_file = tmp_path / "helper.log"
+    log_file.write_text("hello\n")
+    monkeypatch.setattr(paths, "LOG_FILE", log_file)
+
+    import subprocess as subprocess_module
+
+    def raise_interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(subprocess_module, "run", raise_interrupt)
+
+    assert cli_main(["logs", "-f"]) == 0
+
+
 def test_restart_invokes_launchd(monkeypatch, capsys):
     called = []
     monkeypatch.setattr(launchd, "restart", lambda: called.append(True))
@@ -71,9 +88,13 @@ def test_install_agent_fails_when_health_never_answers(monkeypatch, capsys):
 def test_uninstall_keeps_charts_when_stdin_closed(tmp_path, monkeypatch, capsys):
     from helper import paths
 
+    monkeypatch.setattr(paths, "APP_SUPPORT", tmp_path / "AppSupport" / "tabIt")
     monkeypatch.setattr(paths, "ENV_DIR", tmp_path / "AppSupport" / "tabIt" / "env")
     monkeypatch.setattr(paths, "BIN_DIR", tmp_path / "AppSupport" / "tabIt" / "bin")
     monkeypatch.setattr(paths, "CHARTS_DIR", tmp_path / "AppSupport" / "tabIt" / "charts")
+    monkeypatch.setattr(paths, "LOG_DIR", tmp_path / "Logs" / "tabIt")
+    monkeypatch.setattr(paths, "TABIT_SYMLINK", tmp_path / "local-bin" / "tabit")
+    paths.APP_SUPPORT.mkdir(parents=True)
     paths.CHARTS_DIR.mkdir(parents=True)
     monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
 
@@ -84,3 +105,68 @@ def test_uninstall_keeps_charts_when_stdin_closed(tmp_path, monkeypatch, capsys)
     assert cli_main(["uninstall"]) == 0
     assert paths.CHARTS_DIR.exists()
     assert "kept" in capsys.readouterr().out
+
+
+def test_uninstall_purge_removes_symlink_logs_and_app_support(tmp_path, monkeypatch, capsys):
+    from helper import paths
+
+    app_support = tmp_path / "AppSupport" / "tabIt"
+    env_dir = app_support / "env"
+    bin_dir = app_support / "bin"
+    charts_dir = app_support / "charts"
+    log_dir = tmp_path / "Logs" / "tabIt"
+    symlink = tmp_path / "local-bin" / "tabit"
+
+    monkeypatch.setattr(paths, "APP_SUPPORT", app_support)
+    monkeypatch.setattr(paths, "ENV_DIR", env_dir)
+    monkeypatch.setattr(paths, "BIN_DIR", bin_dir)
+    monkeypatch.setattr(paths, "CHARTS_DIR", charts_dir)
+    monkeypatch.setattr(paths, "LOG_DIR", log_dir)
+    monkeypatch.setattr(paths, "TABIT_SYMLINK", symlink)
+    monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
+
+    env_dir.mkdir(parents=True)
+    (env_dir / "bin").mkdir()
+    (env_dir / "bin" / "tabit").write_text("#!/bin/sh\n")
+    charts_dir.mkdir(parents=True)
+    log_dir.mkdir(parents=True)
+    (log_dir / "helper.log").write_text("log\n")
+    symlink.parent.mkdir(parents=True)
+    symlink.symlink_to(env_dir / "bin" / "tabit")
+
+    assert cli_main(["uninstall", "--purge"]) == 0
+
+    assert not symlink.exists() and not symlink.is_symlink()
+    assert not log_dir.exists()
+    assert not app_support.exists()
+
+
+def test_uninstall_leaves_foreign_symlink_alone(tmp_path, monkeypatch, capsys):
+    from helper import paths
+
+    app_support = tmp_path / "AppSupport" / "tabIt"
+    env_dir = app_support / "env"
+    bin_dir = app_support / "bin"
+    charts_dir = app_support / "charts"
+    log_dir = tmp_path / "Logs" / "tabIt"
+    symlink = tmp_path / "local-bin" / "tabit"
+
+    monkeypatch.setattr(paths, "APP_SUPPORT", app_support)
+    monkeypatch.setattr(paths, "ENV_DIR", env_dir)
+    monkeypatch.setattr(paths, "BIN_DIR", bin_dir)
+    monkeypatch.setattr(paths, "CHARTS_DIR", charts_dir)
+    monkeypatch.setattr(paths, "LOG_DIR", log_dir)
+    monkeypatch.setattr(paths, "TABIT_SYMLINK", symlink)
+    monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
+
+    app_support.mkdir(parents=True)
+    charts_dir.mkdir(parents=True)
+    foreign_target = tmp_path / "some-other-tool"
+    foreign_target.write_text("not tabit\n")
+    symlink.parent.mkdir(parents=True)
+    symlink.symlink_to(foreign_target)
+
+    assert cli_main(["uninstall", "--purge"]) == 0
+
+    assert symlink.is_symlink()
+    assert symlink.resolve() == foreign_target.resolve()
