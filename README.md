@@ -53,15 +53,6 @@ itself, so you can play along to practically anything.
   live (download, separation, chords) instead of a blank spinner. Every repeat of
   the same song is served instantly from a disk cache.
 
-## The web app: the whole chart on paper
-
-Prefer the full chart, or have a local audio file instead of a YouTube link? The web
-app renders the entire song as a songbook-style sheet, synced to playback the same way.
-
-<img src="docs/assets/sheet-playing.png" alt="tabIt web app following Three Little Birds: the full chord sheet with the current chord highlighted in amber, the next chord underlined in pencil, and key, tempo, and scale suggestions above" width="100%">
-
-<p align="center"><sub>A real run, not a mockup. Amber highlighter marks the chord playing <em>now</em>; the pencil underline marks what's <em>next</em>; a dotted underline means the engine isn't sure and says so.</sub></p>
-
 ## How it works
 
 Three layers share one contract: the **chart JSON**. The web app and the Chrome
@@ -140,7 +131,12 @@ real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
 marker tracks playback across chord boundaries; teardown/remount survives SPA
 navigation).
 
-### 3. Web app
+### 3. Web app (optional)
+
+The extension is the product; the web app is the dev-facing renderer of the
+same chart JSON — and the only UI for **local audio files** (the extension is
+YouTube-only). It shows the whole song as a songbook-style sheet, synced to
+playback the same way.
 
 ```bash
 # with the API running (terminal 1 above)
