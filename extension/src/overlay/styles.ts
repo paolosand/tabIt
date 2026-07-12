@@ -149,6 +149,16 @@ export const OVERLAY_CSS = `
   line-height: 1.4;
 }
 
+.tabit-bar-offline .tabit-offline-message {
+  font: 13px/1.4 var(--tabit-sans);
+  color: var(--tabit-muted);
+}
+.tabit-bar-offline .tabit-offline-message code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--tabit-ink);
+}
+
 /* Panel (Task 5) - ported from web/src/screens/Sheet.tsx. Values match 1:1; only the
  * font stack differs ('Fraunces' -> --tabit-serif system stack, same substitution the
  * rest of this file already makes - no custom webfont inside a content script). */

@@ -67,3 +67,43 @@ test('pending step from the background reaches the checklist', async () => {
   await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
   vi.useRealTimers();
 });
+
+test('offline response shows the helper-offline bar, backs off, and auto-recovers', async () => {
+  vi.useFakeTimers();
+  const send = chrome.runtime.sendMessage as Mock;
+  send
+    .mockResolvedValueOnce({ status: 'offline' })
+    .mockResolvedValueOnce({ status: 'offline' })
+    .mockResolvedValueOnce({ status: 'done', chart: CHART });
+  render(<App videoId="vid00000001" />);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  await user.click(screen.getByRole('button', { name: /get chords/i }));
+
+  await waitFor(() => expect(screen.getByText(/helper isn't running/)).toBeInTheDocument());
+
+  // first retry fires at the 3s base delay…
+  await vi.advanceTimersByTimeAsync(3100);
+  expect(send).toHaveBeenCalledTimes(2);
+
+  // …the second backs off to 6s: nothing at +3s…
+  await vi.advanceTimersByTimeAsync(3100);
+  expect(send).toHaveBeenCalledTimes(2);
+
+  // …but fires by +6s, and the recovered helper's chart renders
+  await vi.advanceTimersByTimeAsync(3000);
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  expect(send).toHaveBeenCalledTimes(3);
+  vi.useRealTimers();
+});
+
+test('manual retry from the offline bar polls immediately', async () => {
+  const send = chrome.runtime.sendMessage as Mock;
+  send
+    .mockResolvedValueOnce({ status: 'offline' })
+    .mockResolvedValueOnce({ status: 'done', chart: CHART });
+  render(<App videoId="vid00000001" />);
+  await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
+  await waitFor(() => expect(screen.getByText(/helper isn't running/)).toBeInTheDocument());
+  await userEvent.click(screen.getByRole('button', { name: /retry/i }));
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+});

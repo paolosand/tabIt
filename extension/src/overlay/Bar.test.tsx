@@ -1,5 +1,16 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import { Bar } from './Bar';
+
+test('offline variant explains the dead helper and offers retry', async () => {
+  const onRetry = vi.fn();
+  render(<Bar variant="offline" onRetry={onRetry} />);
+  expect(screen.getByText(/helper isn't running/)).toBeInTheDocument();
+  expect(screen.getByText('tabit restart')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /retry/i }));
+  expect(onRetry).toHaveBeenCalledTimes(1);
+});
 
 test('loading checklist marks earlier steps done, current active, later pending', () => {
   render(<Bar variant="loading" step="chords" />);
