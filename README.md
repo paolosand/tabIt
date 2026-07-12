@@ -17,7 +17,7 @@ followed karaoke-style as the music plays.
 
 <img src="docs/assets/extension-demo.gif" alt="Live demo of the tabIt Chrome extension on youtube.com: clicking the Get chords bar under the video expands a beat ribbon that sweeps chord to chord in time with the song, showing the current chord, the next chord, and key, tempo, and scale chips" width="100%">
 
-<p align="center"><sub>A real recording on youtube.com. No separate site: click the "♪ Get chords" bar under the video you're already watching and the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
+<p align="center"><sub>A real recording on youtube.com. Click the "♪ Get chords" bar under the video you're already watching, and the bar walks through the pipeline live: fetch audio, separate instruments, find chords, build chart (sped up here; about 36 seconds in real time). Then the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
 
 ## Why this exists
 
