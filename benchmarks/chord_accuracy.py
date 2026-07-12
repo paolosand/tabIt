@@ -38,7 +38,7 @@ def load_manifest(path) -> list[Song]:
     return songs
 
 
-def duration_warning(actual: float, expected: float | None, tol: float = 0.03):
+def duration_warning(actual: float, expected: float | None, tol: float = 0.03) -> str | None:
     """Return a short warning string if fetched duration drifts from the
     annotated master beyond `tol`, else None."""
     if not expected:
@@ -104,6 +104,8 @@ def run_benchmark(songs, base_dir, metrics=DEFAULT_METRICS,
             engine_version = chart.analysis.engineVersion
             row["duration"] = chart.source.duration
             row["warning"] = duration_warning(chart.source.duration, song.ref_duration)
+            if not chart.chords:
+                raise ValueError("empty chart: analyze returned no chords")
 
             ref_int, ref_lab = load_lab(song.lab)
             est_int, est_lab = chords_to_mir(chart.chords, offset_sec=song.offset_sec)

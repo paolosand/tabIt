@@ -67,6 +67,19 @@ def test_run_benchmark_survives_analyze_error(tmp_path):
     assert "yt-dlp failed" in row["error"]
 
 
+def test_run_benchmark_empty_chart_is_error(tmp_path):
+    lab = _write_lab(tmp_path, "s1.lab", "0.000 2.000 C:maj\n")
+    song = Song(id="s1", title="Song One", url="u", lab=lab, ref_duration=2.0)
+
+    def fake_analyze(url, *, created_at):
+        return _fake_chart(2.0, [])
+
+    results = run_benchmark([song], tmp_path, metrics=METRICS, analyze_fn=fake_analyze)
+    row = results["songs"][0]
+    assert row["scores"] is None
+    assert "empty chart" in row["error"]
+
+
 def test_write_results_emits_json_and_md(tmp_path):
     lab = _write_lab(tmp_path, "s1.lab", "0.000 2.000 C:maj\n")
     song = Song(id="s1", title="Song One", url="u", lab=lab, ref_duration=2.0)

@@ -47,6 +47,16 @@ def test_score_chart_half_wrong_is_half():
     assert scores["majmin"] == pytest.approx(0.5)
 
 
+def test_score_chart_sevenths_distinguishes_from_majmin():
+    ref_int = np.array([[0.0, 2.0]])
+    ref_lab = ["G:7"]
+    est_int, est_lab = chords_to_mir([_seg(0.0, 2.0, "G", "maj")])
+    scores = score_chart(ref_int, ref_lab, est_int, est_lab)
+    assert scores["majmin"] == pytest.approx(1.0)
+    assert scores["root"] == pytest.approx(1.0)
+    assert scores["sevenths"] == pytest.approx(0.0)
+
+
 def test_load_lab_round_trips(tmp_path):
     lab = tmp_path / "x.lab"
     lab.write_text("0.000 2.000 C:maj\n2.000 4.000 A:min\n")
