@@ -36,14 +36,10 @@ def _warm_models() -> None:
     import/model-load latency (~7s). Failures are non-fatal: the job path
     loads lazily anyway."""
     try:
-        _get_chord_model()
-        import crema.analyze  # noqa: F401  (keras model builds at import)
+        from helper.warmup import warm_all
 
-        from engine.separate import _get_separator, _pick_device
-        _get_separator("htdemucs", _pick_device())
-
-        from crepe.core import build_and_load_model
-        build_and_load_model("small")
+        warm_all(progress=lambda m: logger.info("warmup: %s", m),
+                 get_chord_model=_get_chord_model)
         logger.info("model warmup complete")
     except Exception:
         logger.warning("model warmup failed; models will load on first job",
