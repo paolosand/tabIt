@@ -49,8 +49,9 @@ itself, so you can play along to practically anything.
 - **Fast after the first time.** Cold analysis takes well under a minute on an
   Apple-Silicon Mac (~36s of compute for a 3.5-minute song: GPU source separation,
   detection stages running in parallel, models kept warm) plus the download; a few
-  minutes on CPU-only machines. Every repeat of the same song is served instantly
-  from a disk cache.
+  minutes on CPU-only machines. While it runs, the bar shows each pipeline step
+  live (download, separation, chords) instead of a blank spinner. Every repeat of
+  the same song is served instantly from a disk cache.
 
 ## The web app: the whole chart on paper
 
@@ -169,10 +170,11 @@ docs/        design specs, implementation plans, progress ledger
 
 - [x] Extension: degraded mount fallback + live-stream guard
 - [x] Extension: headful Playwright e2e against real YouTube
-- [ ] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
+- [x] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
+- [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
+- [x] Live pipeline-step checklist in the extension bar while a song analyzes
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1
-- [ ] Animated demo in this README (screen-recorded GIF/MP4 of the ribbon sweeping in time)
 - [ ] Package the extension for the Chrome Web Store; deploy the API + web app
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
