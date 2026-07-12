@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 from dataclasses import dataclass
 
 import soundfile as sf
@@ -25,15 +26,28 @@ def _to_mono_wav(in_path: str, out_path: str, sample_rate: int) -> None:
     )
 
 
+def _ytdlp_bin() -> str:
+    """Prefer the yt-dlp installed alongside this interpreter (the venv's
+    pinned copy). Bare PATH resolution can silently pick a stale system
+    copy that YouTube rejects (issue #4)."""
+    sibling = os.path.join(os.path.dirname(sys.executable), "yt-dlp")
+    return sibling if os.path.exists(sibling) else "yt-dlp"
+
+
 def _download_audio(url: str, workdir: str) -> tuple[str, dict]:
     """Download bestaudio + metadata via a single yt-dlp call;
     return (downloaded_path, info_dict)."""
     out_tmpl = os.path.join(workdir, "src.%(ext)s")
-    subprocess.run(
-        ["yt-dlp", "-f", "bestaudio", "--no-playlist", "--write-info-json",
-         "-o", out_tmpl, url],
-        check=True, capture_output=True,
-    )
+    try:
+        subprocess.run(
+            [_ytdlp_bin(), "-f", "bestaudio", "--no-playlist", "--write-info-json",
+             "-o", out_tmpl, url],
+            check=True, capture_output=True,
+        )
+    except subprocess.CalledProcessError as e:
+        stderr = (e.stderr or b"").decode(errors="replace").strip()
+        tail = " | ".join(stderr.splitlines()[-3:]) or "no stderr"
+        raise RuntimeError(f"yt-dlp failed for {url}: {tail}") from e
     info_path = os.path.join(workdir, "src.info.json")
     with open(info_path) as f:
         info = json.load(f)
