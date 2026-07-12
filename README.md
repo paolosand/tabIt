@@ -98,7 +98,8 @@ pip install -e ".[dev]" --build-constraint constraints-build.txt
 
 Skip the manual environment entirely. The installer provisions Python 3.11
 via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and all model weights,
-then runs the API as a background service that starts at login:
+then runs the API as a background service that starts at login. It installs
+the latest tagged release, not main:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh

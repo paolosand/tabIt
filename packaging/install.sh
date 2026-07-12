@@ -9,7 +9,9 @@
 set -eu
 
 TABIT_REPO="${TABIT_REPO:-https://github.com/paolosand/tabIt}"
-TABIT_REF="${TABIT_REF:-main}"
+# Pinned release: bump per release so `curl | sh` always installs a
+# known-good version (override with TABIT_REF=main for bleeding edge).
+TABIT_REF="${TABIT_REF:-v0.3.0}"
 FFMPEG_RELEASE="b6.1.1"
 # Pinned checksums for the static ffmpeg binaries fetched below — computed
 # once from the b6.1.1 release assets. Bump these together with FFMPEG_RELEASE.
