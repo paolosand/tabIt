@@ -125,7 +125,7 @@ With the API from step 1 running:
 ```bash
 # terminal 1: API
 source .venv/bin/activate
-uvicorn api.main:app --port 8000
+uvicorn api.main:app --port 28224
 
 # terminal 2: build the extension
 cd extension && npm install && npm run build

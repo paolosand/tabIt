@@ -19,7 +19,9 @@ FFMPEG_SHA256_X64="ebdddc936f61e14049a2d4b549a412b8a40deeff6540e58a9f2a2da9e6b18
 APP_SUPPORT="$HOME/Library/Application Support/tabIt"
 ENV_DIR="$APP_SUPPORT/env"
 BIN_DIR="$APP_SUPPORT/bin"
-HEALTH_URL="http://127.0.0.1:8000/health"
+# Must match helper/paths.py PORT (dedicated port, off the dev-default 8000).
+TABIT_PORT=28224
+HEALTH_URL="http://127.0.0.1:$TABIT_PORT/health"
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -52,12 +54,18 @@ main() {
   if health="$(curl -sf --max-time 2 "$HEALTH_URL" 2>/dev/null)"; then
     case "$health" in
       *engineVersion*)
-        printf 'existing tabIt helper found on port 8000 — upgrading in place.\n'
+        printf 'existing tabIt helper found on port %s — upgrading in place.\n' "$TABIT_PORT"
         upgrading=true ;;
-      *) fail "port 8000 is in use by something that isn't the tabIt helper; stop it and rerun" ;;
+      *) fail "port $TABIT_PORT is in use by something that isn't the tabIt helper; stop it and rerun" ;;
     esac
-  elif curl -s --max-time 2 -o /dev/null "http://127.0.0.1:8000/"; then
-    fail "port 8000 is in use by something that isn't the tabIt helper; stop it and rerun"
+  elif curl -s --max-time 2 -o /dev/null "http://127.0.0.1:$TABIT_PORT/"; then
+    fail "port $TABIT_PORT is in use by something that isn't the tabIt helper; stop it and rerun"
+  elif curl -sf --max-time 2 "http://127.0.0.1:8000/health" 2>/dev/null | grep -q engineVersion; then
+    # A helper from before the dedicated-port move (or a dev API) answers on
+    # the legacy port. Treat it as an upgrade so the old agent gets booted out
+    # below rather than lingering on 8000 alongside the new one.
+    printf 'tabIt helper found on legacy port 8000 — migrating it to %s.\n' "$TABIT_PORT"
+    upgrading=true
   fi
 
   if [ "$upgrading" = true ]; then

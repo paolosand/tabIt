@@ -35,7 +35,7 @@ as a tiny telemetry ingest endpoint with none of the above problems.
 
 Package the existing FastAPI server as the **tabIt helper**: a background
 service on the user's Mac that the Chrome extension talks to over
-`localhost:8000`, exactly as it does today. Ship it in phases, each removing
+`localhost:28224` (see Port below). Ship it in phases, each removing
 one category of friction while being usable on its own:
 
 1. **Phase 1 (this spec):** one-line shell installer + launchd agent +
@@ -75,7 +75,7 @@ Idempotent: re-running upgrades in place. Steps, in order:
 
 1. **Preflight.** macOS only (abort elsewhere); detect arm64 vs x86_64 and
    warn Intel users about CPU-only speed; check ~8 GB free disk (PyTorch +
-   TensorFlow + model weights); check port 8000 — if something that isn't a
+   TensorFlow + model weights); check port 28224 — if something that isn't a
    tabIt helper already answers there, abort with a clear message (see Port
    below).
 2. **uv.** Install via the official standalone installer if not present
@@ -100,7 +100,7 @@ Idempotent: re-running upgrades in place. Steps, in order:
 6. **Service.** Write `~/Library/LaunchAgents/com.tabit.helper.plist`
    (RunAtLoad + KeepAlive; env: `TABIT_CACHE_DIR`, `PATH`; stdout/err to
    `~/Library/Logs/tabIt/helper.log`) running the venv's
-   `uvicorn api.main:app --port 8000`; `launchctl bootstrap` it.
+   `uvicorn api.main:app --port 28224`; `launchctl bootstrap` it.
 7. **Verify.** Poll `/health` until it answers (bounded wait), then print
    "✓ tabIt helper running" plus the extension-setup link. Any failure exits
    nonzero with the failing step named; a rerun resumes safely.
@@ -128,26 +128,32 @@ New console entry point in `pyproject.toml` (kept separate from
 | logs | `~/Library/Logs/tabIt/helper.log` |
 | launchd agent | `~/Library/LaunchAgents/com.tabit.helper.plist` |
 
-Repo-checkout workflows are unaffected: defaults (`data/charts`, port 8000,
-foreground uvicorn) stay exactly as documented in the README.
+Repo-checkout workflows are unaffected beyond the port: defaults
+(`data/charts`, foreground uvicorn, now on port 28224) stay as documented in
+the README.
 
 ### Port
 
-The helper keeps **8000**, the extension's existing hardcoded `API_BASE`, so
-Phase 1 requires no extension networking changes and the dev workflow is
-identical to the helper workflow. Known tradeoff: 8000 is popular with
-developers — exactly the Phase 1 audience. Mitigations now: the installer
-aborts (never hijacks) when a foreign service owns the port, and `tabit
-status` diagnoses "port 8000 is answering but it isn't tabIt." Moving to a
-dedicated uncommon port is deferred to Phase 2, when onboarding can migrate
-the extension and the app together.
+**Amended 2026-07-12 (pre-merge):** the helper claims a dedicated port,
+**28224** ("TABIT" on a phone keypad, truncated to fit), everywhere — helper,
+extension `API_BASE` + manifest host permission, web dev proxy, and the
+documented dev `uvicorn` command — one port, no dev/helper split. The original
+draft kept 8000 and deferred migration to Phase 2, but 8000 is the single most
+collision-prone port for exactly the Phase 1 developer audience, and moving
+before anyone installs costs five constants; moving after costs a version
+handshake. Retained regardless of port (no port is guaranteed free): the
+installer aborts (never hijacks) when a foreign service owns the port, `tabit
+status` diagnoses "the port is answering but it isn't tabIt," and the helper
+identifies itself via `/health`'s `engineVersion`. The installer also detects
+a pre-migration helper still answering on legacy 8000 and boots it out as part
+of the upgrade.
 
 ### Extension: helper-offline state
 
 New terminal bar variant alongside the existing error state:
 
 - Health probe with a short timeout before/alongside chart requests; a
-  network-level failure to reach `localhost:8000` (vs. an HTTP error from a
+  network-level failure to reach `localhost:28224` (vs. an HTTP error from a
   live server) classifies as **helper offline**.
 - Bar copy: "tabIt helper isn't running — open the app, or run `tabit
   restart` in a terminal." (Copy becomes "open tabIt from the menu bar" in
@@ -183,4 +189,4 @@ New terminal bar variant alongside the existing error state:
 - Any GUI, menubar presence, signing, or notarization (Phase 2).
 - Chrome Web Store packaging (Phase 3).
 - Telemetry of any kind (Phase 4; nothing phones home in Phase 1).
-- Windows/Linux; multiple concurrent helper versions; port migration.
+- Windows/Linux; multiple concurrent helper versions.
