@@ -6,11 +6,14 @@ import { Bar } from './Bar';
 import Panel from './Panel';
 
 const POLL_INTERVAL_MS = 3000;
+const OFFLINE_POLL_BASE_MS = 3000;
+const OFFLINE_POLL_MAX_MS = 30000;
 
 type State =
   | { kind: 'collapsed' }
   | { kind: 'loading'; step?: string }
   | { kind: 'sheet'; chart: Chart }
+  | { kind: 'offline' }
   | { kind: 'error'; message: string };
 
 export interface AppProps {
@@ -27,6 +30,8 @@ export function App({ videoId }: AppProps) {
   // SPA navigation) and against a stale setTimeout firing after retry/unmount.
   const aliveRef = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Consecutive offline polls, for backoff; any non-offline response resets it.
+  const offlineAttemptRef = useRef(0);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -42,6 +47,17 @@ export function App({ videoId }: AppProps) {
       .sendMessage(request)
       .then((response: GetChartResponse) => {
         if (!aliveRef.current) return;
+        if (response.status === 'offline') {
+          const delay = Math.min(
+            OFFLINE_POLL_BASE_MS * 2 ** offlineAttemptRef.current,
+            OFFLINE_POLL_MAX_MS,
+          );
+          offlineAttemptRef.current += 1;
+          setState({ kind: 'offline' });
+          timerRef.current = setTimeout(poll, delay);
+          return;
+        }
+        offlineAttemptRef.current = 0;
         if (response.status === 'done') {
           setState({ kind: 'sheet', chart: response.chart });
         } else if (response.status === 'error') {
@@ -58,6 +74,8 @@ export function App({ videoId }: AppProps) {
   }, [videoId]);
 
   const startPolling = useCallback(() => {
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    offlineAttemptRef.current = 0;
     setState({ kind: 'loading' });
     poll();
   }, [poll]);
@@ -67,6 +85,8 @@ export function App({ videoId }: AppProps) {
       return <Bar variant="collapsed" onGetChords={startPolling} />;
     case 'loading':
       return <Bar variant="loading" step={state.step} />;
+    case 'offline':
+      return <Bar variant="offline" onRetry={startPolling} />;
     case 'error':
       return <Bar variant="error" message={state.message} onRetry={startPolling} />;
     case 'sheet':

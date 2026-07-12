@@ -50,6 +50,10 @@ export async function handleGetChart(videoId: string): Promise<GetChartResponse>
     await chrome.storage.session.set({ [`job:${videoId}`]: newJob });
     return { status: 'pending' };
   } catch (e) {
+    // fetch rejects with TypeError on network-level failure: the local helper
+    // isn't reachable at all — distinct from an HTTP error a live server sent
+    // (api.ts throws those as plain Error('API <status>')).
+    if (e instanceof TypeError) return { status: 'offline' };
     return { status: 'error', error: e instanceof Error ? e.message : String(e) };
   }
 }

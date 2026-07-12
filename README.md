@@ -53,15 +53,6 @@ itself, so you can play along to practically anything.
   live (download, separation, chords) instead of a blank spinner. Every repeat of
   the same song is served instantly from a disk cache.
 
-## The web app: the whole chart on paper
-
-Prefer the full chart, or have a local audio file instead of a YouTube link? The web
-app renders the entire song as a songbook-style sheet, synced to playback the same way.
-
-<img src="docs/assets/sheet-playing.png" alt="tabIt web app following Three Little Birds: the full chord sheet with the current chord highlighted in amber, the next chord underlined in pencil, and key, tempo, and scale suggestions above" width="100%">
-
-<p align="center"><sub>A real run, not a mockup. Amber highlighter marks the chord playing <em>now</em>; the pencil underline marks what's <em>next</em>; a dotted underline means the engine isn't sure and says so.</sub></p>
-
 ## How it works
 
 Three layers share one contract: the **chart JSON**. The web app and the Chrome
@@ -103,14 +94,30 @@ python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]" --build-constraint constraints-build.txt
 ```
 
-### 2. Chrome extension
+#### Or: one-line install (macOS, beta)
 
-With the API from step 1 running:
+Skip the manual environment entirely. The installer provisions Python 3.11
+via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and all model weights,
+then runs the API as a background service that starts at login:
 
 ```bash
-# terminal 1: API
+curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh
+```
+
+Manage it with `tabit status` / `tabit logs` / `tabit restart` /
+`tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
+logs to `~/Library/Logs/tabIt/helper.log`. If the helper is off, the extension
+bar says so and recovers by itself once the service is back.
+
+### 2. Chrome extension
+
+With the API from step 1 running (already the case if you used the one-line
+installer — the helper serves it as a background service):
+
+```bash
+# terminal 1: API — skip if you used the one-line installer
 source .venv/bin/activate
-uvicorn api.main:app --port 8000
+uvicorn api.main:app --port 28224
 
 # terminal 2: build the extension
 cd extension && npm install && npm run build
@@ -124,7 +131,12 @@ real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
 marker tracks playback across chord boundaries; teardown/remount survives SPA
 navigation).
 
-### 3. Web app
+### 3. Web app (optional)
+
+The extension is the product; the web app is the dev-facing renderer of the
+same chart JSON — and the only UI for **local audio files** (the extension is
+YouTube-only). It shows the whole song as a songbook-style sheet, synced to
+playback the same way.
 
 ```bash
 # with the API running (terminal 1 above)
@@ -173,9 +185,11 @@ docs/        design specs, implementation plans, progress ledger
 - [x] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
 - [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
+- [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1
-- [ ] Package the extension for the Chrome Web Store; deploy the API + web app
+- [ ] Package the extension for the Chrome Web Store (pre-built zip release as a stopgap)
+- [ ] Signed menubar app — download, guided setup, no terminal (packaging Phase 2)
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
 design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/).

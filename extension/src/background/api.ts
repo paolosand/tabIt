@@ -1,6 +1,7 @@
 import type { Chart, JobState } from '../../../web/src/lib/types';
 
-export const API_BASE = 'http://localhost:8000';
+// Must match helper/paths.py PORT and manifest.json host_permissions.
+export const API_BASE = 'http://localhost:28224';
 
 export async function fetchCachedChart(videoId: string): Promise<Chart | null> {
   const res = await fetch(`${API_BASE}/chart/${videoId}`);

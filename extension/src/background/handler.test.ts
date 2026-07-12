@@ -57,8 +57,23 @@ test('job error surfaces and clears the job for retry', async () => {
   expect(stored['job:vid00000001']).toBeUndefined();
 });
 
-test('API unreachable -> error response, not a throw', async () => {
-  (api.fetchCachedChart as Mock).mockRejectedValue(new TypeError('fetch failed'));
+test('helper unreachable (network-level TypeError) -> offline, not error', async () => {
+  (api.fetchCachedChart as Mock).mockRejectedValue(new TypeError('Failed to fetch'));
+  const res = await handleGetChart('vid00000001');
+  expect(res).toEqual({ status: 'offline' });
+});
+
+test('helper dying mid-job -> offline, and the job key clears so recovery resubmits', async () => {
+  await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
+  (api.pollJobOnce as Mock).mockRejectedValue(new TypeError('Failed to fetch'));
+  const res = await handleGetChart('vid00000001');
+  expect(res).toEqual({ status: 'offline' });
+  const stored = await chrome.storage.session.get('job:vid00000001');
+  expect(stored['job:vid00000001']).toBeUndefined();
+});
+
+test('HTTP error from a live server stays error, not offline', async () => {
+  (api.fetchCachedChart as Mock).mockRejectedValue(new Error('API 500'));
   const res = await handleGetChart('vid00000001');
   expect(res.status).toBe('error');
 });

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Play along: chords, key and scales for the song you're watching.",
   "permissions": ["storage"],
-  "host_permissions": ["http://localhost:8000/*"],
+  "host_permissions": ["http://localhost:28224/*"],
   "background": { "service_worker": "background.js", "type": "module" },
   "content_scripts": [
     {

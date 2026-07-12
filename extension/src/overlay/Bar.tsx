@@ -5,6 +5,7 @@
 export type BarProps =
   | { variant: 'collapsed'; onGetChords: () => void }
   | { variant: 'loading'; step?: string }
+  | { variant: 'offline'; onRetry: () => void }
   | { variant: 'error'; message: string; onRetry: () => void };
 
 /** Server-reported pipeline step ids in run order, with user-facing labels.
@@ -56,6 +57,25 @@ export function Bar(props: BarProps) {
             );
           })}
         </div>
+      </div>
+    );
+  }
+
+  if (props.variant === 'offline') {
+    return (
+      <div className="tabit-bar tabit-bar-offline" data-state="offline">
+        <Wordmark />
+        <span className="tabit-offline-message">
+          tabIt helper isn&apos;t running — open the app, or run <code>tabit restart</code> in
+          a terminal.
+        </span>
+        <button
+          type="button"
+          className="tabit-btn tabit-btn-secondary"
+          onClick={props.onRetry}
+        >
+          Retry
+        </button>
       </div>
     );
   }
