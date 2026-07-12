@@ -5,10 +5,16 @@ Runs a manifest of songs through the live engine.analyze() pipeline
 annotations with mir_eval. Local/manual only: yt-dlp is blocked from
 datacenter IPs, so this never runs in CI. Not collected by pytest.
 """
+import argparse
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 from pydantic import BaseModel
+
+from engine.pipeline import analyze
+from engine.eval import load_lab, chords_to_mir, score_chart
 
 
 class Song(BaseModel):
@@ -79,3 +85,70 @@ def render_markdown(rows: list[dict], agg: dict, metrics) -> str:
     lines.append(f"| **Aggregate (all)** | {all_cells} | duration-weighted |")
     lines.append(f"| **Aggregate (aligned)** | {aligned_cells} | excludes ⚠ |")
     return "\n".join(lines) + "\n"
+
+
+DEFAULT_METRICS = ("majmin", "sevenths", "root")
+
+
+def run_benchmark(songs, base_dir, metrics=DEFAULT_METRICS,
+                  analyze_fn=analyze, created_at=None) -> dict:
+    """Analyze + score every song. Never raises for a single-song failure:
+    a failed song gets scores=None and an error note."""
+    created_at = created_at or datetime.now(timezone.utc).isoformat()
+    rows, engine_version = [], None
+    for song in songs:
+        row = {"id": song.id, "title": song.title, "scores": None,
+               "weight": 0.0, "warning": None, "error": None, "duration": None}
+        try:
+            chart = analyze_fn(song.url, created_at=created_at)
+            engine_version = chart.analysis.engineVersion
+            row["duration"] = chart.source.duration
+            row["warning"] = duration_warning(chart.source.duration, song.ref_duration)
+
+            ref_int, ref_lab = load_lab(song.lab)
+            est_int, est_lab = chords_to_mir(chart.chords, offset_sec=song.offset_sec)
+            row["scores"] = score_chart(ref_int, ref_lab, est_int, est_lab, metrics=metrics)
+            row["weight"] = float(ref_int[-1][1] - ref_int[0][0])  # scored span (s)
+        except Exception as exc:  # dead URL, empty chart, yt-dlp error, ...
+            row["error"] = f"{type(exc).__name__}: {exc}"
+        rows.append(row)
+        print(f"  {song.id}: "
+              + ("ERROR " + row["error"] if row["error"]
+                 else " ".join(f"{m}={row['scores'][m]:.2f}" for m in metrics)
+                      + (f"  [{row['warning']}]" if row["warning"] else "")))
+
+    return {
+        "engineVersion": engine_version,
+        "metrics": list(metrics),
+        "songs": rows,
+        "aggregate": aggregate(rows, metrics),
+    }
+
+
+def write_results(results: dict, base_dir) -> None:
+    out_dir = Path(base_dir) / "results"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "latest.json").write_text(json.dumps(results, indent=2) + "\n")
+    md = render_markdown(results["songs"], results["aggregate"], tuple(results["metrics"]))
+    (out_dir / "latest.md").write_text(md)
+
+
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(description="tabIt real-song chord-accuracy benchmark")
+    parser.add_argument("--manifest", default=str(Path(__file__).parent / "manifest.yaml"),
+                        help="path to the song manifest YAML")
+    args = parser.parse_args(argv)
+
+    manifest_path = Path(args.manifest)
+    songs = load_manifest(str(manifest_path))
+    print(f"Running benchmark on {len(songs)} songs...")
+    results = run_benchmark(songs, manifest_path.parent)
+    write_results(results, manifest_path.parent)
+    agg = results["aggregate"]
+    print(f"\nHeadline majmin: all={agg['all']['majmin']:.3f} "
+          f"aligned={agg['aligned']['majmin']:.3f}")
+    print(f"Wrote {manifest_path.parent / 'results' / 'latest.md'}")
+
+
+if __name__ == "__main__":
+    main()
