@@ -31,6 +31,9 @@ case "$(uname -m)" in
 esac
 
 avail_gb="$(df -g "$HOME" | awk 'NR==2 {print $4}')"
+case "$avail_gb" in
+  ''|*[!0-9]*) fail "could not determine free disk space for $HOME (df output changed?)" ;;
+esac
 [ "$avail_gb" -ge 8 ] || fail "about 8 GB of free disk is needed (found ${avail_gb} GB free)"
 
 if health="$(curl -sf --max-time 2 "$HEALTH_URL" 2>/dev/null)"; then
