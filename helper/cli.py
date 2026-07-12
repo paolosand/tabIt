@@ -87,9 +87,16 @@ def _cmd_uninstall(args: argparse.Namespace) -> int:
             shutil.rmtree(d)
             print(f"removed {d}")
     if paths.CHARTS_DIR.exists():
-        if args.purge or input(
-            f"delete the analyzed-chart cache at {paths.CHARTS_DIR}? [y/N] "
-        ).strip().lower() == "y":
+        if args.purge:
+            answer = "y"
+        else:
+            try:
+                answer = input(
+                    f"delete the analyzed-chart cache at {paths.CHARTS_DIR}? [y/N] "
+                ).strip().lower()
+            except EOFError:  # non-interactive stdin — keep the cache
+                answer = "n"
+        if answer == "y":
             shutil.rmtree(paths.CHARTS_DIR)
             print(f"removed {paths.CHARTS_DIR}")
         else:

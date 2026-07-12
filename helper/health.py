@@ -8,11 +8,16 @@ from helper import paths
 
 
 def check_health(timeout: float = 2.0) -> dict | None:
-    """GET /health; None when nothing (reachable) answers with JSON."""
+    """GET /health. None when nothing is reachable on the port; a dict when
+    something answered — an empty/foreign dict means it isn't the tabIt helper."""
     try:
         with urllib.request.urlopen(paths.HEALTH_URL, timeout=timeout) as res:
             return json.load(res)
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
+    except urllib.error.HTTPError:
+        return {}  # something serves HTTP here, but not our /health
+    except json.JSONDecodeError:
+        return {}  # answered 200 with a non-JSON body — not the helper
+    except (urllib.error.URLError, TimeoutError, OSError):
         return None
 
 

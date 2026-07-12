@@ -66,3 +66,21 @@ def test_install_agent_fails_when_health_never_answers(monkeypatch, capsys):
     monkeypatch.setattr(health, "wait_for_health", lambda timeout_s=60.0: None)
     assert cli_main(["install-agent"]) == 1
     assert "tabit logs" in capsys.readouterr().out
+
+
+def test_uninstall_keeps_charts_when_stdin_closed(tmp_path, monkeypatch, capsys):
+    from helper import paths
+
+    monkeypatch.setattr(paths, "ENV_DIR", tmp_path / "AppSupport" / "tabIt" / "env")
+    monkeypatch.setattr(paths, "BIN_DIR", tmp_path / "AppSupport" / "tabIt" / "bin")
+    monkeypatch.setattr(paths, "CHARTS_DIR", tmp_path / "AppSupport" / "tabIt" / "charts")
+    paths.CHARTS_DIR.mkdir(parents=True)
+    monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
+
+    def no_stdin(prompt=""):
+        raise EOFError
+    monkeypatch.setattr("builtins.input", no_stdin)
+
+    assert cli_main(["uninstall"]) == 0
+    assert paths.CHARTS_DIR.exists()
+    assert "kept" in capsys.readouterr().out
