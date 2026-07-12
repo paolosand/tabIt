@@ -46,6 +46,8 @@ export function App({ videoId }: AppProps) {
           setState({ kind: 'sheet', chart: response.chart });
         } else if (response.status === 'error') {
           setState({ kind: 'error', message: response.error });
+        } else if (response.status === 'offline') {
+          setState({ kind: 'error', message: 'Helper offline' });
         } else {
           setState({ kind: 'loading', step: response.step });
           timerRef.current = setTimeout(poll, POLL_INTERVAL_MS);
