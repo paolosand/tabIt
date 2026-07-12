@@ -103,6 +103,21 @@ python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]" --build-constraint constraints-build.txt
 ```
 
+#### Or: one-line install (macOS, beta)
+
+Skip the manual environment entirely. The installer provisions Python 3.11
+via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and all model weights,
+then runs the API as a background service that starts at login:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh
+```
+
+Manage it with `tabit status` / `tabit logs` / `tabit restart` /
+`tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
+logs to `~/Library/Logs/tabIt/helper.log`. If the helper is off, the extension
+bar says so and recovers by itself once the service is back.
+
 ### 2. Chrome extension
 
 With the API from step 1 running:
@@ -175,6 +190,7 @@ docs/        design specs, implementation plans, progress ledger
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1
+- [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
 - [ ] Package the extension for the Chrome Web Store; deploy the API + web app
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
