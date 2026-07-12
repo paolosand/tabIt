@@ -2,7 +2,9 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 
+import pytest
 import soundfile as sf
 
 import engine.ingest as ingest_mod
@@ -28,6 +30,67 @@ def test_download_audio_makes_single_ytdlp_call(tmp_path, monkeypatch):
     assert len(calls) == 1
     assert info["id"] == "abc" and info["duration"] == 123.0
     assert downloaded.endswith("src.webm")  # never the info json
+
+
+def test_ytdlp_binary_prefers_interpreter_sibling(tmp_path, monkeypatch):
+    """PATH can resolve to a stale system yt-dlp that YouTube rejects
+    (issue #4). When the running interpreter has a sibling yt-dlp (the
+    venv's pinned copy), that one must win."""
+    bin_dir = tmp_path / "venv" / "bin"
+    bin_dir.mkdir(parents=True)
+    (bin_dir / "yt-dlp").write_text("#!/bin/sh\n")
+    monkeypatch.setattr(sys, "executable", str(bin_dir / "python"))
+
+    assert ingest_mod._ytdlp_bin() == str(bin_dir / "yt-dlp")
+
+
+def test_ytdlp_binary_falls_back_to_path(tmp_path, monkeypatch):
+    """Without an interpreter-sibling copy (system Python, unusual venv
+    layouts), fall back to PATH resolution."""
+    bin_dir = tmp_path / "no-ytdlp-here"
+    bin_dir.mkdir()
+    monkeypatch.setattr(sys, "executable", str(bin_dir / "python"))
+
+    assert ingest_mod._ytdlp_bin() == "yt-dlp"
+
+
+def test_download_audio_invokes_resolved_ytdlp(tmp_path, monkeypatch):
+    """_download_audio must call the resolved binary, not bare 'yt-dlp'."""
+    bin_dir = tmp_path / "venv" / "bin"
+    bin_dir.mkdir(parents=True)
+    (bin_dir / "yt-dlp").write_text("#!/bin/sh\n")
+    monkeypatch.setattr(sys, "executable", str(bin_dir / "python"))
+
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        (tmp_path / "src.webm").write_bytes(b"fake-audio")
+        (tmp_path / "src.info.json").write_text(
+            json.dumps({"id": "abc", "title": "T", "duration": 123.0}))
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+
+    ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+    assert calls[0][0] == str(bin_dir / "yt-dlp")
+
+
+def test_download_audio_error_surfaces_stderr(tmp_path, monkeypatch):
+    """A failed download must carry yt-dlp's stderr in the raised error;
+    the bare CalledProcessError ('returned non-zero exit status 1') gave
+    the API job store nothing to show users (issue #4)."""
+
+    def fake_run(cmd, **kwargs):
+        raise subprocess.CalledProcessError(
+            1, cmd,
+            stderr=b"ERROR: [youtube] abc: The following content is not available on this app.")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError, match="not available on this app"):
+        ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
 
 
 def test_is_url():
