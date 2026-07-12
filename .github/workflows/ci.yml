@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: engine + api + helper (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      # The local-file ingest tests shell out to ffmpeg (engine/ingest.py).
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
+      # CPU-only torch first: the default PyPI wheel drags in multi-GB CUDA
+      # deps the runner neither has nor needs; pre-installing from the CPU
+      # index satisfies demucs's requirement so pip doesn't re-resolve it.
+      - name: Install CPU-only torch
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Install package (build-constrained, same as README)
+        run: pip install -e ".[dev,api]" --build-constraint constraints-build.txt
+      # Integration tests (real models/audio) are deselected by the repo's
+      # pytest addopts; this runs the same 120+ unit tests as local dev.
+      - name: pytest
+        run: pytest
+
+  extension:
+    name: extension (tsc + vitest + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+      - run: npm run build
+
+  web:
+    name: web (vitest + typechecked build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  installer:
+    name: install.sh (sh -n + shellcheck)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh -n packaging/install.sh
+      - run: shellcheck packaging/install.sh

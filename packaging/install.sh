@@ -9,7 +9,9 @@
 set -eu
 
 TABIT_REPO="${TABIT_REPO:-https://github.com/paolosand/tabIt}"
-TABIT_REF="${TABIT_REF:-main}"
+# Pinned release: bump per release so `curl | sh` always installs a
+# known-good version (override with TABIT_REF=main for bleeding edge).
+TABIT_REF="${TABIT_REF:-v0.3.0}"
 FFMPEG_RELEASE="b6.1.1"
 # Pinned checksums for the static ffmpeg binaries fetched below — computed
 # once from the b6.1.1 release assets. Bump these together with FFMPEG_RELEASE.
@@ -144,7 +146,7 @@ main() {
   ln -sf "$ENV_DIR/bin/tabit" "$HOME/.local/bin/tabit"
   case ":$PATH:" in
     *":$HOME/.local/bin:"*) ;;
-    *) printf 'note: add ~/.local/bin to your PATH to call `tabit` directly.\n' ;;
+    *) printf 'note: add ~/.local/bin to your PATH to use the tabit command directly.\n' ;;
   esac
 
   printf '\n\033[1m✓ tabIt helper installed and running.\033[0m\n'
