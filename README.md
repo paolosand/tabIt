@@ -120,10 +120,11 @@ bar says so and recovers by itself once the service is back.
 
 ### 2. Chrome extension
 
-With the API from step 1 running:
+With the API from step 1 running (already the case if you used the one-line
+installer — the helper serves it as a background service):
 
 ```bash
-# terminal 1: API
+# terminal 1: API — skip if you used the one-line installer
 source .venv/bin/activate
 uvicorn api.main:app --port 28224
 
@@ -188,10 +189,11 @@ docs/        design specs, implementation plans, progress ledger
 - [x] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
 - [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
+- [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
 - [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
 - [ ] Song sections (verse/chorus) via allin1
-- [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
-- [ ] Package the extension for the Chrome Web Store; deploy the API + web app
+- [ ] Package the extension for the Chrome Web Store (pre-built zip release as a stopgap)
+- [ ] Signed menubar app — download, guided setup, no terminal (packaging Phase 2)
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
 design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/).
