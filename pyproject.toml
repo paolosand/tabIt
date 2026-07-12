@@ -41,6 +41,12 @@ dependencies = [
 dev = ["pytest>=8", "pytest-mock>=3"]
 api = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9", "httpx>=0.27"]
 
+[project.scripts]
+tabit = "helper.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["engine*", "api*", "helper*"]
+
 [tool.pytest.ini_options]
 markers = [
     "integration: tests that load real ML models / audio (slow; opt-in with -m integration)",
