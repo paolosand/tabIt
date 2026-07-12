@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+      # The local-file ingest tests shell out to ffmpeg (engine/ingest.py).
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
       # CPU-only torch first: the default PyPI wheel drags in multi-GB CUDA
       # deps the runner neither has nor needs; pre-installing from the CPU
       # index satisfies demucs's requirement so pip doesn't re-resolve it.
