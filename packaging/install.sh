@@ -146,7 +146,7 @@ main() {
   ln -sf "$ENV_DIR/bin/tabit" "$HOME/.local/bin/tabit"
   case ":$PATH:" in
     *":$HOME/.local/bin:"*) ;;
-    *) printf 'note: add ~/.local/bin to your PATH to call `tabit` directly.\n' ;;
+    *) printf 'note: add ~/.local/bin to your PATH to use the tabit command directly.\n' ;;
   esac
 
   printf '\n\033[1m✓ tabIt helper installed and running.\033[0m\n'
