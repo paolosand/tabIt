@@ -157,12 +157,18 @@ python -m engine.cli <youtube-url|audio-file> -o chart.json
 
 ## Honest about accuracy
 
-This is a portfolio and learning project, and it doesn't pretend otherwise. The
-measured regression floor (0.495 weighted majmin accuracy via `mir_eval`) comes from a
-**synthetic** Am→F→C→G fixture, which is out-of-distribution for a model trained on
-real recordings, so it says nothing about accuracy on an actual song. A hand-labeled
-real-song accuracy floor is on the roadmap. What the product does instead of promising
-precision: it shows per-chord confidence and makes corrections one click away. Since
+This is a portfolio and learning project, and it doesn't pretend otherwise. On a
+pilot sample of 11 Beatles songs (Isophonics hand-labeled annotations, scored
+against the live YouTube pipeline with `mir_eval`), the engine measures **0.75
+duration-weighted majmin accuracy** (0.65 sevenths) — see
+[`benchmarks/results/latest.md`](benchmarks/results/latest.md) for the per-song
+breakdown and [`benchmarks/README.md`](benchmarks/README.md) for the methodology.
+This supersedes an earlier regression floor (0.495 weighted majmin) that came from
+a **synthetic** Am→F→C→G fixture, out-of-distribution for a model trained on real
+recordings. 11 songs, all from one artist/era, is a pilot, not a claim about
+accuracy across genres — treat it as a directional signal, not a spec. What the
+product does instead of promising precision: it shows per-chord confidence and
+makes corrections one click away. Since
 engine 0.2.0, a conservatism pass also keeps the noise down: slash chords appear only
 when the detected bass is confident *and* a chord tone, low-confidence exotic qualities
 simplify to plain triads, sub-2-beat flicker segments merge away, and a meter detector
@@ -187,7 +193,7 @@ docs/        design specs, implementation plans, progress ledger
 - [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
 - [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
-- [ ] Real-song accuracy floor (licensed/self-recorded, hand-labeled)
+- [x] Real-song accuracy floor (Isophonics-labeled pilot benchmark, 11 songs)
 - [ ] Song sections (verse/chorus) via allin1
 - [ ] Package the extension for the Chrome Web Store (pre-built zip release as a stopgap)
 - [ ] Signed menubar app — download, guided setup, no terminal (packaging Phase 2)

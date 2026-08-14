@@ -1,0 +1,165 @@
+{
+  "engineVersion": "0.2.1",
+  "metrics": [
+    "majmin",
+    "sevenths",
+    "root"
+  ],
+  "songs": [
+    {
+      "id": "twist_and_shout",
+      "title": "The Beatles \u2014 Twist and Shout",
+      "scores": {
+        "majmin": 0.7044947976204371,
+        "sevenths": 0.6916837092496958,
+        "root": 0.7044947976204371
+      },
+      "weight": 153.155918,
+      "warning": null,
+      "error": null,
+      "duration": 155.0
+    },
+    {
+      "id": "a_hard_days_night",
+      "title": "The Beatles \u2014 A Hard Day's Night",
+      "scores": {
+        "majmin": 0.5053541266479296,
+        "sevenths": 0.4999717651944393,
+        "root": 0.5034920205934714
+      },
+      "weight": 152.555102,
+      "warning": null,
+      "error": null,
+      "duration": 153.0
+    },
+    {
+      "id": "ob_la_di_ob_la_da",
+      "title": "The Beatles \u2014 Ob-La-Di, Ob-La-Da",
+      "scores": {
+        "majmin": 0.7984625685306447,
+        "sevenths": 0.788017053781005,
+        "root": 0.7982984070723658
+      },
+      "weight": 188.839184,
+      "warning": null,
+      "error": null,
+      "duration": 189.0
+    },
+    {
+      "id": "with_a_little_help_from_my_friends",
+      "title": "The Beatles \u2014 With a Little Help from My Friends",
+      "scores": {
+        "majmin": 0.7962542261291494,
+        "sevenths": 0.6744385237565695,
+        "root": 0.7962542261291494
+      },
+      "weight": 164.022857,
+      "warning": null,
+      "error": null,
+      "duration": 164.0
+    },
+    {
+      "id": "let_it_be",
+      "title": "The Beatles \u2014 Let It Be",
+      "scores": {
+        "majmin": 0.7806513197921375,
+        "sevenths": 0.7398852635762625,
+        "root": 0.7806513197921375
+      },
+      "weight": 243.330612,
+      "warning": null,
+      "error": null,
+      "duration": 243.0
+    },
+    {
+      "id": "come_together",
+      "title": "The Beatles \u2014 Come Together",
+      "scores": {
+        "majmin": 0.8222818491949462,
+        "sevenths": 0.5037147662084558,
+        "root": 0.8516350594079641
+      },
+      "weight": 260.649796,
+      "warning": null,
+      "error": null,
+      "duration": 259.0
+    },
+    {
+      "id": "here_comes_the_sun",
+      "title": "The Beatles \u2014 Here Comes the Sun",
+      "scores": {
+        "majmin": 0.8013293953992386,
+        "sevenths": 0.7730893124522343,
+        "root": 0.807495138108274
+      },
+      "weight": 185.573878,
+      "warning": null,
+      "error": null,
+      "duration": 186.0
+    },
+    {
+      "id": "yesterday",
+      "title": "The Beatles \u2014 Yesterday",
+      "scores": {
+        "majmin": 0.6614097692581264,
+        "sevenths": 0.5272329469344904,
+        "root": 0.6553710332429319
+      },
+      "weight": 127.451429,
+      "warning": null,
+      "error": null,
+      "duration": 126.0
+    },
+    {
+      "id": "eleanor_rigby",
+      "title": "The Beatles \u2014 Eleanor Rigby",
+      "scores": {
+        "majmin": 0.8123143243212944,
+        "sevenths": 0.6405544928839475,
+        "root": 0.8123143243212944
+      },
+      "weight": 127.686531,
+      "warning": null,
+      "error": null,
+      "duration": 126.0
+    },
+    {
+      "id": "something",
+      "title": "The Beatles \u2014 Something",
+      "scores": {
+        "majmin": 0.7366195555662902,
+        "sevenths": 0.5501897763662704,
+        "root": 0.7113476892841006
+      },
+      "weight": 183.013878,
+      "warning": null,
+      "error": null,
+      "duration": 182.0
+    },
+    {
+      "id": "while_my_guitar_gently_weeps",
+      "title": "The Beatles \u2014 While My Guitar Gently Weeps",
+      "scores": {
+        "majmin": 0.7593542021048632,
+        "sevenths": 0.7365432857926022,
+        "root": 0.7664142855401057
+      },
+      "weight": 285.309388,
+      "warning": null,
+      "error": null,
+      "duration": 285.0
+    }
+  ],
+  "aggregate": {
+    "all": {
+      "majmin": 0.7524893199052685,
+      "sevenths": 0.6546944045028827,
+      "root": 0.754951003420928
+    },
+    "aligned": {
+      "majmin": 0.7524893199052685,
+      "sevenths": 0.6546944045028827,
+      "root": 0.754951003420928
+    }
+  }
+}

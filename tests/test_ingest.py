@@ -88,9 +88,54 @@ def test_download_audio_error_surfaces_stderr(tmp_path, monkeypatch):
             stderr=b"ERROR: [youtube] abc: The following content is not available on this app.")
 
     monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(ingest_mod.time, "sleep", lambda _: None)
 
     with pytest.raises(RuntimeError, match="not available on this app"):
         ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+
+def test_download_audio_retries_transient_failure_then_succeeds(tmp_path, monkeypatch):
+    """YouTube's 403s on the yt-dlp fetch are frequently transient (a bare
+    retry with no other change succeeds) rather than a genuinely dead URL.
+    A single failure must not surface to the caller if a retry recovers."""
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        if len(calls) < 2:
+            raise subprocess.CalledProcessError(
+                1, cmd, stderr=b"ERROR: unable to download video data: HTTP Error 403: Forbidden")
+        (tmp_path / "src.webm").write_bytes(b"fake-audio")
+        (tmp_path / "src.info.json").write_text(
+            json.dumps({"id": "abc", "title": "T", "duration": 123.0}))
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(ingest_mod.time, "sleep", lambda _: None)
+
+    downloaded, info = ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+    assert len(calls) == 2
+    assert info["id"] == "abc"
+    assert downloaded.endswith("src.webm")
+
+
+def test_download_audio_raises_after_exhausting_retries(tmp_path, monkeypatch):
+    """A persistently failing download must still raise (not retry forever)."""
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        raise subprocess.CalledProcessError(
+            1, cmd, stderr=b"ERROR: unable to download video data: HTTP Error 403: Forbidden")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(ingest_mod.time, "sleep", lambda _: None)
+
+    with pytest.raises(RuntimeError, match="403"):
+        ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+    assert len(calls) == ingest_mod._DOWNLOAD_RETRIES
 
 
 def test_is_url():

@@ -1,0 +1,91 @@
+# tabIt chord-accuracy benchmark — song manifest.
+#
+# TODO(you): fill each `url` with a YouTube upload that matches the Isophonics
+# studio master the annotation was made against. Prefer official "The Beatles -
+# Topic" uploads or the official remaster videos; avoid live versions and edits.
+# `ref_duration` (already filled, from the annotation's last interval) flags an
+# upload whose length drifts >3% from the master. Leave `offset_sec: 0.0` and
+# only calibrate it by ear if a song is flagged or scores suspiciously low.
+#
+# Run:  python -m benchmarks.chord_accuracy   (from the repo root, venv active)
+
+- id: twist_and_shout
+  title: "The Beatles — Twist and Shout"
+  url: "https://www.youtube.com/watch?v=2RicaUqd9Hg"   # Twist And Shout (Remastered 2009), official channel, 156s vs 153.2s ref (+1.8%)
+  lab: annotations/beatles/twist_and_shout.lab
+  ref_duration: 153.2
+  offset_sec: 0.0
+
+- id: a_hard_days_night
+  title: "The Beatles — A Hard Day's Night"
+  url: "https://www.youtube.com/watch?v=AMSiHdrHl0g"   # A Hard Day's Night (Remastered 2015), official channel, 153s vs 152.6s ref (+0.3%)
+  lab: annotations/beatles/a_hard_days_night.lab
+  ref_duration: 152.6
+  offset_sec: 0.0
+
+- id: ob_la_di_ob_la_da
+  title: "The Beatles — Ob-La-Di, Ob-La-Da"
+  url: "https://www.youtube.com/watch?v=_J9NpHKrKMw"   # Ob-La-Di, Ob-La-Da (Remastered 2009), official channel, 189s vs 188.8s ref (+0.1%)
+  lab: annotations/beatles/ob_la_di_ob_la_da.lab
+  ref_duration: 188.8
+  offset_sec: 0.0
+
+- id: with_a_little_help_from_my_friends
+  title: "The Beatles — With a Little Help from My Friends"
+  url: "https://www.youtube.com/watch?v=0C58ttB2-Qg"   # With A Little Help From My Friends (Remastered 2009), official channel, 165s vs 164.0s ref (+0.6%)
+  lab: annotations/beatles/with_a_little_help_from_my_friends.lab
+  ref_duration: 164.0
+  offset_sec: 0.0
+
+- id: let_it_be
+  title: "The Beatles — Let It Be"
+  url: "https://www.youtube.com/watch?v=CGj85pVzRJs"   # Let It Be (Official Music Video, Remastered 2015), official channel, 243s vs 243.3s ref (-0.1%)
+  lab: annotations/beatles/let_it_be.lab
+  ref_duration: 243.3
+  offset_sec: -1.52   # this upload has ~1.5s more lead-in than the master (score
+                       # collapsed to 0.15 at offset 0); derived from the engine's
+                       # own first chord-change timestamp (1.70s) vs the .lab's
+                       # first non-N interval (0.18s) -- not fit against the score,
+                       # since no audio playback was available to verify by ear
+
+- id: come_together
+  title: "The Beatles — Come Together"
+  url: "https://www.youtube.com/watch?v=oVW6wJ7MYDM"   # Come Together (Remastered 2015), official channel, 259s vs 260.6s ref (-0.6%)
+  lab: annotations/beatles/come_together.lab
+  ref_duration: 260.6
+  offset_sec: 0.0
+
+- id: here_comes_the_sun
+  title: "The Beatles — Here Comes the Sun"
+  url: "https://www.youtube.com/watch?v=GKdl-GCsNJ0"   # Here Comes The Sun (2019 Mix), official channel, 186s vs 185.6s ref (+0.2%)
+  lab: annotations/beatles/here_comes_the_sun.lab
+  ref_duration: 185.6
+  offset_sec: 0.0
+
+- id: yesterday
+  title: "The Beatles — Yesterday"
+  url: "https://www.youtube.com/watch?v=NrgmdOz227I"   # Yesterday (Remastered 2009), official channel, 126s vs 127.5s ref (-1.2%)
+  lab: annotations/beatles/yesterday.lab
+  ref_duration: 127.5
+  offset_sec: 0.0
+
+- id: eleanor_rigby
+  title: "The Beatles — Eleanor Rigby"
+  url: "https://www.youtube.com/watch?v=ZqYK9Qfh6kE"   # Eleanor Rigby (2022 Mix), official channel, 127s vs 127.7s ref (-0.5%)
+  lab: annotations/beatles/eleanor_rigby.lab
+  ref_duration: 127.7
+  offset_sec: 0.0
+
+- id: something
+  title: "The Beatles — Something"
+  url: "https://www.youtube.com/watch?v=cNavPZ8GA6I"   # Something (2019 Mix), official channel, 183s vs 183.0s ref (0%)
+  lab: annotations/beatles/something.lab
+  ref_duration: 183.0
+  offset_sec: 0.0
+
+- id: while_my_guitar_gently_weeps
+  title: "The Beatles — While My Guitar Gently Weeps"
+  url: "https://www.youtube.com/watch?v=YFDg-pgE0Hk"   # While My Guitar Gently Weeps (2018 Mix), official channel, 286s vs 285.3s ref (+0.2%)
+  lab: annotations/beatles/while_my_guitar_gently_weeps.lab
+  ref_duration: 285.3
+  offset_sec: 0.0
