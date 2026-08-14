@@ -1,0 +1,51 @@
+name: Release extension
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-attach:
+    name: build extension zip + attach to release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Install + build
+        working-directory: extension
+        run: |
+          npm ci
+          npm run build
+
+      # Cheap insurance against build.mjs silently changing its output shape —
+      # catch a broken/empty zip here instead of a user finding out via
+      # "Load unpacked" failing.
+      - name: Verify the build output before shipping it
+        working-directory: extension/dist
+        run: |
+          for f in manifest.json content.js background.js; do
+            [ -f "$f" ] || { echo "missing dist/$f — build produced an incomplete extension" >&2; exit 1; }
+          done
+
+      - name: Zip the extension
+        working-directory: extension/dist
+        run: zip -r "../../tabit-extension-${{ github.event.release.tag_name }}.zip" .
+
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "tabit-extension-${{ github.event.release.tag_name }}.zip"

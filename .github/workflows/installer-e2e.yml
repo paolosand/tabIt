@@ -1,0 +1,73 @@
+name: Installer e2e
+
+# Runs the real packaging/install.sh on macOS — the exact script public users
+# pipe into `sh`. Deliberately stops at "installed, healthy, uninstalls
+# cleanly": it does NOT analyze a real song, because that would need a real
+# yt-dlp/YouTube download, and YouTube blocks datacenter IPs (the whole
+# reason this project is local-first — see
+# docs/superpowers/specs/2026-07-12-tabit-helper-packaging-design.md).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packaging/**'
+      - 'helper/**'
+      - 'pyproject.toml'
+      - 'constraints-build.txt'
+      - '.github/workflows/installer-e2e.yml'
+  pull_request:
+    paths:
+      - 'packaging/**'
+      - 'helper/**'
+      - 'pyproject.toml'
+      - 'constraints-build.txt'
+      - '.github/workflows/installer-e2e.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-and-uninstall:
+    name: install.sh → health check → uninstall --purge
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Dev-install pattern from the README: point the installer at this
+      # checkout instead of the pinned GitHub release.
+      - name: Run the installer against this checkout
+        run: |
+          TABIT_REPO="file://$GITHUB_WORKSPACE" TABIT_REF="${{ github.sha }}" \
+            sh packaging/install.sh
+
+      # install.sh deliberately doesn't touch PATH itself (it just prints a
+      # note) — do it here so later steps can call `tabit` directly.
+      - name: Put tabit on PATH for later steps
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: tabit status reports healthy
+        run: tabit status
+
+      - name: /health responds with an engine version
+        run: curl -sf http://127.0.0.1:28224/health | grep -q engineVersion
+
+      - name: tabit uninstall --purge leaves nothing behind
+        run: |
+          tabit uninstall --purge
+          for path in \
+            "$HOME/Library/Application Support/tabIt" \
+            "$HOME/Library/LaunchAgents/com.tabit.helper.plist" \
+            "$HOME/Library/Logs/tabIt" \
+            "$HOME/.local/bin/tabit"; do
+            if [ -e "$path" ]; then
+              echo "uninstall left $path behind" >&2
+              exit 1
+            fi
+          done
