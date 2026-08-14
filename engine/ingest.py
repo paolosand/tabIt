@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 
 import soundfile as sf
@@ -34,20 +35,30 @@ def _ytdlp_bin() -> str:
     return sibling if os.path.exists(sibling) else "yt-dlp"
 
 
+_DOWNLOAD_RETRIES = 3
+_RETRY_BACKOFF_SEC = 2
+
+
 def _download_audio(url: str, workdir: str) -> tuple[str, dict]:
     """Download bestaudio + metadata via a single yt-dlp call;
-    return (downloaded_path, info_dict)."""
+    return (downloaded_path, info_dict).
+
+    YouTube's fetch 403s are frequently transient (a bare retry with no
+    other change succeeds), so a failed attempt is retried a few times
+    with a short backoff before surfacing an error."""
     out_tmpl = os.path.join(workdir, "src.%(ext)s")
-    try:
-        subprocess.run(
-            [_ytdlp_bin(), "-f", "bestaudio", "--no-playlist", "--write-info-json",
-             "-o", out_tmpl, url],
-            check=True, capture_output=True,
-        )
-    except subprocess.CalledProcessError as e:
-        stderr = (e.stderr or b"").decode(errors="replace").strip()
-        tail = " | ".join(stderr.splitlines()[-3:]) or "no stderr"
-        raise RuntimeError(f"yt-dlp failed for {url}: {tail}") from e
+    cmd = [_ytdlp_bin(), "-f", "bestaudio", "--no-playlist", "--write-info-json",
+           "-o", out_tmpl, url]
+    for attempt in range(1, _DOWNLOAD_RETRIES + 1):
+        try:
+            subprocess.run(cmd, check=True, capture_output=True)
+            break
+        except subprocess.CalledProcessError as e:
+            if attempt == _DOWNLOAD_RETRIES:
+                stderr = (e.stderr or b"").decode(errors="replace").strip()
+                tail = " | ".join(stderr.splitlines()[-3:]) or "no stderr"
+                raise RuntimeError(f"yt-dlp failed for {url}: {tail}") from e
+            time.sleep(_RETRY_BACKOFF_SEC)
     info_path = os.path.join(workdir, "src.info.json")
     with open(info_path) as f:
         info = json.load(f)
