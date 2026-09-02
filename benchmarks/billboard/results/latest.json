@@ -1,0 +1,139 @@
+{
+  "engineVersion": "0.2.1",
+  "metrics": [
+    "majmin",
+    "sevenths",
+    "root"
+  ],
+  "songs": [
+    {
+      "id": "country_road",
+      "title": "James Taylor \u2014 Country Road",
+      "scores": {
+        "majmin": 0.8199179277619433,
+        "sevenths": 0.7586960842050255,
+        "root": 0.6768794953813845
+      },
+      "weight": 203.45185941,
+      "warning": null,
+      "error": null,
+      "duration": 202.0
+    },
+    {
+      "id": "sounds_of_silence",
+      "title": "Simon & Garfunkel \u2014 The Sounds of Silence",
+      "scores": {
+        "majmin": 0.870327785749669,
+        "sevenths": 0.870327785749669,
+        "root": 0.8629934028828444
+      },
+      "weight": 189.361632653,
+      "warning": null,
+      "error": null,
+      "duration": 186.0
+    },
+    {
+      "id": "bread_if",
+      "title": "Bread \u2014 If",
+      "scores": {
+        "majmin": 0.7539989704986141,
+        "sevenths": 0.6617133766888247,
+        "root": 0.7541750818957869
+      },
+      "weight": 155.506938775,
+      "warning": null,
+      "error": null,
+      "duration": 156.0
+    },
+    {
+      "id": "cold_sweat",
+      "title": "James Brown \u2014 Cold Sweat",
+      "scores": {
+        "majmin": 0.27818272528857174,
+        "sevenths": 0.24684640837693703,
+        "root": 0.8295573180378911
+      },
+      "weight": 171.937959183,
+      "warning": null,
+      "error": null,
+      "duration": 171.0
+    },
+    {
+      "id": "super_freak",
+      "title": "Rick James \u2014 Super Freak",
+      "scores": {
+        "majmin": 0.4944476078027008,
+        "sevenths": 0.493905847057846,
+        "root": 0.5389161428868181
+      },
+      "weight": 201.848163265,
+      "warning": null,
+      "error": null,
+      "duration": 203.0
+    },
+    {
+      "id": "jungle_boogie",
+      "title": "Kool & The Gang \u2014 Jungle Boogie",
+      "scores": {
+        "majmin": 0.08118219229461865,
+        "sevenths": 0.03248534730133856,
+        "root": 0.9751445600734304
+      },
+      "weight": 186.200816326,
+      "warning": null,
+      "error": null,
+      "duration": 186.0
+    },
+    {
+      "id": "hold_on",
+      "title": "Wilson Phillips \u2014 Hold On",
+      "scores": {
+        "majmin": 0.6136916220690573,
+        "sevenths": 0.6136916220690573,
+        "root": 0.52148287984024
+      },
+      "weight": 221.361632653,
+      "warning": null,
+      "error": null,
+      "duration": 220.0
+    },
+    {
+      "id": "motownphilly",
+      "title": "Boyz II Men \u2014 Motownphilly",
+      "scores": {
+        "majmin": 0.6126506865911163,
+        "sevenths": 0.5943532198147458,
+        "root": 0.6138923472180514
+      },
+      "weight": 234.24,
+      "warning": null,
+      "error": null,
+      "duration": 235.0
+    },
+    {
+      "id": "the_power",
+      "title": "SNAP! \u2014 The Power",
+      "scores": {
+        "majmin": 0.9470702732076743,
+        "sevenths": 0.8995360976663664,
+        "root": 0.683935593068062
+      },
+      "weight": 220.891428571,
+      "warning": null,
+      "error": null,
+      "duration": 221.0
+    }
+  ],
+  "aggregate": {
+    "all": {
+      "majmin": 0.6164146164476093,
+      "sevenths": 0.5849504338068424,
+      "root": 0.7069160016221622
+    },
+    "aligned": {
+      "majmin": 0.6164146164476093,
+      "sevenths": 0.5849504338068424,
+      "root": 0.7069160016221622
+    }
+  }
+}
