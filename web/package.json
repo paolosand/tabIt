@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:dev-only": "node scripts/check-dev-only.mjs"
   },
   "dependencies": {
     "react": "^19.2.7",
