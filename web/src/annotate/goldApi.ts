@@ -11,7 +11,7 @@ export function readDraft(id: string): GoldFile | null {
   }
 }
 
-function writeDraft(file: GoldFile): void {
+export function writeDraft(file: GoldFile): void {
   try {
     localStorage.setItem(draftKey(file.videoId), JSON.stringify(file));
   } catch {

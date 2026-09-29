@@ -6,7 +6,7 @@ import AnnotateEditor from './AnnotateEditor.tsx';
 import * as goldApi from './goldApi.ts';
 
 vi.mock('../playback/YouTubePlayer', () => ({ default: () => <div data-testid="yt" /> }));
-vi.mock('./goldApi.ts', () => ({ saveGold: vi.fn(() => Promise.resolve()) }));
+vi.mock('./goldApi.ts', () => ({ saveGold: vi.fn(() => Promise.resolve()), writeDraft: vi.fn() }));
 
 const chips = (kind?: string) =>
   screen.queryAllByTestId('chip').filter((c) => !kind || c.getAttribute('data-kind') === kind);

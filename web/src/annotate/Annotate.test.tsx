@@ -10,7 +10,7 @@ import * as goldApi from './goldApi.ts';
 vi.mock('../playback/YouTubePlayer', () => ({ default: () => <div data-testid="yt" /> }));
 vi.mock('../lib/api', () => ({ analyzeUrl: vi.fn(), pollJob: vi.fn() }));
 vi.mock('./goldApi.ts', () => ({
-  listGold: vi.fn(), loadGold: vi.fn(), saveGold: vi.fn(() => Promise.resolve()),
+  listGold: vi.fn(), loadGold: vi.fn(), saveGold: vi.fn(() => Promise.resolve()), writeDraft: vi.fn(),
 }));
 
 const chart = (videoId: string | null): Chart => ({
