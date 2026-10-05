@@ -3,6 +3,12 @@ import type { PlaybackSource } from './usePlaybackTime';
 
 interface YTPlayerInstance {
   getCurrentTime(): number;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  playVideo(): void;
+  pauseVideo(): void;
+  setPlaybackRate(rate: number): void;
+  getPlaybackRate(): number;
+  getPlayerState(): number;
   destroy(): void;
 }
 
@@ -11,6 +17,7 @@ interface YTPlayerOptions {
   playerVars?: Record<string, number>;
   events?: {
     onReady?: (event: { target: YTPlayerInstance }) => void;
+    onError?: (event: { data: number }) => void;
   };
 }
 
@@ -46,15 +53,30 @@ function loadYouTubeApi(): Promise<void> {
   return apiPromise;
 }
 
-export interface YouTubePlayerProps {
-  videoId: string;
-  onReady: (source: PlaybackSource) => void;
+/** PlaybackSource plus the transport the annotator needs. Sheet only uses getCurrentTime. */
+export interface PlayerControls extends PlaybackSource {
+  seekTo(seconds: number): void;
+  play(): void;
+  pause(): void;
+  setPlaybackRate(rate: number): void;
+  getPlaybackRate(): number;
+  isPlaying(): boolean;
 }
 
-export default function YouTubePlayer({ videoId, onReady }: YouTubePlayerProps) {
+export interface YouTubePlayerProps {
+  videoId: string;
+  onReady: (controls: PlayerControls) => void;
+  /** YouTube error code, e.g. 101/150 = embedding disabled for this video */
+  onError?: (code: number) => void;
+  width?: number;
+}
+
+export default function YouTubePlayer({ videoId, onReady, onError, width = 300 }: YouTubePlayerProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
     let cancelled = false;
@@ -68,9 +90,19 @@ export default function YouTubePlayer({ videoId, onReady }: YouTubePlayerProps) 
         events: {
           onReady: (event) => {
             if (cancelled) return;
+            const target = event.target;
             onReadyRef.current({
-              getCurrentTime: () => event.target.getCurrentTime(),
+              getCurrentTime: () => target.getCurrentTime(),
+              seekTo: (seconds) => target.seekTo(seconds, true),
+              play: () => target.playVideo(),
+              pause: () => target.pauseVideo(),
+              setPlaybackRate: (rate) => target.setPlaybackRate(rate),
+              getPlaybackRate: () => target.getPlaybackRate(),
+              isPlaying: () => target.getPlayerState() === 1,
             });
+          },
+          onError: (event) => {
+            if (!cancelled) onErrorRef.current?.(event.data);
           },
         },
       });
@@ -92,7 +124,7 @@ export default function YouTubePlayer({ videoId, onReady }: YouTubePlayerProps) 
     <div
       style={{
         flex: 'none',
-        width: 300,
+        width,
         background: '#000',
         borderRadius: 3,
         overflow: 'hidden',
