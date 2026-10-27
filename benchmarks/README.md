@@ -64,3 +64,13 @@ text is committed here — **no audio**.
 Attribution: C. Harte, *Towards Automatic Extraction of Harmony Information from
 Music Signals*, PhD thesis, Queen Mary University of London, 2010.
 Dataset: <http://isophonics.net/content/reference-annotations-beatles>.
+
+## UG sequence benchmark (untimed)
+
+`python -m benchmarks.ug_sequence --songs <songs.json> [--hyp-dir DIR] [--tag NAME]`
+scores the engine's chord *sequence* against Ultimate Guitar section charts
+(no timestamps; see `engine/seqeval.py`) and writes
+`results/ug_sequence_<tag>.md`. It focuses on missed chords (deletions).
+Engine hypotheses are cached in `benchmarks/.cache_ug/`; `--hyp-dir` scores
+precomputed `[{start,end,label}]` files (`<youtube_id>.json`) from other models.
+The raw chart data and the cache are git-ignored; never commit them.
