@@ -12,8 +12,8 @@ Beatles songs** — a single-genre/era pilot, not a broad accuracy claim. In nor
 are generally right but miss some changes "every now and then."
 
 Known engine gaps on record: tempo doubling on slow/drum-less tracks (reggae specifically —
-no cheap fix found, would need a trained perceptual-tempo model), slash-chord bass detection
-tuned but still occasionally noisy, `allin1` section labels deferred (Python/NATTEN install
+no cheap fix found, would need a trained perceptual-tempo model), no slash chords since v0.4.0 (BTC-only engine;
+v0.3.1 had them via Demucs + crema), `allin1` section labels deferred (Python/NATTEN install
 pain), accuracy only validated on one genre/era so far.
 
 ## What "beta" means here
