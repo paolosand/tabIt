@@ -32,8 +32,9 @@ While it plays:
 - The current chord is always obvious at a glance, and the next one is
   flagged before it arrives, so your hands are ready — karaoke-style,
   not a static page you have to scroll ahead on.
-- Slash chords (like D/F#) are detected from the actual bass line, not
-  guessed from the chord alone.
+- Chords come from the song's original mix in about two seconds. Slash
+  chords (like D/F#) are not shown by default; an optional slower mode
+  detects them from the actual bass line.
 - The full chord sheet is one click away if you'd rather read ahead than
   follow the sweep.
 
