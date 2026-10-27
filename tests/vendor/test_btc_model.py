@@ -34,8 +34,9 @@ def test_forward_and_backward_blocks_see_opposite_halves():
     x = torch.randn(1, 8, 16)
     x2 = x.clone()
     x2[:, 7] = torch.randn(16) * 5  # not a constant shift: layer norm would cancel it
+    # frames 0-4 only: the width-3 feed-forward convolution leaks one neighbour
     with torch.no_grad():
         f1, f2 = layer.attn_block(x), layer.attn_block(x2)
         b1, b2 = layer.backward_attn_block(x), layer.backward_attn_block(x2)
-    assert torch.allclose(f1[:, :6], f2[:, :6], atol=1e-5)
-    assert not torch.allclose(b1[:, :6], b2[:, :6], atol=1e-5)
+    assert torch.allclose(f1[:, :5], f2[:, :5], atol=1e-5)
+    assert not torch.allclose(b1[:, :5], b2[:, :5], atol=1e-5)
