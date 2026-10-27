@@ -18,6 +18,6 @@ pinned SHA-256 (see `engine/chords_btc.py`).
 
 ## Citation
 
-J. Park, K. Choi, S. Jeon, D. Kim, J. Park. "A Bi-Directional Transformer for
+J. Park, K. Choi, S. Jeon, D. Kim, J. Park. "A Bi-directional Transformer for
 Musical Chord Recognition." Proceedings of the 20th International Society for Music
 Information Retrieval Conference (ISMIR), 2019.

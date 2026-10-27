@@ -242,14 +242,25 @@ Choose the backend with `TABIT_CHORD_BACKEND=btc|crema`. If BTC's weights can't 
 fetched and you didn't ask for btc explicitly, tabIt falls back to crema with a
 logged warning; an explicit `btc` raises instead.
 
+Park, J., Choi, K., Jeon, S., Kim, D., Park, J. (2019). A Bi-directional Transformer for
+Musical Chord Recognition. ISMIR.
+
 ```bibtex
 @inproceedings{park2019bi,
-  title={A Bi-Directional Transformer for Musical Chord Recognition},
-  author={Park, Jonggwon and Choi, Kyoungho and Jeon, Sungwook and Kim, Dokyun and Park, Jonghun},
+  title={A Bi-directional Transformer for Musical Chord Recognition},
+  author={Park, Jonggwon and Choi, Kyoyun and Jeon, Sungwook and Kim, Dokyun and Park, Jonghun},
   booktitle={Proceedings of the 20th International Society for Music Information Retrieval Conference (ISMIR)},
-  year={2019}
+  address={Delft, The Netherlands},
+  year={2019},
+  eprint={1907.02698},
+  archivePrefix={arXiv},
+  url={https://arxiv.org/abs/1907.02698}
 }
 ```
+
+The crema backend (`TABIT_CHORD_BACKEND=crema`) is the model from McFee & Bello,
+"Structured training for large-vocabulary chord recognition", 18th ISMIR, Suzhou,
+China, 2017, pp. 188-194.
 
 ## License
 
