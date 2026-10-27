@@ -42,3 +42,9 @@ separated/
 # Playwright MCP session artifacts
 .playwright-mcp/
 .superpowers/
+
+# UG sequence benchmark: raw crowd-sourced chart data + cached hypotheses -- never commit
+benchmarks/.cache_ug/
+benchmarks/ug_data/
+songs.json
+benchmarks/results/ug_sequence_*.md

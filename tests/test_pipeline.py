@@ -5,7 +5,7 @@ import numpy as np
 from engine.pipeline import analyze
 from engine.chords import RawChord
 from engine.schema import Key
-from engine import __version__
+from engine import engine_version
 
 
 class FakeChordModel:
@@ -38,7 +38,7 @@ def test_analyze_local_file_end_to_end(tone_440_wav, tmp_path, monkeypatch):
                     workdir=str(tmp_path), chord_model=FakeChordModel())
 
     assert chart.schemaVersion == 1
-    assert chart.analysis.engineVersion == __version__
+    assert chart.analysis.engineVersion == engine_version("crema")
     assert chart.key.tonic == "A"
     assert chart.tempo.bpm == 120.0
     assert [c.label for c in chart.chords] == ["Am", "F"]
@@ -139,3 +139,90 @@ def test_analyze_survives_broken_step_callback(tone_440_wav, tmp_path, monkeypat
                     on_step=bad_callback)
 
     assert [c.label for c in chart.chords] == ["Am", "F"]
+
+
+class FakeBtcModel(FakeChordModel):
+    backend = "btc"
+
+    def __init__(self):
+        self.seen = []
+
+    def predict(self, wav_path):
+        self.seen.append(wav_path)
+        return super().predict(wav_path)
+
+
+def _forbid_stem_stages(p, monkeypatch):
+    def boom(*a, **k):
+        raise AssertionError("the btc backend must not run separation or bass tracking")
+    for name in ("separate", "harmonic_mix", "predict_bass_pitch", "window_bass_notes"):
+        monkeypatch.setattr(p, name, boom)
+
+
+def test_btc_backend_skips_demucs_and_crepe_and_reads_the_original_mix(
+        tone_440_wav, tmp_path, monkeypatch):
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    _forbid_stem_stages(p, monkeypatch)
+    model = FakeBtcModel()
+
+    steps = []
+    chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
+                    workdir=str(tmp_path), chord_model=model, on_step=steps.append)
+
+    assert model.seen == [str(tmp_path / "audio.wav")]   # original mix, not a harmonic mix
+    assert steps == ["ingest", "chords", "finalize"]
+    assert chart.analysis.engineVersion == engine_version("btc")
+    assert [c.label for c in chart.chords] == ["Am", "F"]
+    # no slash/bass data: every segment's bass is explicitly its own root
+    assert all(c.bass == c.root for c in chart.chords)
+
+
+def test_btc_chords_are_still_snapped_to_the_beat_grid(tone_440_wav, tmp_path, monkeypatch):
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    _forbid_stem_stages(p, monkeypatch)
+    monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 0.5, 1.0, 1.5, 2.0]))
+
+    class OffGrid(FakeBtcModel):
+        def predict(self, wav_path):
+            return [RawChord(0.04, 1.02, "A", "min", "A", 0.8),
+                    RawChord(1.02, 1.97, "F", "maj", "F", 0.7)]
+
+    chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z",
+                    workdir=str(tmp_path), chord_model=OffGrid())
+
+    assert [(c.start, c.end) for c in chart.chords] == [(0.0, 1.0), (1.0, 2.0)]
+
+
+def test_default_chord_model_comes_from_backend_selection(tone_440_wav, tmp_path, monkeypatch):
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    _forbid_stem_stages(p, monkeypatch)
+    monkeypatch.setattr(p, "select_chord_model", FakeBtcModel)
+
+    chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z", workdir=str(tmp_path))
+
+    assert chart.analysis.engineVersion == engine_version("btc")
+
+
+def test_btc_keeps_a_one_beat_passing_chord_and_drops_zero_length_segments(
+        tone_440_wav, tmp_path, monkeypatch):
+    """merge_short (2-beat minimum) is a crema smoother: on btc, MIN_SEGMENT_SEC
+    already removed flicker, so a genuine 1-beat passing chord must survive."""
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    _forbid_stem_stages(p, monkeypatch)
+    monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]))
+
+    class Passing(FakeBtcModel):
+        def predict(self, wav_path):
+            return [RawChord(0.0, 1.5, "A", "min", "A", 0.8),
+                    RawChord(1.5, 2.0, "G", "maj", "G", 0.8),      # 1 beat at 120 BPM
+                    RawChord(2.0, 3.0, "F", "maj", "F", 0.8),
+                    RawChord(3.0, 3.1, "C", "maj", "C", 0.8)]      # snaps to zero length
+
+    chart = analyze(tone_440_wav, created_at="x", workdir=str(tmp_path), chord_model=Passing())
+
+    assert [c.label for c in chart.chords] == ["Am", "G", "F"]
+    assert all(c.end > c.start for c in chart.chords)

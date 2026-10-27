@@ -6,11 +6,17 @@ from typing import Callable
 
 def warm_all(progress: Callable[[str], object] = print,
              get_chord_model: Callable[[], object] | None = None) -> None:
-    progress("loading chord model (crema)…")
     if get_chord_model is None:
-        from engine.chords import CremaChordModel
-        get_chord_model = CremaChordModel
-    get_chord_model()
+        from engine.chord_backend import select_chord_model
+        get_chord_model = select_chord_model
+    progress("loading chord model…")
+    model = get_chord_model()
+    if getattr(model, "backend", "crema") == "btc":
+        # BTC runs on the original mix: no crema, Demucs or CREPE to preload.
+        model.load()
+        progress("all models ready")
+        return
+    progress("loading chord model (crema)…")
     import crema.analyze  # noqa: F401  (keras model builds at import)
 
     progress("loading source separator (Demucs htdemucs)…")

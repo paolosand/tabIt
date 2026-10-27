@@ -5,7 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 import api.main as m
-from api.main import ENGINE_VERSION, app
+from api.main import app
+from engine import engine_version
 
 
 def test_chord_model_is_a_process_singleton(monkeypatch):
@@ -16,7 +17,7 @@ def test_chord_model_is_a_process_singleton(monkeypatch):
         def __init__(self):
             created.append(1)
 
-    monkeypatch.setattr(m, "CremaChordModel", FakeModel)
+    monkeypatch.setattr(m, "select_chord_model", FakeModel)
     monkeypatch.setattr(m, "_chord_model", None)
 
     a = m._get_chord_model()
@@ -60,7 +61,7 @@ def test_startup_warms_models_in_background(monkeypatch):
 FAKE_CHART = {
     "schemaVersion": 1,
     "source": {"kind": "youtube", "videoId": "dQw4w9WgXcQ", "title": "t", "duration": 2.0},
-    "analysis": {"engineVersion": ENGINE_VERSION, "createdAt": "2026-07-09T00:00:00Z"},
+    "analysis": {"engineVersion": engine_version("crema"), "createdAt": "2026-07-09T00:00:00Z"},
     "key": {"tonic": "A", "mode": "minor", "confidence": 0.8},
     "scales": [], "tempo": {"bpm": 120.0}, "beats": [], "sections": [],
     "chords": [{"start": 0.0, "end": 2.0, "label": "Am", "root": "A",
@@ -182,3 +183,64 @@ def test_pending_job_exposes_pipeline_step(client, monkeypatch):
 
     release.set()
     assert _poll_done(client, job_id)["status"] == "done"
+
+
+def test_cache_key_includes_the_backend(tmp_path, monkeypatch):
+    """A chart cached by one chord backend must not be served for another."""
+    monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
+    monkeypatch.setattr(m, "jobs", m.JobStore())
+    monkeypatch.setattr(m, "_run_analysis", lambda src, on_step=None: FAKE_CHART)
+    client = TestClient(app)
+
+    class Btc:
+        backend = "btc"
+    monkeypatch.setattr(m, "_chord_model", Btc())
+
+    m.cache.put(FAKE_CHART)    # tagged "<ver>-crema"
+    assert client.get("/chart/dQw4w9WgXcQ").status_code == 404
+
+
+def test_health_reports_the_backend_tagged_version(monkeypatch):
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.setenv("TABIT_CHORD_BACKEND", "btc")
+    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("btc")
+
+    class Crema:
+        backend = "crema"
+    monkeypatch.setattr(m, "_chord_model", Crema())
+    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("crema")
+
+
+def test_default_btc_is_retried_after_a_fallback_to_crema(monkeypatch):
+    class Crema:
+        backend = "crema"
+
+    class Btc:
+        backend = "btc"
+    picks = iter([Crema(), Btc()])
+    monkeypatch.setattr(m, "select_chord_model", lambda: next(picks))
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.delenv("TABIT_CHORD_BACKEND")
+    now = [1000.0]
+    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
+
+    assert m._get_chord_model().backend == "crema"
+    now[0] += 5
+    assert m._get_chord_model().backend == "crema"      # too soon: no new attempt
+    now[0] += m.BTC_RETRY_SEC
+    assert m._get_chord_model().backend == "btc"        # retried, now btc
+
+
+def test_explicit_crema_is_never_retried(monkeypatch):
+    class Crema:
+        backend = "crema"
+    calls = []
+    monkeypatch.setattr(m, "select_chord_model", lambda: calls.append(1) or Crema())
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.setenv("TABIT_CHORD_BACKEND", "crema")
+    now = [1000.0]
+    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
+    m._get_chord_model()
+    now[0] += 10_000
+    m._get_chord_model()
+    assert calls == [1]

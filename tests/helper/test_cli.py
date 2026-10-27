@@ -170,3 +170,44 @@ def test_uninstall_leaves_foreign_symlink_alone(tmp_path, monkeypatch, capsys):
 
     assert symlink.is_symlink()
     assert symlink.resolve() == foreign_target.resolve()
+
+
+def _fake_layout(tmp_path, monkeypatch):
+    from helper import paths
+
+    app_support = tmp_path / "AppSupport" / "tabIt"
+    monkeypatch.setattr(paths, "APP_SUPPORT", app_support)
+    monkeypatch.setattr(paths, "ENV_DIR", app_support / "env")
+    monkeypatch.setattr(paths, "BIN_DIR", app_support / "bin")
+    monkeypatch.setattr(paths, "CHARTS_DIR", app_support / "charts")
+    monkeypatch.setattr(paths, "MODELS_DIR", app_support / "models")
+    monkeypatch.setattr(paths, "LOG_DIR", tmp_path / "Logs" / "tabIt")
+    monkeypatch.setattr(paths, "TABIT_SYMLINK", tmp_path / "local-bin" / "tabit")
+    monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
+    (app_support / "models").mkdir(parents=True)
+    (app_support / "models" / "btc_model_large_voca.pt").write_bytes(b"w")
+    (app_support / "charts").mkdir()
+    return paths
+
+
+def test_uninstall_purge_removes_downloaded_models_and_app_support(tmp_path, monkeypatch, capsys):
+    paths = _fake_layout(tmp_path, monkeypatch)
+    assert cli_main(["uninstall", "--purge"]) == 0
+    assert not paths.MODELS_DIR.exists()
+    assert not paths.APP_SUPPORT.exists()
+    assert f"removed {paths.MODELS_DIR}" in capsys.readouterr().out
+
+
+def test_uninstall_without_purge_drops_models_but_keeps_charts(tmp_path, monkeypatch):
+    paths = _fake_layout(tmp_path, monkeypatch)
+    monkeypatch.setattr("builtins.input", lambda prompt="": "n")
+    assert cli_main(["uninstall"]) == 0
+    assert not paths.MODELS_DIR.exists()          # re-downloadable, never worth keeping
+    assert paths.CHARTS_DIR.exists() and paths.APP_SUPPORT.exists()
+
+
+def test_engine_models_dir_is_the_helpers(monkeypatch):
+    from engine import chords_btc
+    from helper import paths
+    monkeypatch.delenv("TABIT_MODELS_DIR", raising=False)
+    assert chords_btc.models_dir() == paths.MODELS_DIR

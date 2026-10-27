@@ -73,3 +73,14 @@ def test_api_warm_models_stays_nonfatal(monkeypatch):
         raise RuntimeError("download failed")
     monkeypatch.setattr(warmup, "warm_all", boom)
     api_main._warm_models()  # must not raise
+
+
+def test_warm_all_btc_backend_loads_only_the_chord_model(stubbed_models):
+    from helper.warmup import warm_all
+
+    class Btc:
+        backend = "btc"
+        def load(self):
+            stubbed_models.append("btc-weights")
+    warm_all(progress=lambda m: None, get_chord_model=Btc)
+    assert stubbed_models == ["btc-weights"]

@@ -8,7 +8,7 @@
 **paste a song, follow the chords, play along**
 
 Turn any song into a synced, play-along guitar chord sheet, embedded right under the
-YouTube video you're watching: chords, key, suggested scales, even slash chords,
+YouTube video you're watching: chords, key, and suggested scales,
 followed karaoke-style as the music plays.
 
 [![CI](https://github.com/paolosand/tabIt/actions/workflows/ci.yml/badge.svg)](https://github.com/paolosand/tabIt/actions/workflows/ci.yml) ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white) ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-fadc7d)
@@ -17,7 +17,7 @@ followed karaoke-style as the music plays.
 
 <img src="docs/assets/extension-demo.gif" alt="Live demo of the tabIt Chrome extension on youtube.com: clicking the Get chords bar under the video expands a beat ribbon that sweeps chord to chord in time with the song, showing the current chord, the next chord, and key, tempo, and scale chips" width="100%">
 
-<p align="center"><sub>A real recording on youtube.com. Click the "♪ Get chords" bar under the video you're already watching, and the bar walks through the pipeline live: fetch audio, separate instruments, find chords, build chart (sped up here; about 36 seconds in real time). Then the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
+<p align="center"><sub>A real recording on youtube.com. Click the "♪ Get chords" bar under the video you're already watching, and the bar walks through the pipeline live: fetch audio, separate instruments, find chords, build chart (recorded on the opt-in crema backend, which has the separation step; sped up here, about 36 seconds in real time). Then the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
 
 ## Why this exists
 
@@ -37,20 +37,22 @@ itself, so you can play along to practically anything.
   sheet is one click away.
 - **Karaoke-style following.** The current chord is always obvious at a glance; the next
   chord is flagged before it arrives, so your hands are ready.
-- **Slash chords.** The chord model runs on the drums-removed harmonic mix while a pitch
-  tracker follows the isolated bass stem; the two are reconciled to emit inversions like
-  `A/C#`. Most tools skip this entirely.
+- **Slash chords (opt-in).** The default BTC backend has no slash chords. Set
+  `TABIT_CHORD_BACKEND=crema` and the chord model runs on the drums-removed harmonic mix
+  while a pitch tracker follows the isolated bass stem; the two are reconciled to emit
+  inversions like `A/C#`, at the cost of the much slower separation pipeline.
 - **Honest confidence.** Chord detection is imperfect (state of the art is ~72% on
   7th chords; human experts only agree ~54% on complex ones). Low-confidence chords are
   visibly softer with a dotted underline, never hidden. Click any chord to correct it;
   edits persist locally.
 - **Practice-friendly.** Key, tempo, and scale chips at the top; one-tap transpose;
   auto-scroll that keeps the current line in view.
-- **Fast after the first time.** Cold analysis takes well under a minute on an
-  Apple-Silicon Mac (~36s of compute for a 3.5-minute song: GPU source separation,
-  detection stages running in parallel, models kept warm) plus the download; a few
-  minutes on CPU-only machines. While it runs, the bar shows each pipeline step
-  live (download, separation, chords) instead of a blank spinner. Every repeat of
+- **Fast after the first time.** With the default BTC backend, analysis of a ~3.5-minute
+  song took about 1.8 s of compute with models warm on an Apple-Silicon Mac (measured),
+  plus the download; the first run also fetches the BTC weights. The opt-in crema backend
+  (`TABIT_CHORD_BACKEND=crema`) took about 27 s warm on the same machine, because it
+  runs GPU source separation and bass tracking first. While it runs, the bar shows each
+  pipeline step live (download, chords, plus separation on crema) instead of a blank spinner. Every repeat of
   the same song is served instantly from a disk cache.
 
 ## How it works
@@ -61,20 +63,25 @@ extension are both just renderers of it.
 ```mermaid
 flowchart LR
     IN["YouTube URL<br/>or audio file"] --> ING[ingest]
-    ING --> SEP["Demucs<br/>source separation"]
-    SEP -- harmonic mix --> CH["crema<br/>chord model"]
-    SEP -- bass stem --> BA["CREPE<br/>bass tracking"]
+    ING --> BTC["BTC<br/>chord model<br/>(original mix)"]
     ING --> BE["librosa<br/>beats + tempo"]
     ING --> KEY["Essentia<br/>key detection"]
-    CH --> REC["reconcile<br/>slash chords"]
-    BA --> REC
-    REC --> POST["post-process"]
+    BTC --> POST["post-process"]
     BE --> POST
     KEY --> POST
+    ING -. "TABIT_CHORD_BACKEND=crema" .-> SEP["Demucs<br/>source separation"]
+    SEP -- harmonic mix --> CH["crema<br/>chord model"]
+    SEP -- bass stem --> BA["CREPE<br/>bass tracking"]
+    CH --> REC["reconcile<br/>slash chords"]
+    BA --> REC
+    REC --> POST
     POST --> JSON[("chart JSON")]
     JSON --> WEB["React web app"]
     JSON --> EXT["Chrome extension<br/>(overlay on youtube.com)"]
 ```
+
+The solid path is the default. The dotted path is the opt-in crema backend, the only
+one that produces slash chords.
 
 | Layer | What | Status |
 |---|---|---|
@@ -169,9 +176,9 @@ recordings. 11 songs, all from one artist/era, is a pilot, not a claim about
 accuracy across genres — treat it as a directional signal, not a spec. What the
 product does instead of promising precision: it shows per-chord confidence and
 makes corrections one click away. Since
-engine 0.2.0, a conservatism pass also keeps the noise down: slash chords appear only
-when the detected bass is confident *and* a chord tone, low-confidence exotic qualities
-simplify to plain triads, sub-2-beat flicker segments merge away, and a meter detector
+engine 0.2.0, a conservatism pass also keeps the noise down: on the crema backend slash chords appear
+only when the detected bass is confident *and* a chord tone (BTC emits none), low-confidence exotic qualities
+simplify to plain triads, flicker segments merge away (sub-2-beat on crema, sub-0.5 s on BTC), and a meter detector
 (chord changes land on downbeats) gives the chart real bar lines instead of assuming 4/4.
 
 ## Project layout
@@ -189,7 +196,7 @@ docs/        design specs, implementation plans, progress ledger
 
 - [x] Extension: degraded mount fallback + live-stream guard
 - [x] Extension: headful Playwright e2e against real YouTube
-- [x] Quieter slash chords: emit `X/Y` only when the bass is confident *and* on a chord tone
+- [x] Quieter slash chords (crema backend): emit `X/Y` only when the bass is confident *and* on a chord tone
 - [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
 - [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
@@ -206,12 +213,54 @@ design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/
 | | |
 |---|---|
 | [Demucs](https://github.com/facebookresearch/demucs) | source separation (harmonic mix + bass stem) |
-| [crema](https://github.com/bmcfee/crema) | chord recognition |
+| [BTC](https://github.com/jayg996/BTC-ISMIR19) | chord recognition (default; see below) |
+| [crema](https://github.com/bmcfee/crema) | chord recognition (`TABIT_CHORD_BACKEND=crema`) |
 | [librosa](https://librosa.org) | beat and tempo tracking |
 | [Essentia](https://essentia.upf.edu) | key detection |
 | [CREPE](https://github.com/marl/crepe) | bass pitch tracking |
 | [mir_eval](https://github.com/mir-evaluation/mir_eval) | accuracy harness |
 | [FastAPI](https://fastapi.tiangolo.com) · [React 19](https://react.dev) · [Vite](https://vite.dev) · [esbuild](https://esbuild.github.io) | the app around the engine |
+
+## Chord recognition
+
+The default chord backend is **BTC**, the Bi-directional Transformer for Chord
+recognition by Park et al. (ISMIR 2019), <https://github.com/jayg996/BTC-ISMIR19>.
+Its code (MIT, (c) 2019 Jonggwon Park) is vendored, trimmed to inference, in
+[`engine/vendor/btc`](engine/vendor/btc) with the upstream licence and a notice.
+BTC reads the original mix, so it skips source separation and bass tracking
+(about 1 s instead of about 30 s per song) and emits no slash chords. Segments
+shorter than 0.5 s are merged into their neighbours.
+
+The pretrained weights are by the authors. They are not in this repository: they
+are downloaded at first use from the authors' repo at a pinned commit, verified
+against a pinned SHA-256, and stored under `~/Library/Application Support/tabIt/models`
+(override with `TABIT_MODELS_DIR`). The authors state no licence for the weights,
+which were trained on commercial recordings, so their terms for commercial use are
+unconfirmed; tabIt is non-commercial.
+
+Choose the backend with `TABIT_CHORD_BACKEND=btc|crema`. If BTC's weights can't be
+fetched and you didn't ask for btc explicitly, tabIt falls back to crema with a
+logged warning; an explicit `btc` raises instead.
+
+Park, J., Choi, K., Jeon, S., Kim, D., Park, J. (2019). A Bi-directional Transformer for
+Musical Chord Recognition. ISMIR.
+
+```bibtex
+@inproceedings{park2019bi,
+  title={A Bi-directional Transformer for Musical Chord Recognition},
+  author={Park, Jonggwon and Choi, Kyoyun and Jeon, Sungwook and Kim, Dokyun and Park, Jonghun},
+  booktitle={Proceedings of the 20th International Society for Music Information Retrieval Conference (ISMIR)},
+  address={Delft, The Netherlands},
+  year={2019},
+  eprint={1907.02698},
+  archivePrefix={arXiv},
+  url={https://arxiv.org/abs/1907.02698}
+}
+```
+
+The crema backend (`TABIT_CHORD_BACKEND=crema`) is the model from McFee & Bello,
+"Structured training for large-vocabulary chord recognition", 18th ISMIR, Suzhou,
+China, 2017, pp. 188-194.
 
 ## License
 
