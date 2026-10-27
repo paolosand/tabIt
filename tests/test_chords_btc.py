@@ -125,7 +125,8 @@ def test_offline_error_is_actionable(pinned, tmp_path):
     msg = str(e.value)
     assert "Network is unreachable" in msg
     assert str(tmp_path / chords_btc.WEIGHTS_FILENAME) in msg
-    assert "TABIT_CHORD_BACKEND=crema" in msg
+    assert str(tmp_path) in msg and "tabit warmup" in msg
+    assert "crema" not in msg.lower()
 
 
 # ---- inference with tiny fake weights ----
@@ -161,10 +162,6 @@ def test_predict_returns_contiguous_rawchords_covering_the_song(fake_weights, tm
     assert (r.root, r.quality, r.bass) == ("A", "dom7", "A")   # no slash chords in BTC
     assert r.start == 0.0 and r.end == pytest.approx(25.0, abs=0.01)
     assert r.confidence > 0.99          # softmax top-1 probability, not a constant
-
-
-def test_backend_attribute_names_the_backend():
-    assert BtcChordModel.backend == "btc"
 
 
 def test_a_pinned_hash_is_checked_against_the_bytes_loaded(fake_weights):

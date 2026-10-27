@@ -1,55 +1,50 @@
-import sys
-import types
-
 import pytest
 
 
-@pytest.fixture
-def stubbed_models(monkeypatch):
-    """Stub every heavy import warm_all touches; record what loads."""
-    loaded: list[str] = []
-
-    crema = types.ModuleType("crema")
-    crema_analyze = types.ModuleType("crema.analyze")
-    crema.analyze = crema_analyze
-    monkeypatch.setitem(sys.modules, "crema", crema)
-    monkeypatch.setitem(sys.modules, "crema.analyze", crema_analyze)
-
-    separate = types.ModuleType("engine.separate")
-    separate._pick_device = lambda: "cpu"
-    separate._get_separator = lambda name, device: loaded.append(f"demucs:{name}:{device}")
-    monkeypatch.setitem(sys.modules, "engine.separate", separate)
-
-    crepe = types.ModuleType("crepe")
-    crepe_core = types.ModuleType("crepe.core")
-    crepe_core.build_and_load_model = lambda size: loaded.append(f"crepe:{size}")
-    crepe.core = crepe_core
-    monkeypatch.setitem(sys.modules, "crepe", crepe)
-    monkeypatch.setitem(sys.modules, "crepe.core", crepe_core)
-
-    return loaded
-
-
-def test_warm_all_loads_everything_in_order(stubbed_models):
+def test_warm_all_loads_the_weights_then_runs_one_tiny_inference():
     from helper.warmup import warm_all
+
+    events: list = []
+
+    class Btc:
+        def load(self):
+            events.append("load")
+
+        def predict(self, wav_path):
+            import soundfile as sf
+            data, sr = sf.read(wav_path)      # a real, readable, short clip
+            events.append(("predict", len(data) / sr))
+            return []
 
     messages: list[str] = []
-    warm_all(progress=messages.append,
-             get_chord_model=lambda: stubbed_models.append("crema-chords"))
-    assert stubbed_models == ["crema-chords", "demucs:htdemucs:cpu", "crepe:small"]
-    assert any("crema" in m for m in messages)
-    assert any("Demucs" in m for m in messages)
-    assert any("CREPE" in m for m in messages)
+    warm_all(progress=messages.append, get_chord_model=Btc)
+
+    assert events[0] == "load"
+    assert events[1][0] == "predict" and 0 < events[1][1] <= 5
+    assert any("test inference" in m for m in messages)
+    assert messages[-1] == "all models ready"
 
 
-def test_warm_all_propagates_failures(stubbed_models, monkeypatch):
+def test_warm_all_propagates_failures():
     from helper.warmup import warm_all
 
-    def broken(name, device):
+    def broken():
         raise OSError("no space left on device")
-    sys.modules["engine.separate"]._get_separator = broken
     with pytest.raises(OSError, match="no space"):
-        warm_all(progress=lambda m: None, get_chord_model=lambda: None)
+        warm_all(progress=lambda m: None, get_chord_model=broken)
+
+
+def test_warm_all_propagates_an_inference_failure():
+    from helper.warmup import warm_all
+
+    class Bad:
+        def load(self):
+            pass
+
+        def predict(self, wav_path):
+            raise RuntimeError("torch is broken")
+    with pytest.raises(RuntimeError, match="torch"):
+        warm_all(progress=lambda m: None, get_chord_model=Bad)
 
 
 def test_api_warm_models_delegates_with_its_cached_model(monkeypatch):
@@ -73,14 +68,3 @@ def test_api_warm_models_stays_nonfatal(monkeypatch):
         raise RuntimeError("download failed")
     monkeypatch.setattr(warmup, "warm_all", boom)
     api_main._warm_models()  # must not raise
-
-
-def test_warm_all_btc_backend_loads_only_the_chord_model(stubbed_models):
-    from helper.warmup import warm_all
-
-    class Btc:
-        backend = "btc"
-        def load(self):
-            stubbed_models.append("btc-weights")
-    warm_all(progress=lambda m: None, get_chord_model=Btc)
-    assert stubbed_models == ["btc-weights"]

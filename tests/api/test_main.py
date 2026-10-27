@@ -61,7 +61,7 @@ def test_startup_warms_models_in_background(monkeypatch):
 FAKE_CHART = {
     "schemaVersion": 1,
     "source": {"kind": "youtube", "videoId": "dQw4w9WgXcQ", "title": "t", "duration": 2.0},
-    "analysis": {"engineVersion": engine_version("crema"), "createdAt": "2026-07-09T00:00:00Z"},
+    "analysis": {"engineVersion": engine_version(), "createdAt": "2026-07-09T00:00:00Z"},
     "key": {"tonic": "A", "mode": "minor", "confidence": 0.8},
     "scales": [], "tempo": {"bpm": 120.0}, "beats": [], "sections": [],
     "chords": [{"start": 0.0, "end": 2.0, "label": "Am", "root": "A",
@@ -166,7 +166,7 @@ def test_pending_job_exposes_pipeline_step(client, monkeypatch):
     release = threading.Event()
 
     def fake_run(src, on_step=None):
-        on_step("separate")
+        on_step("chords")
         release.wait(timeout=5)
         return FAKE_CHART
 
@@ -176,71 +176,67 @@ def test_pending_job_exposes_pipeline_step(client, monkeypatch):
 
     deadline = time.time() + 5
     body = client.get(f"/analyze/{job_id}").json()
-    while body.get("step") != "separate" and time.time() < deadline:
+    while body.get("step") != "chords" and time.time() < deadline:
         time.sleep(0.01)
         body = client.get(f"/analyze/{job_id}").json()
-    assert body == {"status": "pending", "step": "separate"}
+    assert body == {"status": "pending", "step": "chords"}
 
     release.set()
     assert _poll_done(client, job_id)["status"] == "done"
 
 
-def test_cache_key_includes_the_backend(tmp_path, monkeypatch):
-    """A chart cached by one chord backend must not be served for another."""
+def _stale_chart(version):
+    return {**FAKE_CHART, "analysis": {**FAKE_CHART["analysis"], "engineVersion": version}}
+
+
+@pytest.mark.parametrize("old", ["0.3.1-crema", "0.3.0-crema", "0.4.0-crema", "0.4.0-btc"])
+def test_charts_cached_by_an_older_engine_are_not_served(tmp_path, monkeypatch, old):
+    """The cache key is videoId@engineVersion: the 0.3.x (Demucs + crema) charts a
+    user already has on disk must be re-analyzed, never served as current."""
     monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
     monkeypatch.setattr(m, "jobs", m.JobStore())
-    monkeypatch.setattr(m, "_run_analysis", lambda src, on_step=None: FAKE_CHART)
+    ran = []
+    monkeypatch.setattr(m, "_run_analysis",
+                        lambda src, on_step=None: ran.append(src) or FAKE_CHART)
     client = TestClient(app)
 
-    class Btc:
-        backend = "btc"
-    monkeypatch.setattr(m, "_chord_model", Btc())
-
-    m.cache.put(FAKE_CHART)    # tagged "<ver>-crema"
+    m.cache.put(_stale_chart(old))
     assert client.get("/chart/dQw4w9WgXcQ").status_code == 404
 
+    r = client.post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
+    assert _poll_done(client, r.json()["jobId"])["status"] == "done"
+    assert ran                      # a fresh analysis ran instead of the stale chart
 
-def test_health_reports_the_backend_tagged_version(monkeypatch):
+
+def test_health_reports_the_engine_version_without_loading_a_model(monkeypatch):
     monkeypatch.setattr(m, "_chord_model", None)
-    monkeypatch.setenv("TABIT_CHORD_BACKEND", "btc")
-    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("btc")
-
-    class Crema:
-        backend = "crema"
-    monkeypatch.setattr(m, "_chord_model", Crema())
-    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("crema")
+    monkeypatch.setattr(m, "select_chord_model",
+                        lambda: pytest.fail("health must not load or download weights"))
+    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version()
 
 
-def test_default_btc_is_retried_after_a_fallback_to_crema(monkeypatch):
-    class Crema:
-        backend = "crema"
-
-    class Btc:
-        backend = "btc"
-    picks = iter([Crema(), Btc()])
-    monkeypatch.setattr(m, "select_chord_model", lambda: next(picks))
+def test_cache_lookup_does_not_need_the_weights(tmp_path, monkeypatch):
+    """A cached chart is served even while the BTC weights are unavailable."""
+    monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
+    monkeypatch.setattr(m, "jobs", m.JobStore())
     monkeypatch.setattr(m, "_chord_model", None)
-    monkeypatch.delenv("TABIT_CHORD_BACKEND")
-    now = [1000.0]
-    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
-
-    assert m._get_chord_model().backend == "crema"
-    now[0] += 5
-    assert m._get_chord_model().backend == "crema"      # too soon: no new attempt
-    now[0] += m.BTC_RETRY_SEC
-    assert m._get_chord_model().backend == "btc"        # retried, now btc
+    monkeypatch.setattr(m, "select_chord_model",
+                        lambda: pytest.fail("a cache hit must not load the model"))
+    m.cache.put(FAKE_CHART)
+    r = TestClient(app).post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
+    assert r.status_code == 202
 
 
-def test_explicit_crema_is_never_retried(monkeypatch):
-    class Crema:
-        backend = "crema"
-    calls = []
-    monkeypatch.setattr(m, "select_chord_model", lambda: calls.append(1) or Crema())
+def test_missing_weights_fail_the_job_with_the_actionable_message(tmp_path, monkeypatch):
+    from engine.chords_btc import BtcWeightsUnavailable
+    monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
+    monkeypatch.setattr(m, "jobs", m.JobStore())
     monkeypatch.setattr(m, "_chord_model", None)
-    monkeypatch.setenv("TABIT_CHORD_BACKEND", "crema")
-    now = [1000.0]
-    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
-    m._get_chord_model()
-    now[0] += 10_000
-    m._get_chord_model()
-    assert calls == [1]
+
+    def offline():
+        raise BtcWeightsUnavailable("BTC chord weights are missing; run `tabit warmup`")
+    monkeypatch.setattr(m, "select_chord_model", offline)
+    client = TestClient(app)
+    r = client.post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
+    body = _poll_done(client, r.json()["jobId"])
+    assert body["status"] == "error" and "tabit warmup" in body["error"]

@@ -27,7 +27,7 @@ def test_majmin_accuracy_on_synthetic_clip(ref_clip):
     assert len(chart.chords) >= 1
     assert 0.0 <= score <= 1.0
 
-    # Honest floor: crema is trained on real recordings, not synthesized tones,
+    # Honest floor: BTC is trained on real recordings, not synthesized tones,
     # so a synthetic clip is out of distribution. This is a synthetic-fixture
     # regression floor, not a real-music benchmark (that lives in benchmarks/).
     assert score >= 0.4
