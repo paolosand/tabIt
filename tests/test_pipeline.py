@@ -204,3 +204,25 @@ def test_default_chord_model_comes_from_backend_selection(tone_440_wav, tmp_path
     chart = analyze(tone_440_wav, created_at="2026-07-09T00:00:00Z", workdir=str(tmp_path))
 
     assert chart.analysis.engineVersion == engine_version("btc")
+
+
+def test_btc_keeps_a_one_beat_passing_chord_and_drops_zero_length_segments(
+        tone_440_wav, tmp_path, monkeypatch):
+    """merge_short (2-beat minimum) is a crema smoother: on btc, MIN_SEGMENT_SEC
+    already removed flicker, so a genuine 1-beat passing chord must survive."""
+    import engine.pipeline as p
+    _stub_common(p, monkeypatch, tone_440_wav)
+    _forbid_stem_stages(p, monkeypatch)
+    monkeypatch.setattr(p, "track_beats", lambda w: (120.0, [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]))
+
+    class Passing(FakeBtcModel):
+        def predict(self, wav_path):
+            return [RawChord(0.0, 1.5, "A", "min", "A", 0.8),
+                    RawChord(1.5, 2.0, "G", "maj", "G", 0.8),      # 1 beat at 120 BPM
+                    RawChord(2.0, 3.0, "F", "maj", "F", 0.8),
+                    RawChord(3.0, 3.1, "C", "maj", "C", 0.8)]      # snaps to zero length
+
+    chart = analyze(tone_440_wav, created_at="x", workdir=str(tmp_path), chord_model=Passing())
+
+    assert [c.label for c in chart.chords] == ["Am", "G", "F"]
+    assert all(c.end > c.start for c in chart.chords)

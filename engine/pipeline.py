@@ -79,6 +79,9 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
 
             segs = raw_to_segments(raws)
             segs = snap_to_beats(segs, beats)
+            if backend != "crema":
+                # Snapping can collapse a short segment onto a single beat.
+                segs = [x for x in segs if x.end > x.start]
             segs = merge_adjacent(segs)
 
             if backend == "crema":
@@ -89,7 +92,10 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
         # simplification for out-of-key exotics, and the threshold reads the same
         # confidence the UI dims on.
         segs = simplify_quality(segs)
-        segs = merge_short(segs, beats)
+        if backend == "crema":
+            # crema's smoother. BTC already dropped its flicker (MIN_SEGMENT_SEC);
+            # a further 2-beat floor deletes genuine passing chords.
+            segs = merge_short(segs, beats)
         segs = merge_adjacent(segs)
 
         change_times = [s.start for s in segs[1:]]
