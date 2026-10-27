@@ -65,7 +65,7 @@ def models_dir() -> Path:
     if override:
         return Path(override)
     from helper import paths
-    return paths.APP_SUPPORT / "models"
+    return paths.MODELS_DIR
 
 
 def _download(url: str) -> bytes:

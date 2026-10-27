@@ -5,6 +5,8 @@ APP_SUPPORT = Path.home() / "Library" / "Application Support" / "tabIt"
 ENV_DIR = APP_SUPPORT / "env"
 BIN_DIR = APP_SUPPORT / "bin"
 CHARTS_DIR = APP_SUPPORT / "charts"
+# Downloaded model weights (BTC); re-fetched on first use, so uninstall always drops them.
+MODELS_DIR = APP_SUPPORT / "models"
 LOG_DIR = Path.home() / "Library" / "Logs" / "tabIt"
 LOG_FILE = LOG_DIR / "helper.log"
 AGENT_LABEL = "com.tabit.helper"

@@ -87,7 +87,7 @@ def test_models_dir_env_override(monkeypatch, tmp_path):
 def test_default_models_dir_lives_beside_the_helper_data(monkeypatch):
     from helper import paths
     monkeypatch.delenv("TABIT_MODELS_DIR", raising=False)
-    assert chords_btc.models_dir() == paths.APP_SUPPORT / "models"
+    assert chords_btc.models_dir() == paths.MODELS_DIR
 
 
 def test_weights_url_is_pinned_to_a_commit():
