@@ -93,19 +93,22 @@ def render_markdown(results: dict, tag: str = "") -> str:
              "(untimed, semiglobal per section, key-shift corrected). "
              "Deletions = missed chords.", "",
              "## Summary by artist", "",
-             "| Artist | Songs | root recall | majmin recall | majmin insertion rate |",
-             "|---|---:|---:|---:|---:|"]
+             "| Artist | Songs | root recall | majmin recall | "
+             "majmin deletion rate | majmin insertion rate |",
+             "|---|---:|---:|---:|---:|---:|"]
     for artist in sorted({r["artist"] for r in ok}):
         a = [r for r in ok if r["artist"] == artist]
         lines.append(
             f"| {artist} | {len(a)} | "
             f"{_mean([r['levels']['root']['recall'] for r in a]):.2f} | "
             f"{_mean([r['levels']['majmin']['recall'] for r in a]):.2f} | "
+            f"{_mean([r['levels']['majmin']['deletion_rate'] for r in a]):.2f} | "
             f"{_mean([r['levels']['majmin']['insertion_rate'] for r in a]):.2f} |")
     lines.append(
         f"| **All** | {len(ok)} | "
         f"**{_mean([r['levels']['root']['recall'] for r in ok]):.2f}** | "
         f"**{_mean([r['levels']['majmin']['recall'] for r in ok]):.2f}** | "
+        f"**{_mean([r['levels']['majmin']['deletion_rate'] for r in ok]):.2f}** | "
         f"**{_mean([r['levels']['majmin']['insertion_rate'] for r in ok]):.2f}** |")
     for r in rows:
         lines += ["", f"## {r['artist']} - {r['title']}", ""]
@@ -119,7 +122,9 @@ def render_markdown(results: dict, tag: str = "") -> str:
                      f"{s['unshifted_recall']:.2f}, with shift {s['recall']:.2f}")
         up = s["unparseable"]
         lines.append(f"- Unparseable labels dropped: ref {up['ref']}, hyp {up['hyp']}")
-        lines.append(f"- majmin recall {s['recall']:.2f}, root recall "
+        lines.append(f"- majmin recall {s['recall']:.2f}, deletion rate "
+                     f"{s['deletion_rate']:.2f}, insertion rate {s['insertion_rate']:.2f}; "
+                     f"root recall "
                      f"{r['levels']['root']['recall']:.2f}, whole-song global recall "
                      f"{s['whole_song']['recall']:.2f}")
         lines.append("- Section recalls: " + ", ".join(
@@ -127,7 +132,7 @@ def render_markdown(results: dict, tag: str = "") -> str:
         missed = Counter((d["chord"], d["kind"]) for x in s["sections"]
                          for d in x["deletions"])
         top = ", ".join(f"{c} x{n} ({k})" for (c, k), n in missed.most_common(5))
-        lines.append(f"- Top missed chords: {top or 'none'}")
+        lines.append(f"- Missed chord list: {top or 'none'}")
         for x in s["sections"]:
             for d in x["deletions"]:
                 lines.append(f"  - {x['name']}: missed {d['chord']} between "

@@ -256,3 +256,30 @@ def test_deleted_chord_present_in_window_as_insertion_is_timing():
     s = score_song(SECTIONS, ["C", "Am", "F", "G"], "majmin")
     d = s["sections"][0]["deletions"][0]
     assert d["chord"] == "G" and d["kind"] == "timing"
+
+
+FULL = ["C", "G", "Am", "F", "C", "G", "F", "C"]
+
+
+def test_whole_song_full_ref_same_space_as_sections_keeps_shift_zero():
+    secs = [{"name": "v", "chords": ["C", "G", "Am", "F"]},
+            {"name": "c", "chords": ["C", "G", "F", "C"]}]
+    s = score_song(secs, FULL, "majmin", full_ref=FULL)
+    assert s["shift"] == 0
+    assert s["whole_song"]["recall"] == 1.0 and s["whole_song"]["shift"] == 0
+
+
+def test_whole_song_not_double_transposed_for_capo_song():
+    # sections written with capo 3 (shapes in A), full_ref already sounding (C);
+    # hyp is the sounding song. Section shift becomes 3; whole song must stay 1.0.
+    written = [{"name": "v", "chords": ["A", "E", "F#m", "D"]},
+               {"name": "c", "chords": ["A", "E", "D", "A"]}]
+    s = score_song(written, FULL, "majmin", full_ref=FULL)
+    assert s["shift"] == 3 and s["recall"] == 1.0
+    assert s["whole_song"]["recall"] == 1.0 and s["whole_song"]["shift"] == 0
+
+
+def test_whole_song_truly_transposed_hyp_still_recovered():
+    hyp = ["D", "A", "Bm", "G", "D", "A", "G", "D"]
+    s = score_song([{"name": "v", "chords": FULL}], hyp, "majmin", full_ref=FULL)
+    assert s["whole_song"]["recall"] == 1.0 and s["whole_song"]["shift"] == 2

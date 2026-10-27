@@ -111,3 +111,11 @@ def test_ug_report_files_are_gitignored():
     out = subprocess.run(["git", "check-ignore", "benchmarks/results/ug_sequence_x.md"],
                          capture_output=True, text=True)
     assert out.returncode == 0
+
+
+def test_report_has_deletion_rate_and_missed_list(songs_json):
+    res = run_benchmark(load_songs(songs_json),
+                        hyp_fn=lambda s: [c["label"] for c in HYPS[s["youtube_id"]]])
+    md = render_markdown(res)
+    assert "deletion rate" in md.lower()
+    assert "Missed chord list" in md and "G x1 (vocab)" in md

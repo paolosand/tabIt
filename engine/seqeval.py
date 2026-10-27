@@ -275,8 +275,20 @@ def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None,
 
     vocab = sorted({t for _, toks in secs for t in _shift(toks, shift)})
     missing = [fmt(t) for t in vocab if t not in hyp_set]
-    flat = full_ref if full_ref is not None else [t for _, toks in secs for t in toks]
-    whole_ref = _shift(collapse(flat, level), shift)
+    if full_ref is None:
+        # concatenated sections live in the sections' pitch space: same shift
+        whole_ref = _shift(collapse([t for _, toks in secs for t in toks], level), shift)
+        w_shift = shift
+    else:
+        # full_ref (chord_sequence_sounding) may be in a different pitch space
+        # than the sections (e.g. sections written with a capo), so reusing the
+        # section shift would transpose it twice. Pick its own shift, with the
+        # same cost-margin gate.
+        base = collapse(full_ref, level)
+        costs = [align(_shift(base, sh), h, level, "global")["cost"] for sh in range(12)]
+        best = _pick_shift(lambda sh: costs[sh])
+        w_shift = best if costs[0] - costs[best] >= max(2, -(-len(base) // 10)) else 0
+        whole_ref = _shift(base, w_shift)
     w = align(whole_ref, h, level, "global")
     w_match = sum(o["op"] == "match" for o in w["ops"])
     return {
@@ -292,7 +304,9 @@ def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None,
         "insertion_rate": sum(s["n_insertions"] for s in sections) / n_ref if n_ref else 0.0,
         "vocab": {"n_distinct": len(vocab), "missing": missing,
                   "recall": (len(vocab) - len(missing)) / len(vocab) if vocab else 0.0},
+        "deletion_rate": sum(len(x["deletions"]) for x in sections) / n_ref if n_ref else 0.0,
         "whole_song": {
+            "shift": w_shift,
             "cost": w["cost"], "n_ref": w["n_ref"], "n_hyp": w["n_hyp"],
             "recall": w_match / w["n_ref"] if w["n_ref"] else 0.0,
             "deletions": sum(o["op"] == "deletion" for o in w["ops"]),
