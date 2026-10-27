@@ -3,7 +3,7 @@ import logging
 import os
 
 from engine.chords import CremaChordModel
-from engine.chords_btc import BtcChordModel, BtcWeightsUnavailable, ensure_weights
+from engine.chords_btc import BtcChordModel, BtcWeightsUnavailable, WEIGHTS_SHA256, ensure_weights
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def select_chord_model():
     if backend == "crema":
         return CremaChordModel()
     try:
-        return BtcChordModel(ensure_weights())
+        return BtcChordModel(ensure_weights(), sha256=WEIGHTS_SHA256)
     except BtcWeightsUnavailable as exc:
         if explicit:
             raise

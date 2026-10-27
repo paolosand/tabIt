@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 import numpy as np
 import pytest
@@ -164,3 +165,22 @@ def test_predict_returns_contiguous_rawchords_covering_the_song(fake_weights, tm
 
 def test_backend_attribute_names_the_backend():
     assert BtcChordModel.backend == "btc"
+
+
+def test_a_pinned_hash_is_checked_against_the_bytes_loaded(fake_weights):
+    with pytest.raises(BtcWeightsUnavailable, match="sha256"):
+        BtcChordModel(fake_weights, config=TINY, sha256="0" * 64).load()
+    good = hashlib.sha256(fake_weights.read_bytes()).hexdigest()
+    assert BtcChordModel(fake_weights, config=TINY, sha256=good).load()
+
+
+def test_checkpoint_loads_without_arbitrary_unpickling(fake_weights, tmp_path):
+    import pickle
+
+    class Evil:
+        def __reduce__(self):
+            return (os.system, ("true",))
+    bad = tmp_path / "evil.pt"
+    torch.save({"model": {}, "mean": Evil(), "std": 1.0}, bad)
+    with pytest.raises(pickle.UnpicklingError):
+        BtcChordModel(bad, config=TINY).load()

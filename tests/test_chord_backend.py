@@ -77,3 +77,28 @@ def test_engine_version_carries_the_backend():
     from engine import __version__, engine_version
     assert engine_version("btc") == f"{__version__}-btc"
     assert engine_version("crema") != engine_version("btc")
+
+
+def _incomplete_read(monkeypatch, tmp_path):
+    import http.client
+    monkeypatch.setenv("TABIT_MODELS_DIR", str(tmp_path))
+    monkeypatch.setattr(chord_backend, "ensure_weights", chords_btc.ensure_weights)
+
+    def dropped(url, timeout=None):
+        raise http.client.IncompleteRead(b"par")
+    monkeypatch.setattr(chords_btc.urllib.request, "urlopen", dropped)
+
+
+def test_dropped_connection_mid_download_falls_back_to_crema(monkeypatch, tmp_path, caplog):
+    monkeypatch.delenv("TABIT_CHORD_BACKEND", raising=False)
+    _incomplete_read(monkeypatch, tmp_path)
+    with caplog.at_level(logging.WARNING, logger=chord_backend.__name__):
+        model = chord_backend.select_chord_model()
+    assert isinstance(model, CremaChordModel) and "falling back to crema" in caplog.text
+
+
+def test_dropped_connection_with_explicit_btc_raises_a_clear_error(monkeypatch, tmp_path):
+    monkeypatch.setenv("TABIT_CHORD_BACKEND", "btc")
+    _incomplete_read(monkeypatch, tmp_path)
+    with pytest.raises(BtcWeightsUnavailable, match="TABIT_CHORD_BACKEND=crema"):
+        chord_backend.select_chord_model()

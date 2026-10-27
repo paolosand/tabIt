@@ -7,6 +7,8 @@ authors' repository on first use (see ensure_weights).
 """
 import dataclasses
 import hashlib
+import http.client
+import io
 import os
 import tempfile
 import threading
@@ -87,7 +89,7 @@ def ensure_weights(directory: Path | None = None, *, fetch=_download) -> Path:
         return target
     try:
         data = fetch(WEIGHTS_URL)
-    except OSError as exc:
+    except (OSError, http.client.HTTPException) as exc:   # IncompleteRead is not an OSError
         raise BtcWeightsUnavailable(
             f"BTC chord weights are not downloaded and could not be fetched ({exc}). "
             f"Connect to the internet and retry, download {WEIGHTS_URL} to {target} "
@@ -151,14 +153,48 @@ def filter_short_segments(raws: list[RawChord], min_sec: float = MIN_SEGMENT_SEC
             return segs
 
 
+# What a plain state_dict checkpoint legitimately pickles. torch 2.0's own
+# weights_only mode can't read the numpy-scalar mean/std stored beside the weights
+# (and has no safe_globals hook), so the same idea is applied with an allowlist.
+_ALLOWED_GLOBALS = {
+    ("collections", "OrderedDict"), ("_codecs", "encode"),   # numpy scalars pickle bytes via this
+    ("numpy", "dtype"), ("numpy.core.multiarray", "scalar"),
+    ("torch._utils", "_rebuild_tensor_v2"), ("torch._utils", "_rebuild_parameter"),
+}
+
+
+def _restricted_pickle():
+    """A pickle-module stand-in for torch.load whose Unpickler refuses any global
+    outside the allowlist (and torch storage types), so a swapped file can't run code."""
+    import pickle
+    import types
+
+    class RestrictedUnpickler(pickle.Unpickler):
+        def find_class(self, module, name):
+            if (module, name) in _ALLOWED_GLOBALS or (
+                    module == "torch" and name.endswith("Storage")):
+                return super().find_class(module, name)
+            raise pickle.UnpicklingError(f"checkpoint references forbidden global {module}.{name}")
+
+    mod = types.ModuleType("restricted_pickle")
+    mod.__dict__.update({k: getattr(pickle, k) for k in dir(pickle) if not k.startswith("__")})
+    mod.Unpickler = RestrictedUnpickler
+    mod.load = lambda f, **kw: RestrictedUnpickler(f, **kw).load()
+    return mod
+
+
 class BtcChordModel:
     """Chord estimator backed by BTC; same predict() contract as CremaChordModel,
     but takes the ORIGINAL mix (no stem separation needed)."""
 
     backend = "btc"
 
-    def __init__(self, weights_path: Path | None = None, config: dict | None = None):
+    def __init__(self, weights_path: Path | None = None, config: dict | None = None,
+                 sha256: str | None = None):
+        """weights_path None means "the pinned download" (verified). A caller-supplied
+        path is trusted as given unless it also passes the sha256 to check."""
         self._weights_path = Path(weights_path) if weights_path else None
+        self._sha256 = sha256 or (None if weights_path else WEIGHTS_SHA256)
         self._config = config or MODEL_CONFIG
         self._lock = threading.Lock()
         self._model = None
@@ -170,9 +206,13 @@ class BtcChordModel:
                 from engine.vendor.btc.model import BTCModel
 
                 path = self._weights_path or ensure_weights()
-                # weights_only=False: the checkpoint stores numpy scalars (mean/std).
-                # The file is sha256-pinned, so this is not an arbitrary-pickle risk.
-                ckpt = torch.load(path, map_location="cpu", weights_only=False)
+                # Hash the exact bytes we deserialize (no check-then-reopen gap).
+                data = Path(path).read_bytes()
+                if self._sha256 and _sha256(data) != self._sha256:
+                    raise BtcWeightsUnavailable(
+                        f"{path} does not match the pinned sha256; delete it to re-download.")
+                ckpt = torch.load(io.BytesIO(data), map_location="cpu",
+                                  pickle_module=_restricted_pickle())
                 model = BTCModel(self._config)
                 model.load_state_dict(ckpt["model"])
                 self._model = (model.eval(), float(ckpt["mean"]), float(ckpt["std"]))
