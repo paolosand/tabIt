@@ -198,3 +198,49 @@ def test_cache_key_includes_the_backend(tmp_path, monkeypatch):
 
     m.cache.put(FAKE_CHART)    # tagged "<ver>-crema"
     assert client.get("/chart/dQw4w9WgXcQ").status_code == 404
+
+
+def test_health_reports_the_backend_tagged_version(monkeypatch):
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.setenv("TABIT_CHORD_BACKEND", "btc")
+    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("btc")
+
+    class Crema:
+        backend = "crema"
+    monkeypatch.setattr(m, "_chord_model", Crema())
+    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version("crema")
+
+
+def test_default_btc_is_retried_after_a_fallback_to_crema(monkeypatch):
+    class Crema:
+        backend = "crema"
+
+    class Btc:
+        backend = "btc"
+    picks = iter([Crema(), Btc()])
+    monkeypatch.setattr(m, "select_chord_model", lambda: next(picks))
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.delenv("TABIT_CHORD_BACKEND")
+    now = [1000.0]
+    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
+
+    assert m._get_chord_model().backend == "crema"
+    now[0] += 5
+    assert m._get_chord_model().backend == "crema"      # too soon: no new attempt
+    now[0] += m.BTC_RETRY_SEC
+    assert m._get_chord_model().backend == "btc"        # retried, now btc
+
+
+def test_explicit_crema_is_never_retried(monkeypatch):
+    class Crema:
+        backend = "crema"
+    calls = []
+    monkeypatch.setattr(m, "select_chord_model", lambda: calls.append(1) or Crema())
+    monkeypatch.setattr(m, "_chord_model", None)
+    monkeypatch.setenv("TABIT_CHORD_BACKEND", "crema")
+    now = [1000.0]
+    monkeypatch.setattr(m.time, "monotonic", lambda: now[0])
+    m._get_chord_model()
+    now[0] += 10_000
+    m._get_chord_model()
+    assert calls == [1]

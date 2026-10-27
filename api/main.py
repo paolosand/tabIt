@@ -2,6 +2,7 @@ import logging
 import os
 import tempfile
 import threading
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
@@ -12,7 +13,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from engine import __version__ as ENGINE_VERSION, engine_version
-from engine.chord_backend import backend_of, select_chord_model
+from engine.chord_backend import backend_of, requested_backend, select_chord_model
 from api.cache import ChartCache
 from api.jobs import JobStore
 from api.videoid import extract_video_id
@@ -21,14 +22,25 @@ logger = logging.getLogger(__name__)
 
 _chord_model = None
 _chord_model_lock = threading.Lock()
+_chord_model_at = 0.0
+# After a silent btc -> crema fallback, try btc again on a later job, but not on
+# every request while offline (each attempt can wait out a network timeout).
+BTC_RETRY_SEC = 60.0
 
 
 def _get_chord_model():
-    """Process-wide chord model: weights load once, not once per job."""
-    global _chord_model
+    """Process-wide chord model: weights load once, not once per job. If the
+    default btc backend fell back to crema (weights unavailable), retry btc
+    periodically instead of pinning crema until restart."""
+    global _chord_model, _chord_model_at
     with _chord_model_lock:
-        if _chord_model is None:
+        fell_back = (_chord_model is not None
+                     and backend_of(_chord_model) == "crema"
+                     and requested_backend() == ("btc", False)
+                     and time.monotonic() - _chord_model_at >= BTC_RETRY_SEC)
+        if _chord_model is None or fell_back:
             _chord_model = select_chord_model()
+            _chord_model_at = time.monotonic()
         return _chord_model
 
 
@@ -89,9 +101,17 @@ class AnalyzeBody(BaseModel):
     url: str
 
 
+def _health_engine_version() -> str:
+    """Backend-tagged version without loading (or downloading) any model."""
+    with _chord_model_lock:
+        model = _chord_model
+    backend = backend_of(model) if model is not None else requested_backend()[0]
+    return engine_version(backend)
+
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "engineVersion": ENGINE_VERSION}
+    return {"status": "ok", "engineVersion": _health_engine_version()}
 
 
 @app.post("/analyze", status_code=202)
