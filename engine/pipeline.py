@@ -2,13 +2,14 @@ import shutil
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
-from engine import __version__
+from engine import engine_version
 from engine.ingest import ingest
 from engine.separate import separate, harmonic_mix
 from engine.beats import track_beats
 from engine.key import detect_key
 from engine.bass import predict_bass_pitch, window_bass_notes
-from engine.chords import CremaChordModel, raw_to_segments
+from engine.chord_backend import backend_of, select_chord_model
+from engine.chords import raw_to_segments
 from engine.scales import suggest_scales
 from engine.postprocess import (
     snap_to_beats, merge_adjacent, reconcile_bass, apply_key_prior,
@@ -31,36 +32,47 @@ def _report(on_step, step):
 
 def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False,
             on_step=None) -> Chart:
+    # Resolved first: an explicit-btc request with no weights raises here,
+    # before a workdir exists to leak.
+    chord_model = chord_model or select_chord_model()
+    backend = backend_of(chord_model)
     own_workdir = workdir is None
     workdir = workdir or tempfile.mkdtemp(prefix="tabit_")
-    chord_model = chord_model or CremaChordModel()
     try:
         _report(on_step, "ingest")
-        # crepe (worker thread) and crema (main thread) both resolve
-        # tensorflow.keras lazily on first use, and TF's LazyLoader is not
-        # thread-safe -- concurrent first access can raise ModuleNotFoundError.
-        # Materialize it once on this thread before any worker starts.
-        import tensorflow.keras  # noqa: F401
+        if backend == "crema":
+            # crepe (worker thread) and crema (main thread) both resolve
+            # tensorflow.keras lazily on first use, and TF's LazyLoader is not
+            # thread-safe -- concurrent first access can raise ModuleNotFoundError.
+            # Materialize it once on this thread before any worker starts.
+            import tensorflow.keras  # noqa: F401
 
         ingested = ingest(src, workdir)
         # Stage graph: key and beat tracking need only the original wav, so
-        # they overlap separation; the bulk bass pitch track overlaps the
-        # chord model (which stays on this thread). The underlying model
-        # libraries (torch, TF, numpy) release the GIL during inference.
+        # they overlap the chord stage. For crema that stage is separation +
+        # the chord model, with the bulk bass pitch track overlapping the chord
+        # model (which stays on this thread). The underlying model libraries
+        # (torch, TF, numpy) release the GIL during inference.
         with ThreadPoolExecutor(max_workers=3) as pool:
             key_fut = pool.submit(detect_key, ingested.wav_path)
             # Track beats on the full mix, not the drum-less harmonic mix:
             # without drums the onset evidence is weak and librosa's 120-BPM
             # prior double-times slow songs (true ~60 reported as ~120).
             beats_fut = pool.submit(track_beats, ingested.wav_path)
-            _report(on_step, "separate")
-            stems = separate(ingested.wav_path, workdir)
-            harm = harmonic_mix(stems, workdir)
+            if backend == "crema":
+                _report(on_step, "separate")
+                stems = separate(ingested.wav_path, workdir)
+                harm = harmonic_mix(stems, workdir)
 
-            bass_src = stems.get("bass", ingested.wav_path)
-            bass_fut = pool.submit(predict_bass_pitch, bass_src)
-            _report(on_step, "chords")
-            raws = chord_model.predict(harm)
+                bass_src = stems.get("bass", ingested.wav_path)
+                bass_fut = pool.submit(predict_bass_pitch, bass_src)
+                _report(on_step, "chords")
+                raws = chord_model.predict(harm)
+            else:
+                # BTC reads the original mix and has no slash chords, so there
+                # are no stems and no bass pass: every segment's bass is its root.
+                _report(on_step, "chords")
+                raws = chord_model.predict(ingested.wav_path)
 
             bpm, beats = beats_fut.result()
             key = key_fut.result()
@@ -69,7 +81,8 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
             segs = snap_to_beats(segs, beats)
             segs = merge_adjacent(segs)
 
-            segs = reconcile_bass(segs, window_bass_notes(bass_fut.result(), segs))
+            if backend == "crema":
+                segs = reconcile_bass(segs, window_bass_notes(bass_fut.result(), segs))
         _report(on_step, "finalize")
         segs = apply_key_prior(segs, key)
         # Runs after apply_key_prior on purpose -- the x0.7 out-of-key dock widens
@@ -84,7 +97,7 @@ def analyze(src, *, created_at, workdir=None, chord_model=None, keep_audio=False
 
         return Chart(
             source=ingested.source,
-            analysis=Analysis(engineVersion=__version__, createdAt=created_at),
+            analysis=Analysis(engineVersion=engine_version(backend), createdAt=created_at),
             key=key,
             scales=suggest_scales(key.tonic, key.mode),
             tempo=Tempo(bpm=bpm),
