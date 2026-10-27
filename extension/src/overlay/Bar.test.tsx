@@ -40,3 +40,24 @@ test('unknown step id defaults to the first step active', () => {
   render(<Bar variant="loading" step="warp-drive" />);
   expect(screen.getAllByRole('listitem')[0]).toHaveClass('tabit-check-active');
 });
+
+test('btc backend: ingest straight to chords drops the separation step', () => {
+  const { rerender } = render(<Bar variant="loading" step="ingest" />);
+  expect(screen.getByText('Separate instruments')).toBeInTheDocument();
+  rerender(<Bar variant="loading" step="chords" />);
+  expect(screen.queryByText('Separate instruments')).not.toBeInTheDocument();
+  const items = screen.getAllByRole('listitem');
+  expect(items.map((el) => el.textContent)).toEqual([
+    expect.stringContaining('Fetch audio'),
+    expect.stringContaining('Find chords'),
+    expect.stringContaining('Build chart'),
+  ]);
+  expect(items[1]).toHaveClass('tabit-check-active');
+});
+
+test('crema backend: separate reported, so the full checklist stays', () => {
+  const { rerender } = render(<Bar variant="loading" step="ingest" />);
+  rerender(<Bar variant="loading" step="separate" />);
+  rerender(<Bar variant="loading" step="chords" />);
+  expect(screen.getByText('Separate instruments')).toHaveClass('tabit-check-done');
+});

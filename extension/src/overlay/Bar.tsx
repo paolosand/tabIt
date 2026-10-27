@@ -2,6 +2,8 @@
  *  Rendered inside the shadow root; all visual styling lives in classes from styles.ts
  *  (shadow DOM has no access to a global stylesheet, and pseudo-states like :hover need
  *  real CSS classes rather than inline styles). */
+import { useRef } from 'react';
+
 export type BarProps =
   | { variant: 'collapsed'; onGetChords: () => void }
   | { variant: 'loading'; step?: string }
@@ -17,6 +19,40 @@ const PIPELINE_STEPS = [
   { id: 'chords', label: 'Find chords' },
   { id: 'finalize', label: 'Build chart' },
 ] as const;
+
+/** The BTC chord backend never separates stems, so the server goes straight from
+ *  `ingest` to `chords`. Having watched exactly that jump, drop the separation step
+ *  rather than show it as a fake completed one. Cold renders (no `ingest` seen) and
+ *  the crema backend, which reports `separate`, keep the full checklist. */
+function LoadingBar({ step }: { step?: string }) {
+  const seen = useRef(new Set<string>());
+  if (step) seen.current.add(step);
+  const skipSeparate = seen.current.has('ingest') && !seen.current.has('separate')
+    && (step === 'chords' || step === 'finalize');
+  const steps = PIPELINE_STEPS.filter((s) => !(skipSeparate && s.id === 'separate'));
+  const active = Math.max(0, steps.findIndex((s) => s.id === step));
+  return (
+    <div className="tabit-bar tabit-bar-loading" data-state="loading">
+      <Wordmark />
+      <div className="tabit-checklist" role="list" aria-label="analysis progress">
+        {steps.map((s, i) => {
+          const state = i < active ? 'done' : i === active ? 'active' : 'pending';
+          return (
+            <span
+              key={s.id}
+              role="listitem"
+              className={`tabit-check-item tabit-check-${state}`}
+              aria-current={state === 'active' ? 'step' : undefined}
+            >
+              <span className="tabit-check-icon" aria-hidden="true">✓</span>
+              {s.label}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 const Wordmark = () => <span className="tabit-wordmark">tabIt</span>;
 
@@ -37,28 +73,7 @@ export function Bar(props: BarProps) {
   }
 
   if (props.variant === 'loading') {
-    const active = Math.max(0, PIPELINE_STEPS.findIndex((s) => s.id === props.step));
-    return (
-      <div className="tabit-bar tabit-bar-loading" data-state="loading">
-        <Wordmark />
-        <div className="tabit-checklist" role="list" aria-label="analysis progress">
-          {PIPELINE_STEPS.map((s, i) => {
-            const state = i < active ? 'done' : i === active ? 'active' : 'pending';
-            return (
-              <span
-                key={s.id}
-                role="listitem"
-                className={`tabit-check-item tabit-check-${state}`}
-                aria-current={state === 'active' ? 'step' : undefined}
-              >
-                <span className="tabit-check-icon" aria-hidden="true">✓</span>
-                {s.label}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-    );
+    return <LoadingBar step={props.step} />;
   }
 
   if (props.variant === 'offline') {
