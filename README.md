@@ -206,12 +206,43 @@ design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/
 | | |
 |---|---|
 | [Demucs](https://github.com/facebookresearch/demucs) | source separation (harmonic mix + bass stem) |
-| [crema](https://github.com/bmcfee/crema) | chord recognition |
+| [BTC](https://github.com/jayg996/BTC-ISMIR19) | chord recognition (default; see below) |
+| [crema](https://github.com/bmcfee/crema) | chord recognition (`TABIT_CHORD_BACKEND=crema`) |
 | [librosa](https://librosa.org) | beat and tempo tracking |
 | [Essentia](https://essentia.upf.edu) | key detection |
 | [CREPE](https://github.com/marl/crepe) | bass pitch tracking |
 | [mir_eval](https://github.com/mir-evaluation/mir_eval) | accuracy harness |
 | [FastAPI](https://fastapi.tiangolo.com) · [React 19](https://react.dev) · [Vite](https://vite.dev) · [esbuild](https://esbuild.github.io) | the app around the engine |
+
+## Chord recognition
+
+The default chord backend is **BTC**, the Bi-directional Transformer for Chord
+recognition by Park et al. (ISMIR 2019), <https://github.com/jayg996/BTC-ISMIR19>.
+Its code (MIT, (c) 2019 Jonggwon Park) is vendored, trimmed to inference, in
+[`engine/vendor/btc`](engine/vendor/btc) with the upstream licence and a notice.
+BTC reads the original mix, so it skips source separation and bass tracking
+(about 1 s instead of about 30 s per song) and emits no slash chords. Segments
+shorter than 0.5 s are merged into their neighbours.
+
+The pretrained weights are by the authors. They are not in this repository: they
+are downloaded at first use from the authors' repo at a pinned commit, verified
+against a pinned SHA-256, and stored under `~/Library/Application Support/tabIt/models`
+(override with `TABIT_MODELS_DIR`). The authors state no licence for the weights,
+which were trained on commercial recordings, so their terms for commercial use are
+unconfirmed; tabIt is non-commercial.
+
+Choose the backend with `TABIT_CHORD_BACKEND=btc|crema`. If BTC's weights can't be
+fetched and you didn't ask for btc explicitly, tabIt falls back to crema with a
+logged warning; an explicit `btc` raises instead.
+
+```bibtex
+@inproceedings{park2019bi,
+  title={A Bi-Directional Transformer for Musical Chord Recognition},
+  author={Park, Jonggwon and Choi, Kyoungho and Jeon, Sungwook and Kim, Dokyun and Park, Jonghun},
+  booktitle={Proceedings of the 20th International Society for Music Information Retrieval Conference (ISMIR)},
+  year={2019}
+}
+```
 
 ## License
 
