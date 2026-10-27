@@ -13,14 +13,12 @@ on:
       - 'packaging/**'
       - 'helper/**'
       - 'pyproject.toml'
-      - 'constraints-build.txt'
       - '.github/workflows/installer-e2e.yml'
   pull_request:
     paths:
       - 'packaging/**'
       - 'helper/**'
       - 'pyproject.toml'
-      - 'constraints-build.txt'
       - '.github/workflows/installer-e2e.yml'
   release:
     types: [published]
