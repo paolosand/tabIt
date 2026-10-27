@@ -71,6 +71,8 @@ def raw_to_segments(raws: list[RawChord]) -> list[ChordSegment]:
 class CremaChordModel:
     """Chord estimator backed by crema (large-vocabulary, structured, slash-capable)."""
 
+    backend = "crema"
+
     def predict(self, wav_path: str) -> list[RawChord]:
         from crema.analyze import analyze
 
