@@ -51,6 +51,7 @@ def normalize(label: str, level: str = "sevenths"):
     unparseable labels.
     """
     s = (label or "").strip().split("/")[0]
+    s = s[:1].upper() + s[1:]  # lowercase roots ('am7', 'bb') are common in UG
     m = _ROOT_RE.match(s)
     if not m:
         return None
@@ -66,6 +67,15 @@ def normalize(label: str, level: str = "sevenths"):
     elif level == "majmin":
         q = "min" if q in ("min", "min7") else "maj"
     return (pc % 12, q)
+
+
+_NO_CHORD = {"N", "N.C.", "NC", "N.C", "", "X"}
+
+
+def count_unparseable(seq) -> int:
+    """Labels that are neither a chord nor an explicit no-chord marker."""
+    return sum(1 for x in seq if isinstance(x, str)
+               and x.strip().upper() not in _NO_CHORD and normalize(x) is None)
 
 
 def fmt(token) -> str:
@@ -207,13 +217,37 @@ def _score_sections(secs, h, level, shift):
     return out
 
 
-def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None) -> dict:
+def choose_shift(ref_sections, hyp_seq, level: str = "majmin", min_margin=None) -> dict:
+    """Pick the ref key shift for a whole song (total semiglobal cost over sections).
+
+    A non-zero shift is accepted only if it beats shift 0 by at least
+    `min_margin` cost (default max(2, 10% of total ref chords)); otherwise a
+    short or simplified chart can "fit" a wrong key by luck. Ties among
+    non-zero shifts prefer the smallest. Returns shift, margin (cost0 - best
+    cost over all shifts), cost0, cost.
+    """
+    h = _tokens(hyp_seq, level)
+    secs = [(s["name"], _tokens(s["chords"], level)) for s in ref_sections]
+    n_ref = sum(len(t) for _, t in secs)
+    if min_margin is None:
+        min_margin = max(2, -(-n_ref // 10))
+    costs = [sum(a["cost"] for a in _score_sections(secs, h, level, sh))
+             for sh in range(12)]
+    best = _pick_shift(lambda sh: costs[sh])
+    margin = costs[0] - costs[best]
+    shift = best if margin >= min_margin else 0
+    return {"shift": shift, "margin": margin, "cost0": costs[0], "cost": costs[shift]}
+
+
+def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None,
+               shift=None) -> dict:
     """Score one song's hypothesis against its UG sections.
 
-    ref_sections: [{name, chords}]. The ref key shift is chosen once for the
-    whole song (min total semiglobal cost, ties prefer 0) and applied to every
-    section. Per section: semiglobal recall, deletions (with neighbours and
+    ref_sections: [{name, chords}]. The ref key shift is chosen once per song
+    by choose_shift() AT THE MAJMIN LEVEL (with a minimum cost margin) and
+    reused for every level and section; pass `shift` to override. Per section: semiglobal recall, deletions (with neighbours and
     whether the chord appears elsewhere in hyp: "timing" = passing-chord miss,
+    incl. when the chord shows up as an insertion/substitution nearby;
     "vocab" = the engine never produced it), substitutions, insertions.
     Overall: recall = total matches / total ref chords; insertion_rate = total
     in-window insertions / total ref chords; vocabulary recall of distinct ref
@@ -223,10 +257,11 @@ def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None) -> d
     h = _tokens(hyp_seq, level)
     secs = [(s["name"], _tokens(s["chords"], level)) for s in ref_sections]
 
-    def total_cost(s):
-        return sum(a["cost"] for a in _score_sections(secs, h, level, s))
-
-    shift = _pick_shift(total_cost)
+    if shift is None:
+        pick = choose_shift(ref_sections, hyp_seq, "majmin")
+    else:
+        pick = {"shift": shift, "margin": None}
+    shift = pick["shift"]
     sections = _score_sections(secs, h, level, shift)
     unshifted = _score_sections(secs, h, level, 0)
 
@@ -248,6 +283,9 @@ def score_song(ref_sections, hyp_seq, level: str = "majmin", full_ref=None) -> d
         "level": level,
         "shift": shift,
         "key_mismatch": shift != 0,
+        "shift_margin": pick["margin"],
+        "unparseable": {"ref": sum(count_unparseable(x["chords"]) for x in ref_sections),
+                        "hyp": count_unparseable(hyp_seq)},
         "sections": sections,
         "recall": sum(s["matches"] for s in sections) / n_ref if n_ref else 0.0,
         "unshifted_recall": (sum(s["matches"] for s in unshifted) / n_ref) if n_ref else 0.0,

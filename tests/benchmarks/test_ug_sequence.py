@@ -90,3 +90,24 @@ def test_engine_hyp_caches_and_never_reanalyzes(tmp_path):
     assert engine_hyp(song, tmp_path, analyze_fn=fake) == ["C:maj", "A:min"]
     assert engine_hyp(song, tmp_path, analyze_fn=fake) == ["C:maj", "A:min"]
     assert len(calls) == 1 and "vidX" in calls[0]
+
+
+def test_report_shows_margin_and_both_recalls_and_unparseable(songs_json):
+    res = run_benchmark(load_songs(songs_json),
+                        hyp_fn=lambda s: [c["label"] for c in HYPS[s["youtube_id"]]])
+    md = render_markdown(res)
+    assert "margin" in md and "unshifted" in md and "unparseable" in md.lower()
+
+
+def test_run_benchmark_uses_one_shift_for_all_levels(songs_json):
+    res = run_benchmark(load_songs(songs_json),
+                        hyp_fn=lambda s: [c["label"] for c in HYPS[s["youtube_id"]]])
+    for s in res["songs"]:
+        assert s["levels"]["root"]["shift"] == s["levels"]["majmin"]["shift"]
+
+
+def test_ug_report_files_are_gitignored():
+    import subprocess
+    out = subprocess.run(["git", "check-ignore", "benchmarks/results/ug_sequence_x.md"],
+                         capture_output=True, text=True)
+    assert out.returncode == 0

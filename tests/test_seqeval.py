@@ -205,3 +205,54 @@ def test_fmt_labels():
     assert fmt((10, "maj")) == "A#"
     assert fmt((0, "7")) == "C7"
     assert fmt((2, "")) == "D"
+
+
+def test_spurious_shift_rejected_without_cost_margin():
+    sections = [{"name": "verse", "chords": ["C", "F", "C"]}]
+    hyp = "C G C G C G F C C G F C A F G C G F C".split()
+    s = score_song(sections, hyp, "majmin")
+    assert s["shift"] == 0 and s["key_mismatch"] is False
+    assert s["recall"] == pytest.approx(s["unshifted_recall"])
+    assert s["recall"] < 1.0
+    assert s["shift_margin"] < 2
+
+
+def test_real_shift_accepted_with_margin_and_reported():
+    sections = [{"name": "v", "chords": ["C", "G", "Am", "F", "C", "G"]}]
+    s = score_song(sections, ["D", "A", "Bm", "G", "D", "A"], "majmin")
+    assert s["shift"] == 2 and s["shift_margin"] >= 2
+
+
+def test_same_shift_across_levels():
+    sections = [{"name": "v", "chords": ["C", "G", "Am7", "F"]}]
+    hyp = ["D", "A", "Bm", "G"]
+    shifts = {lv: score_song(sections, hyp, lv)["shift"]
+              for lv in ("root", "majmin", "sevenths")}
+    assert set(shifts.values()) == {2}
+
+
+def test_root_level_uses_majmin_shift_even_if_root_alone_would_differ():
+    # at root level alone, ref Am F vs hyp C F fits shift 3 (A->C, F->F? no) --
+    # pin behaviour: an explicit shift is honoured and default comes from majmin
+    sections = [{"name": "v", "chords": ["Am", "Dm", "Em", "Am"]}]
+    hyp = ["A", "D", "E", "A"]
+    assert score_song(sections, hyp, "root")["shift"] == \
+        score_song(sections, hyp, "majmin")["shift"]
+
+
+def test_normalize_lowercase_root():
+    assert normalize("am7") == (9, "min7")
+    assert normalize("bb") == (10, "maj")
+    assert normalize("f#m") == (6, "min")
+
+
+def test_unparseable_labels_counted_not_silent():
+    sections = [{"name": "v", "chords": ["C", "G", "x?"]}]
+    s = score_song(sections, ["C", "N", "G", "???", "H"], "majmin")
+    assert s["unparseable"] == {"ref": 1, "hyp": 2}  # N is no-chord, not garbage
+
+
+def test_deleted_chord_present_in_window_as_insertion_is_timing():
+    s = score_song(SECTIONS, ["C", "Am", "F", "G"], "majmin")
+    d = s["sections"][0]["deletions"][0]
+    assert d["chord"] == "G" and d["kind"] == "timing"

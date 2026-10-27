@@ -65,6 +65,7 @@ def run_benchmark(songs, hyp_fn, levels=LEVELS) -> dict:
             hyp = hyp_fn(song)
             if not hyp:
                 raise ValueError("empty hypothesis")
+            # score_song picks the key shift at majmin for every level
             for lv in levels:
                 row["levels"][lv] = score_song(
                     song["sections"], hyp, lv,
@@ -113,8 +114,11 @@ def render_markdown(results: dict, tag: str = "") -> str:
             continue
         s = r["levels"]["majmin"]
         flag = " (KEY MISMATCH)" if s["key_mismatch"] else ""
-        lines.append(f"- Transposition shift: {s['shift']} semitones{flag}; "
-                     f"recall unshifted {s['unshifted_recall']:.2f} -> shifted {s['recall']:.2f}")
+        lines.append(f"- Transposition shift: {s['shift']} semitones{flag}, cost margin "
+                     f"over unshifted {s['shift_margin']}; recall unshifted "
+                     f"{s['unshifted_recall']:.2f}, with shift {s['recall']:.2f}")
+        up = s["unparseable"]
+        lines.append(f"- Unparseable labels dropped: ref {up['ref']}, hyp {up['hyp']}")
         lines.append(f"- majmin recall {s['recall']:.2f}, root recall "
                      f"{r['levels']['root']['recall']:.2f}, whole-song global recall "
                      f"{s['whole_song']['recall']:.2f}")

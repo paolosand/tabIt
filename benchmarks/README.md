@@ -74,3 +74,17 @@ scores the engine's chord *sequence* against Ultimate Guitar section charts
 Engine hypotheses are cached in `benchmarks/.cache_ug/`; `--hyp-dir` scores
 precomputed `[{start,end,label}]` files (`<youtube_id>.json`) from other models.
 The raw chart data and the cache are git-ignored; never commit them.
+
+Notes on the UG numbers:
+- Report files `results/ug_sequence_*.md` are git-ignored: they embed
+  UG-derived chords. Do not commit them.
+- The key shift is chosen once per song at majmin and reused at every level. A
+  non-zero shift needs a cost margin of at least max(2, 10% of ref chords) over
+  no shift; the report shows the margin and recall both unshifted and shifted.
+- `insertion_rate` counts only insertions inside each section's matched window
+  (divided by total ref chords); extra chords outside it are free.
+- A missed chord that appears elsewhere in the hypothesis (including nearby as an
+  insertion) is classed `timing`; one the hypothesis never contains is `vocab`.
+- dim is folded into min, aug/sus/5/add into maj, so these scores are NOT
+  directly comparable to the mir_eval benchmark in `engine/eval.py`.
+- Unparseable labels (not chords, not N) are dropped but counted per song.

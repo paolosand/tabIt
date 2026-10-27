@@ -47,3 +47,4 @@ separated/
 benchmarks/.cache_ug/
 benchmarks/ug_data/
 songs.json
+benchmarks/results/ug_sequence_*.md
