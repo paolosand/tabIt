@@ -3,6 +3,8 @@ from pathlib import Path
 
 APP_SUPPORT = Path.home() / "Library" / "Application Support" / "tabIt"
 ENV_DIR = APP_SUPPORT / "env"
+# The installer parks the previous environment here while it builds a new one.
+ENV_BACKUP_DIR = APP_SUPPORT / "env.old"
 BIN_DIR = APP_SUPPORT / "bin"
 CHARTS_DIR = APP_SUPPORT / "charts"
 # Downloaded model weights (BTC); re-fetched on first use, so uninstall always drops them.

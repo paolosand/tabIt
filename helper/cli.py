@@ -97,7 +97,7 @@ def _cmd_uninstall(args: argparse.Namespace) -> int:
             paths.TABIT_SYMLINK.unlink()
             print(f"removed {paths.TABIT_SYMLINK}")
 
-    for d in (paths.ENV_DIR, paths.BIN_DIR, paths.MODELS_DIR):
+    for d in (paths.ENV_DIR, paths.ENV_BACKUP_DIR, paths.BIN_DIR, paths.MODELS_DIR):
         if d.exists():
             shutil.rmtree(d)
             print(f"removed {d}")

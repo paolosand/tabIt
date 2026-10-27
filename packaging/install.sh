@@ -10,8 +10,9 @@ set -eu
 
 TABIT_REPO="${TABIT_REPO:-https://github.com/paolosand/tabIt}"
 # Pinned release: bump per release so `curl | sh` always installs a
-# known-good version (override with TABIT_REF=main for bleeding edge).
-TABIT_REF="${TABIT_REF:-v0.3.1}"
+# known-good version (override with TABIT_REF=main for bleeding edge, or pin
+# TABIT_REF=v0.3.1 for the previous Demucs + crema pipeline with slash chords).
+TABIT_REF="${TABIT_REF:-v0.4.0}"
 FFMPEG_RELEASE="b6.1.1"
 # Pinned checksums for the static ffmpeg binaries fetched below — computed
 # once from the b6.1.1 release assets. Bump these together with FFMPEG_RELEASE.
@@ -27,6 +28,27 @@ HEALTH_URL="http://127.0.0.1:$TABIT_PORT/health"
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
+
+# 0.3.x environments carry ~2 GB of TensorFlow / Demucs / crema / CREPE packages
+# that 0.4 no longer uses. `uv pip install` never uninstalls what a new version
+# stopped requiring, so such an environment is rebuilt instead of reused.
+legacy_env() {
+  [ -x "$ENV_DIR/bin/python" ] || return 1
+  "$ENV_DIR/bin/python" -c '
+import importlib.util, sys
+mods = ("tensorflow", "demucs", "crema", "crepe")
+sys.exit(0 if any(importlib.util.find_spec(m) for m in mods) else 1)' 2>/dev/null
+}
+
+# $1 = true to create the venv first. Kept as a function so the caller can roll
+# back when the legacy-environment swap fails halfway.
+install_engine() {
+  if [ "$1" = true ]; then
+    "$UV" venv --python 3.11 "$ENV_DIR" || return 1
+  fi
+  "$UV" pip install --python "$ENV_DIR/bin/python" \
+    "tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
+}
 
 # Wrapping the whole install in main(), called only as the literal last line,
 # means a truncated `curl | sh` (network cut off mid-stream) hits a shell
@@ -46,11 +68,17 @@ main() {
     *) fail "unsupported architecture: $(uname -m)" ;;
   esac
 
+  # Measured for 0.4.0: the environment is ~1 GB and uv's wheel cache another
+  # ~1 GB, plus ffmpeg and the 12 MB model: a fresh install needs ~2 GB, so
+  # require 3. Replacing a 0.3.x environment keeps the old ~2.2 GB one until
+  # the new one is built, so that case needs ~4.2 GB: require 5.
+  need_gb=3
+  if legacy_env; then need_gb=5; fi
   avail_gb="$(df -g "$HOME" | awk 'NR==2 {print $4}')"
   case "$avail_gb" in
     ''|*[!0-9]*) fail "could not determine free disk space for $HOME (df output changed?)" ;;
   esac
-  [ "$avail_gb" -ge 8 ] || fail "about 8 GB of free disk is needed (found ${avail_gb} GB free)"
+  [ "$avail_gb" -ge "$need_gb" ] || fail "about $need_gb GB of free disk is needed (found ${avail_gb} GB free)"
 
   upgrading=false
   if health="$(curl -sf --max-time 2 "$HEALTH_URL" 2>/dev/null)"; then
@@ -91,26 +119,39 @@ main() {
 
   # --- python environment --------------------------------------------------------
   mkdir -p "$APP_SUPPORT" "$BIN_DIR"
-  if [ -x "$ENV_DIR/bin/python" ] && "$ENV_DIR/bin/python" --version >/dev/null 2>&1; then
-    step "Reusing the existing Python environment"
-  else
-    step "Creating the Python 3.11 environment (first run downloads ~2 GB of wheels)"
-    "$UV" venv --python 3.11 "$ENV_DIR"
+  # A run interrupted mid-swap leaves the old environment behind: put it back if
+  # the new one never got created, otherwise drop it.
+  if [ -d "$ENV_DIR.old" ]; then
+    if [ -e "$ENV_DIR" ]; then rm -rf "$ENV_DIR.old"; else mv "$ENV_DIR.old" "$ENV_DIR"; fi
   fi
 
-  workdir="$(mktemp -d)"
-  trap 'rm -rf "$workdir"' EXIT
-  # crema's legacy build needs an old setuptools at *build* time — same
-  # constraint the README documents for dev installs.
-  case "$TABIT_REPO" in
-    file://*) cp "${TABIT_REPO#file://}/constraints-build.txt" "$workdir/constraints-build.txt" ;;
-    *) curl -fsSL "$TABIT_REPO/raw/$TABIT_REF/constraints-build.txt" \
-         -o "$workdir/constraints-build.txt" ;;
-  esac
+  env_backup=""
+  if legacy_env; then
+    step "Replacing the 0.3.x Python environment (TensorFlow, Demucs and crema are no longer used)"
+    # Charts and downloaded models live beside the environment, not in it, and
+    # are kept. The old environment is only deleted once the new one works.
+    launchctl bootout "gui/$(id -u)/com.tabit.helper" 2>/dev/null || true
+    mv "$ENV_DIR" "$ENV_DIR.old"
+    env_backup="$ENV_DIR.old"
+  fi
 
-  "$UV" pip install --python "$ENV_DIR/bin/python" \
-    --build-constraints "$workdir/constraints-build.txt" \
-    "tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
+  create_env=true
+  if [ -x "$ENV_DIR/bin/python" ] && "$ENV_DIR/bin/python" --version >/dev/null 2>&1; then
+    step "Reusing the existing Python environment"
+    create_env=false
+  else
+    step "Creating the Python 3.11 environment (first run downloads ~1 GB of wheels)"
+  fi
+
+  if ! install_engine "$create_env"; then
+    if [ -n "$env_backup" ]; then
+      rm -rf "$ENV_DIR"
+      mv "$env_backup" "$ENV_DIR"
+      fail "installing tabIt failed; your previous environment was restored (start it with: tabit start)"
+    fi
+    fail "installing tabIt failed"
+  fi
+  [ -z "$env_backup" ] || rm -rf "$env_backup"
 
   # --- ffmpeg --------------------------------------------------------------------
   step "Installing ffmpeg (static build $FFMPEG_RELEASE)"
@@ -134,7 +175,7 @@ main() {
   "$BIN_DIR/ffmpeg" -version >/dev/null 2>&1 || fail "downloaded ffmpeg does not run"
 
   # --- models ---------------------------------------------------------------------
-  step "Downloading models (one-time; can take a few minutes)"
+  step "Downloading the chord model and running a test inference (one-time; ~12 MB)"
   "$ENV_DIR/bin/tabit" warmup
 
   # --- service --------------------------------------------------------------------
