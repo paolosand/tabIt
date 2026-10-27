@@ -8,10 +8,11 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
-from engine import __version__ as ENGINE_VERSION
-from engine.chords import CremaChordModel
+from engine import __version__ as ENGINE_VERSION, engine_version
+from engine.chord_backend import backend_of, select_chord_model
 from api.cache import ChartCache
 from api.jobs import JobStore
 from api.videoid import extract_video_id
@@ -27,8 +28,13 @@ def _get_chord_model():
     global _chord_model
     with _chord_model_lock:
         if _chord_model is None:
-            _chord_model = CremaChordModel()
+            _chord_model = select_chord_model()
         return _chord_model
+
+
+def _engine_version() -> str:
+    """Cache/chart version for the active chord backend (e.g. 0.4.0-btc)."""
+    return engine_version(backend_of(_get_chord_model()))
 
 
 def _warm_models() -> None:
@@ -154,7 +160,8 @@ async def analyze_submit(request: Request):
             detail="That doesn't look like a YouTube link. Paste a youtube.com or youtu.be URL, or upload an audio file.",
         )
 
-    cached = cache.get(video_id, ENGINE_VERSION)
+    # May fetch BTC weights on the very first call; keep it off the event loop.
+    cached = cache.get(video_id, await run_in_threadpool(_engine_version))
     if cached:
         return {"jobId": jobs.submit_done(cached)}
 
@@ -178,7 +185,7 @@ def analyze_status(job_id: str):
 
 @app.get("/chart/{video_id}")
 def chart(video_id: str):
-    found = cache.get(video_id, ENGINE_VERSION)
+    found = cache.get(video_id, _engine_version())
     if found is None:
         raise HTTPException(status_code=404, detail="not analyzed yet")
     return found
