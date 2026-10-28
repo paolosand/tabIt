@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "tabit-engine"
 version = "0.4.0"
@@ -35,6 +39,9 @@ tabit = "helper.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["engine*", "api*", "helper*"]
+
+[tool.setuptools.package-data]
+"engine.vendor.btc" = ["LICENSE", "NOTICE.md"]
 
 [tool.pytest.ini_options]
 markers = [
