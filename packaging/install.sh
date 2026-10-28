@@ -15,7 +15,7 @@ TABIT_REPO="${TABIT_REPO:-https://github.com/paolosand/tabIt}"
 # Pinned release: bump per release so `curl | sh` always installs a
 # known-good version (override with TABIT_REF=main for bleeding edge, or pin
 # TABIT_REF=v0.3.1 for the previous Demucs + crema pipeline with slash chords).
-TABIT_REF="${TABIT_REF:-v0.4.0}"
+TABIT_REF="${TABIT_REF:-v0.4.1}"
 FFMPEG_RELEASE="b6.1.1"
 # Pinned checksums for the static ffmpeg binaries fetched below — computed
 # once from the b6.1.1 release assets. Bump these together with FFMPEG_RELEASE.
