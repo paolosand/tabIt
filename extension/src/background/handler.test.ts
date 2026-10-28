@@ -108,13 +108,13 @@ test('pending job passes the pipeline step through', async () => {
 describe('handleGetHelperStatus', () => {
   const okJson = (body: unknown, status = 200) =>
     vi.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body });
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
   test('healthy current helper -> up, remembers it was seen', async () => {
     const f = okJson({ status: 'ok', engineVersion: '0.4.0' });
     vi.stubGlobal('fetch', f);
     expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
-    expect(f).toHaveBeenCalledWith('http://localhost:28224/health');
+    expect(f).toHaveBeenCalledWith('http://localhost:28224/health', expect.objectContaining({ signal: expect.anything() }));
     expect((await chrome.storage.local.get('helperSeen')).helperSeen).toBe(true);
   });
 
@@ -143,5 +143,17 @@ describe('handleGetHelperStatus', () => {
   test('500 -> down', async () => {
     vi.stubGlobal('fetch', okJson({}, 500));
     expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: false });
+  });
+
+  test('a failing storage read falls back to everSeen false', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    vi.spyOn(chrome.storage.local, 'get').mockRejectedValue(new Error('storage broken'));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: false });
+  });
+
+  test('a failing storage write does not discard a confirmed up result', async () => {
+    vi.stubGlobal('fetch', okJson({ status: 'ok', engineVersion: '0.4.0' }));
+    vi.spyOn(chrome.storage.local, 'set').mockRejectedValue(new Error('quota'));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
   });
 });

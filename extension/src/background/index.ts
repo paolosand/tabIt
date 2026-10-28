@@ -1,4 +1,4 @@
-import type { GetChartRequest, GetHelperStatusRequest } from '../messages';
+import type { GetChartRequest, GetHelperStatusRequest, HelperStatusResponse } from '../messages';
 import { handleGetChart, handleGetHelperStatus } from './handler';
 
 console.log('[tabit] background alive');
@@ -9,7 +9,9 @@ chrome.runtime.onMessage.addListener((msg: GetChartRequest | GetHelperStatusRequ
     return true; // async response
   }
   if (msg?.type === 'GET_HELPER_STATUS') {
-    handleGetHelperStatus().then(sendResponse);
+    handleGetHelperStatus()
+      .catch((): HelperStatusResponse => ({ state: 'down', everSeen: false }))
+      .then(sendResponse);
     return true;
   }
   return false;

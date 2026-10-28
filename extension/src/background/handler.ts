@@ -66,9 +66,19 @@ export async function handleGetChart(videoId: string): Promise<GetChartResponse>
 export async function handleGetHelperStatus(): Promise<HelperStatusResponse> {
   const status = await getHelperStatus();
   if (status.state === 'up') {
-    await chrome.storage.local.set({ helperSeen: true });
+    try {
+      await chrome.storage.local.set({ helperSeen: true });
+    } catch {
+      // Remembering is best-effort; the helper is up regardless.
+    }
     return { state: 'up', tooOld: isOlderThan(status.engineVersion, MIN_ENGINE_VERSION) };
   }
-  const { helperSeen } = await chrome.storage.local.get('helperSeen');
-  return { state: 'down', everSeen: helperSeen === true };
+  let everSeen = false;
+  try {
+    const { helperSeen } = await chrome.storage.local.get('helperSeen');
+    everSeen = helperSeen === true;
+  } catch {
+    // Unreadable storage: treat as never seen.
+  }
+  return { state: 'down', everSeen };
 }
