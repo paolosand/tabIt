@@ -52,6 +52,9 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip wheel . --no-deps -w "$RUNNER_TEMP/wheel"
+          # setuptools leaves an egg-info in the checkout; it must not shadow
+          # the installed distribution when later steps run from here.
+          rm -rf ./*.egg-info build
           ls "$RUNNER_TEMP/wheel"
 
       # Negative case, BEFORE the real install, in a throwaway HOME: with no
@@ -86,7 +89,7 @@ jobs:
       - name: VERSION file matches the installed engine
         run: |
           app="$HOME/Library/Application Support/tabIt"
-          want="$("$app/env/bin/python" -c 'import engine; print(engine.__version__)')"
+          want="$("$app/env/bin/python" -I -c 'import engine; print(engine.__version__)')"
           got="$(cat "$app/VERSION")"
           echo "engine=$want VERSION=$got"
           [ -n "$want" ] && [ "$want" = "$got" ]
@@ -94,7 +97,7 @@ jobs:
       - name: Engine was installed from the wheel, not from git
         run: |
           app="$HOME/Library/Application Support/tabIt"
-          url="$("$app/env/bin/python" -c "import importlib.metadata as m; print(m.distribution('tabit-engine').read_text('direct_url.json') or '')")"
+          url="$("$app/env/bin/python" -I -c "import importlib.metadata as m; print(m.distribution('tabit-engine').read_text('direct_url.json') or '')")"
           echo "$url"
           case "$url" in *git+*) echo "installed from git" >&2; exit 1 ;; esac
           case "$url" in *file://*) ;; *) echo "direct_url.json does not reference a file:// wheel" >&2; exit 1 ;; esac

@@ -38,13 +38,38 @@ fail() {
 
 # Is git safe to run? Decided WITHOUT running it: on a Mac that never had
 # developer tools /usr/bin/git is a shim whose mere execution pops Apple's
-# "install the command line tools" dialog. TABIT_ASSUME_NO_GIT=1 forces "no"
-# (used by the CI negative test).
+# "install the command line tools" dialog. `-ef` compares the files themselves,
+# so every spelling of the shim (/usr/bin//git, /bin/../usr/bin/git, a symlink
+# to it) is recognised. TABIT_ASSUME_NO_GIT=1 forces "no" (CI negative test).
 git_usable() {
   if [ "${TABIT_ASSUME_NO_GIT:-}" = 1 ]; then return 1; fi
   git_path="$(command -v git 2>/dev/null || true)"
-  if [ -n "$git_path" ] && [ "$git_path" != /usr/bin/git ]; then return 0; fi
+  if [ -n "$git_path" ] && ! [ "$git_path" -ef /usr/bin/git ]; then return 0; fi
   xcode-select -p >/dev/null 2>&1
+}
+
+# True when $1 starts with the zip magic (PK\003\004): a captive-portal HTML
+# page that curl -f accepted as 200 must not reach uv.
+is_zip() {
+  [ "$(head -c 4 "$1" 2>/dev/null | od -An -tx1 | tr -d ' \n')" = 504b0304 ]
+}
+
+# True only for a whole-string vX.Y.Z (a newline anywhere makes it fail).
+is_release_tag() {
+  expr "$1" : 'v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$' >/dev/null 2>&1
+}
+
+# Removes the temp wheel dir on INT/TERM/HUP. Replaced by restore_env if an
+# upgrade swap starts later (restore_env removes the dir too).
+wheel_signal() {
+  trap - INT TERM HUP
+  [ -z "${WHEEL_DIR:-}" ] || rm -rf "$WHEEL_DIR"
+  exit 1
+}
+
+# $1 = URL, $2 = destination file. Fails like curl does when the body is not a zip.
+download_wheel() {
+  curl -fsSL -o "$2" "$1" && is_zip "$2"
 }
 
 # Sets INSTALL_SPEC (what `uv pip install` is given). Order: TABIT_WHEEL, then
@@ -56,9 +81,13 @@ select_install_source() {
   if [ -n "${TABIT_WHEEL:-}" ]; then
     case "$TABIT_WHEEL" in
       https://*)
+        wheel_name="${TABIT_WHEEL%%[?#]*}"
+        wheel_name="${wheel_name##*/}"
+        case "$wheel_name" in *.whl) ;; *) fail "$no_download" ;; esac
         WHEEL_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tabit-wheel.XXXXXX")" || fail "could not create a temporary directory"
-        wheel="$WHEEL_DIR/${TABIT_WHEEL##*/}"
-        curl -fsSL -o "$wheel" "$TABIT_WHEEL" || fail "$no_download" ;;
+        trap wheel_signal INT TERM HUP
+        wheel="$WHEEL_DIR/$wheel_name"
+        download_wheel "$TABIT_WHEEL" "$wheel" || fail "$no_download" ;;
       *)
         [ -f "$TABIT_WHEEL" ] || fail "TABIT_WHEEL=$TABIT_WHEEL is not a file"
         wheel="$TABIT_WHEEL" ;;
@@ -66,16 +95,17 @@ select_install_source() {
     INSTALL_SPEC="${wheel}[api]"
     return 0
   fi
-  if [ "$TABIT_REPO" = "https://github.com/paolosand/tabIt" ] &&
-     printf '%s' "$TABIT_REF" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  if [ "$TABIT_REPO" = "https://github.com/paolosand/tabIt" ] && is_release_tag "$TABIT_REF"; then
     WHEEL_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tabit-wheel.XXXXXX")" || fail "could not create a temporary directory"
+    trap wheel_signal INT TERM HUP
     wheel="$WHEEL_DIR/tabit_engine-${TABIT_REF#v}-py3-none-any.whl"
-    if curl -fsSL -o "$wheel" "$TABIT_REPO/releases/download/$TABIT_REF/tabit_engine-${TABIT_REF#v}-py3-none-any.whl"; then
+    if download_wheel "$TABIT_REPO/releases/download/$TABIT_REF/tabit_engine-${TABIT_REF#v}-py3-none-any.whl" "$wheel"; then
       INSTALL_SPEC="${wheel}[api]"
       return 0
     fi
     rm -rf "$WHEEL_DIR"
     WHEEL_DIR=""
+    trap - INT TERM HUP
   fi
   git_usable || fail "$no_download"
   INSTALL_SPEC="tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
@@ -116,6 +146,7 @@ resume_old_agent() {
 # the start of the next run.
 restore_env() {
   trap - INT TERM HUP
+  [ -z "${WHEEL_DIR:-}" ] || rm -rf "$WHEEL_DIR"
   if [ -n "${env_backup:-}" ] && [ -d "$env_backup" ]; then
     rm -rf "$ENV_DIR"
     mv "$env_backup" "$ENV_DIR"
@@ -237,6 +268,8 @@ main() {
     step "Creating the Python 3.11 environment (first run downloads ~1 GB of wheels)"
   fi
 
+  # Rewritten after warmup succeeds; never left describing a replaced engine.
+  rm -f "$APP_SUPPORT/VERSION"
   if install_engine "$create_env"; then
     install_ok=true
   else
@@ -244,6 +277,7 @@ main() {
   fi
   [ -z "$WHEEL_DIR" ] || rm -rf "$WHEEL_DIR"
   WHEEL_DIR=""
+  [ -n "$env_backup" ] || trap - INT TERM HUP
   if [ "$install_ok" = false ]; then
     if [ -n "$env_backup" ]; then
       trap - INT TERM HUP
@@ -288,7 +322,7 @@ main() {
   fi
 
   # What is actually installed, whichever source it came from.
-  engine_version="$("$ENV_DIR/bin/python" -c 'import importlib.metadata as m; print(m.version("tabit-engine"))')" ||
+  engine_version="$("$ENV_DIR/bin/python" -I -c 'import importlib.metadata as m; print(m.version("tabit-engine"))')" ||
     fail "could not read the installed engine version"
   printf '%s\n' "$engine_version" > "$APP_SUPPORT/VERSION"
 
