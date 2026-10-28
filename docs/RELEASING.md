@@ -4,24 +4,28 @@
 
 `packaging/install.sh` pins `TABIT_REF` to the version written in the file on
 `main`. If a version bump is merged before the matching GitHub release exists,
-the public install command is broken until the tag, the release and the engine
-wheel all exist. Tag and publish immediately after merging.
+the installer cannot find the engine wheel and falls back to a git install, which
+needs git. A fresh Mac without developer tools therefore cannot install until
+the tag, the release and the engine wheel all exist. Tag and publish immediately
+after merging.
 
 ## Checklist
 
-1. Bump the version in all SIX places together (one `X.Y.Z`; `vX.Y.Z` for the
-   install.sh default):
+1. Bump the version in every place below, together (one `X.Y.Z`; `vX.Y.Z` for
+   the install.sh default). That is seven files holding eight literals, plus
+   three test literals:
    - `pyproject.toml` (`version`)
    - `engine/__init__.py` (`__version__`)
    - `extension/manifest.json` (`version`)
-   - `extension/package.json` and `extension/package-lock.json` (both
-     top-level `version` fields in the lock file)
+   - `extension/package.json` (`version`)
+   - `extension/package-lock.json` (both top-level `version` fields)
    - `packaging/install.sh` (`TABIT_REF` default, `vX.Y.Z`)
    - `.github/workflows/installer-e2e.yml` (the `"engineVersion":"..."`
      assertion)
-
-   Also update `RELEASE` in `tests/packaging/test_versions_match.py`; that
-   test fails if any place disagrees.
+   - the test literals: `RELEASE` in `tests/packaging/test_versions_match.py`
+     (that test fails if any place above disagrees), the engine-version
+     assertion in `tests/test_smoke.py` and the one in
+     `tests/test_chord_backend.py` (`test_engine_version_is_the_package_version`)
 2. Run the suites: `python -m pytest -q` and
    `cd extension && npx vitest run && npx tsc --noEmit`.
 3. Merge to `main`.
