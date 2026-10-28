@@ -13,6 +13,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 from engine import engine_version
 from engine.chord_backend import select_chord_model
 from api.cache import ChartCache
+from api.guard import LocalGuardMiddleware
 from api.jobs import JobStore
 from api.videoid import extract_video_id
 
@@ -61,6 +62,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Added last = outermost: the guard runs before CORS handling and routing.
+app.add_middleware(LocalGuardMiddleware)
 
 cache = ChartCache(os.environ.get("TABIT_CACHE_DIR", "data/charts"))
 jobs = JobStore()
