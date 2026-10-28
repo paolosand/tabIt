@@ -44,7 +44,8 @@ fail() {
 git_usable() {
   if [ "${TABIT_ASSUME_NO_GIT:-}" = 1 ]; then return 1; fi
   git_path="$(command -v git 2>/dev/null || true)"
-  if [ -n "$git_path" ] && ! [ "$git_path" -ef /usr/bin/git ]; then return 0; fi
+  [ -n "$git_path" ] || return 1  # no git on PATH at all: nothing to run
+  if ! [ "$git_path" -ef /usr/bin/git ]; then return 0; fi
   xcode-select -p >/dev/null 2>&1
 }
 
