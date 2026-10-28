@@ -94,7 +94,7 @@ pip install -e ".[dev]"
 
 Skip the manual environment entirely. The installer provisions Python 3.11
 via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and the chord-model weights
-(about 1 GB on disk in total, a couple of minutes), then runs the API as a
+(about 1 GB for the environment, plus about 1 GB of download cache, a couple of minutes), then runs the API as a
 background service that starts at login. It installs
 the latest tagged release, not main:
 

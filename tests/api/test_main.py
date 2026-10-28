@@ -189,10 +189,10 @@ def _stale_chart(version):
     return {**FAKE_CHART, "analysis": {**FAKE_CHART["analysis"], "engineVersion": version}}
 
 
-@pytest.mark.parametrize("old", ["0.3.1-crema", "0.3.0-crema", "0.4.0-crema", "0.4.0-btc"])
+@pytest.mark.parametrize("old", ["0.2.1", "0.4.0-crema", "0.4.0-btc"])
 def test_charts_cached_by_an_older_engine_are_not_served(tmp_path, monkeypatch, old):
-    """The cache key is videoId@engineVersion: the 0.3.x (Demucs + crema) charts a
-    user already has on disk must be re-analyzed, never served as current."""
+    """The cache key is videoId@engineVersion: the 0.2.1 (Demucs + crema) charts a
+    user already has on disk, and the unreleased 0.4.0-btc/-crema tags from main, must be re-analyzed, never served as current."""
     monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
     monkeypatch.setattr(m, "jobs", m.JobStore())
     ran = []
