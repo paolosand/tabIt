@@ -1,12 +1,16 @@
-import type { GetChartRequest } from '../messages';
-import { handleGetChart } from './handler';
+import type { GetChartRequest, GetHelperStatusRequest } from '../messages';
+import { handleGetChart, handleGetHelperStatus } from './handler';
 
 console.log('[tabit] background alive');
 
-chrome.runtime.onMessage.addListener((msg: GetChartRequest, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg: GetChartRequest | GetHelperStatusRequest, _sender, sendResponse) => {
   if (msg?.type === 'GET_CHART') {
     handleGetChart(msg.videoId).then(sendResponse);
     return true; // async response
+  }
+  if (msg?.type === 'GET_HELPER_STATUS') {
+    handleGetHelperStatus().then(sendResponse);
+    return true;
   }
   return false;
 });

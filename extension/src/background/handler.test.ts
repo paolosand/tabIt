@@ -1,8 +1,9 @@
 import { vi, type Mock } from 'vitest';
-import { handleGetChart } from './handler';
+import { handleGetChart, handleGetHelperStatus } from './handler';
 import * as api from './api';
 
 vi.mock('./api', () => ({
+  API_BASE: 'http://localhost:28224',
   fetchCachedChart: vi.fn(),
   submitAnalysis: vi.fn(),
   pollJobOnce: vi.fn(),
@@ -14,6 +15,7 @@ beforeEach(async () => {
   vi.clearAllMocks();
   // reset the session stub between tests
   (chrome.storage.session as unknown as { _data: Record<string, unknown> })._data = {};
+  (chrome.storage.local as unknown as { _data: Record<string, unknown> })._data = {};
 });
 
 test('session-cached chart returns done without network', async () => {
@@ -101,4 +103,45 @@ test('pending job passes the pipeline step through', async () => {
   (api.pollJobOnce as Mock).mockResolvedValue({ status: 'pending', step: 'chords' });
   const res = await handleGetChart('vid00000001');
   expect(res).toEqual({ status: 'pending', step: 'chords' });
+});
+
+describe('handleGetHelperStatus', () => {
+  const okJson = (body: unknown, status = 200) =>
+    vi.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body });
+  afterEach(() => vi.unstubAllGlobals());
+
+  test('healthy current helper -> up, remembers it was seen', async () => {
+    const f = okJson({ status: 'ok', engineVersion: '0.4.0' });
+    vi.stubGlobal('fetch', f);
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
+    expect(f).toHaveBeenCalledWith('http://localhost:28224/health');
+    expect((await chrome.storage.local.get('helperSeen')).helperSeen).toBe(true);
+  });
+
+  test('older helper -> up with tooOld', async () => {
+    vi.stubGlobal('fetch', okJson({ status: 'ok', engineVersion: '0.3.1' }));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: true });
+  });
+
+  test('network failure, never seen -> down, everSeen false', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: false });
+  });
+
+  test('network failure after helperSeen -> everSeen true', async () => {
+    await chrome.storage.local.set({ helperSeen: true });
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: true });
+  });
+
+  test('200 without engineVersion (other program on the port) -> down', async () => {
+    vi.stubGlobal('fetch', okJson({ hello: 'world' }));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: false });
+    expect((await chrome.storage.local.get('helperSeen')).helperSeen).toBeUndefined();
+  });
+
+  test('500 -> down', async () => {
+    vi.stubGlobal('fetch', okJson({}, 500));
+    expect(await handleGetHelperStatus()).toEqual({ state: 'down', everSeen: false });
+  });
 });
