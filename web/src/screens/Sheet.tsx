@@ -155,17 +155,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
-          <span
-            style={{
-              fontFamily: "'Fraunces', serif",
-              fontStyle: 'italic',
-              fontWeight: 600,
-              fontSize: 26,
-              color: 'oklch(0.28 0.02 70)',
-            }}
-          >
-            tabIt
-          </span>
+          <img src="/wordmark.svg" alt="tabIt" style={{ height: 26, width: 'auto', display: 'block' }} />
           <a
             href="#"
             onClick={(e) => {

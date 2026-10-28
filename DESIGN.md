@@ -17,11 +17,15 @@ Never `#000`/`#fff`; every neutral tinted warm.
 | Ink | `oklch(0.28 0.02 70)` | primary text, warm sepia-black |
 | Ink muted | `oklch(0.52 0.02 70)` | secondary text, metadata |
 | Rule line | `oklch(0.88 0.015 250)` | faint notebook feint-blue horizontal rules |
-| Margin line | `oklch(0.70 0.10 25)` | notebook red margin, used once, sparingly |
+| Margin line | `oklch(0.70 0.10 25)` | notebook red margin — web app / landing pages only, never in the extension's in-player component |
 | Highlighter | `oklch(0.90 0.12 92)` | warm amber marker behind the CURRENT chord |
+| Amber (progress) | `oklch(0.88 0.14 90)` | the in-player component's progress state only: done/current pipeline steps, current beat cell. Never decorative, never a hover or background fill |
+| Amber dot | `oklch(0.55 0.13 70)` | active beat-dot inside the amber current-beat cell |
 | Graphite | `oklch(0.55 0.02 70)` | pencil underline / "next" chord marker |
 
 **Confidence encoding:** high-confidence chords in full Ink; confidence lowers → ink lightens toward Ink-muted and a faint dotted underline appears. Never hide a low-confidence chord; soften it.
+
+**Brand rule (in-player component):** amber means progress — it's the only color used for the done/current pipeline steps and the current-beat cell. Margin red belongs to the notebook-margin motif on app/landing pages; it never appears in the extension's in-player strip (see `docs/design/TabIt Brand Handoff.dc.html`).
 
 ## Typography
 
@@ -31,6 +35,10 @@ Serif for content (songbook feel), clean sans for controls (product legibility).
 - **UI / controls / metadata:** system humanist sans: `-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif`. Small caps + letterspacing for labels (key/BPM tags).
 - Chord labels are the largest, boldest type on the page — they are the data.
 - Fixed rem scale, ratio ~1.25. Cap prose at 65ch.
+
+## Mark and wordmark
+
+The mark is a Fraunces bold-italic "t" over an amber swipe rotated −6°, on a paper tile; the wordmark is the same swipe sitting behind "It" in every state. Both are outlined vector assets (`docs/design/assets/icon.svg`, `wordmark.svg`), not live text — recreate the swipe only where no asset exists. Only the swipe slants; everything else (grid cells, icon borders) stays flat and square. Source assets and Chrome Web Store sizes live in `docs/design/assets/`; built-extension copies in `extension/icons/`; store-submission-only sizes in `packaging/store/`.
 
 ## Layout
 

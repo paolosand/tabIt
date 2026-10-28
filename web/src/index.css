@@ -9,6 +9,11 @@ a { color: oklch(0.42 0.09 250); text-decoration: underline; text-decoration-col
 a:hover { color: oklch(0.32 0.11 250); }
 ::selection { background: oklch(0.90 0.12 92); }
 
+/* The YouTube IFrame API replaces the mount div with its own <iframe>
+   (640x390 by default) outside React's control, so the fill has to be
+   forced from here rather than via inline styles on the mount div. */
+.tabit-yt-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
 @keyframes tabit-pulse {
   0%, 100% { opacity: 0.25; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-2px); }

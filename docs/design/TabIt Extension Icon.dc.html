@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&display=swap" rel="stylesheet">
+  <style>body{margin:0;background:oklch(0.972 0.008 85);} a{color:oklch(0.28 0.02 70);} a:hover{color:oklch(0.70 0.10 25);}</style>
+</helmet>
+<section style="padding:56px 56px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column; gap:28px; max-width:1240px;">
+<div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px;">Round 5</span><span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">the identity applied to the in-player component</span></div>
+<div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-wrap:wrap; gap:28px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+<div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:9px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Keeps (what already works)</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">Paper card on YouTube’s dark UI: warm and analog, and clearly not part of YouTube.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">The serif/sans split, now a strict rule: serif for headers and grid chords only.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">The ink button with tracked uppercase sans.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">Amber for the current beat.</span></div>
+<div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:9px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Adds (from the new mark)</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;"><strong>Amber = progress</strong>: the current beat, completed pipeline steps, and the wordmark’s “It”.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">The beat grid stays flat and square. The slant belongs to the logo only.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">The wordmark always carries the amber swipe on “It”, in every state.</span><span style="font-size:13px; line-height:1.55; text-wrap:pretty;">The processing spinner moves from red to amber/ink. Red stays YouTube’s.</span></div>
+</div>
+<div id="5a" style="display:flex; flex-direction:column; gap:12px;"><div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">5a</span><span style="font-size:13px; font-weight:600;">Idle</span><span style="font-size:12px; color:oklch(0.52 0.02 70);">unchanged apart from tokens; wordmark always carries the swipe</span></div><div style="background:oklch(0.15 0 0); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; width:100%; max-width:820px;"><div style="height:90px; background:linear-gradient(oklch(0.24 0 0), oklch(0.19 0 0));"></div><div style="height:3px; background:oklch(0.35 0 0);"><div style="width:52%; height:100%; background:oklch(0.62 0.22 27);"></div></div><div style="padding:14px 16px 18px;"><div style="background:oklch(0.988 0.006 85); border-radius:6px; padding:14px 22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:inline-flex;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:26px; line-height:1; position:relative; isolation:isolate; white-space:nowrap;">tab<span style="position:relative; display:inline-block; padding:0 2px;"><span style="position:absolute; left:-2px; right:-3px; top:24%; bottom:6%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative;">It</span></span></span><span style="font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.988 0.006 85); background:oklch(0.28 0.02 70); padding:10px 16px; border-radius:2px;">♪ Get chords</span></div></div></div></div>
+<div id="5b" style="display:flex; flex-direction:column; gap:12px;"><div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">5b</span><span style="font-size:13px; font-weight:600;">Processing</span><span style="font-size:12px; color:oklch(0.52 0.02 70);">done = amber check, now = amber ring, pending = hairline</span></div><div style="background:oklch(0.15 0 0); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; width:100%; max-width:820px;"><div style="height:90px; background:linear-gradient(oklch(0.24 0 0), oklch(0.19 0 0));"></div><div style="height:3px; background:oklch(0.35 0 0);"><div style="width:52%; height:100%; background:oklch(0.62 0.22 27);"></div></div><div style="padding:14px 16px 18px;"><div style="background:oklch(0.988 0.006 85); border-radius:6px; padding:14px 22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:inline-flex;" data-comment-anchor="8f0621827e-div"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:26px; line-height:1; position:relative; isolation:isolate; white-space:nowrap;">tab<span style="position:relative; display:inline-block; padding:0 2px;"><span style="position:absolute; left:-2px; right:-3px; top:24%; bottom:6%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative;">It</span></span></span><span style="display:flex; align-items:center; gap:8px; font-size:14px;  color:oklch(0.28 0.02 70);"><span style="width:16px; height:16px; border-radius:50%; background:oklch(0.88 0.14 90); color:oklch(0.28 0.02 70); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">✓</span>Fetch audio</span><span style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:oklch(0.28 0.02 70);"><span style="width:12px; height:12px; border-radius:50%; border:2.5px solid oklch(0.88 0.14 90); border-top-color:oklch(0.28 0.02 70);"></span>Separate instruments</span><span style="display:flex; align-items:center; gap:8px; font-size:14px;  color:oklch(0.52 0.02 70);"><span style="width:13px; height:13px; border-radius:50%; border:1.5px solid oklch(0.88 0.015 85);"></span>Find chords</span><span style="display:flex; align-items:center; gap:8px; font-size:14px;  color:oklch(0.52 0.02 70);"><span style="width:13px; height:13px; border-radius:50%; border:1.5px solid oklch(0.88 0.015 85);"></span>Build chart</span></div></div></div></div>
+<div id="5c" style="display:flex; flex-direction:column; gap:12px;"><div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"><span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">5c</span><span style="font-size:13px; font-weight:600;">Synced</span><span style="font-size:12px; color:oklch(0.52 0.02 70);">matches the live component: serif chords in the grid, amber current cell with beat dots, sans for all data</span></div><div style="background:oklch(0.15 0 0); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; width:100%; max-width:820px;"><div style="height:90px; background:linear-gradient(oklch(0.24 0 0), oklch(0.19 0 0));"></div><div style="height:3px; background:oklch(0.35 0 0);"><div style="width:52%; height:100%; background:oklch(0.62 0.22 27);"></div></div><div style="padding:14px 16px 18px;"><div style="background:oklch(0.988 0.006 85); border-radius:6px; padding:16px 22px 12px; display:flex; flex-direction:column; gap:26px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70);">
+<div style="display:flex; align-items:center; gap:22px; flex-wrap:wrap;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:28px; line-height:1; position:relative; isolation:isolate; white-space:nowrap;">tab<span style="position:relative; display:inline-block; padding:0 2px;"><span style="position:absolute; left:-2px; right:-3px; top:24%; bottom:6%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative;">It</span></span></span><span style="font-size:13.5px; white-space:nowrap;">Key <strong style="font-weight:700;">G# major</strong></span><span style="font-size:13.5px;"><strong style="font-weight:700;">112</strong> bpm</span><span style="font-size:13.5px; white-space:nowrap;">Solo <strong style="font-weight:700;">G# major pentatonic</strong></span>
+<span style="margin-left:auto; display:flex; align-items:center; gap:10px;"><span style="width:26px; height:26px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); display:flex; align-items:center; justify-content:center;">−</span><span style="font-weight:600; font-size:15px;">no shift</span><span style="width:26px; height:26px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); display:flex; align-items:center; justify-content:center;">+</span><span style="width:26px; height:26px; border-radius:50%; border:1.5px solid oklch(0.52 0.02 70 / 0.4); display:flex; align-items:center; justify-content:center; font-size:9px;">▲</span></span></div>
+<div style="display:flex;"><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"><span style="position:relative; font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:oklch(0.28 0.02 70);">D#</span></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"><div style="position:absolute; inset:0; background:oklch(0.88 0.14 90); border-radius:3px;" data-comment-anchor="6b7d6b8403-div"></div><span style="position:relative; font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:oklch(0.28 0.02 70);">G#</span><span style="position:absolute; bottom:6px; left:0; right:0; display:flex; justify-content:center; gap:6px;"><span style="width:6px; height:6px; border-radius:50%; background:oklch(0.55 0.13 70);"></span><span style="width:6px; height:6px; border-radius:50%; background:oklch(0.93 0.03 90);"></span><span style="width:6px; height:6px; border-radius:50%; background:oklch(0.93 0.03 90);"></span></span></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"><span style="position:relative; font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:oklch(0.55 0.02 70);">C#</span></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:1px solid oklch(0.93 0.01 85);"></div><div style="flex:1; height:64px; position:relative; display:flex; align-items:center; justify-content:center; border-left:3px solid oklch(0.86 0.01 85);"></div></div>
+<div style="display:flex; flex-direction:column; gap:6px;"><div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; font-size:13.5px; color:oklch(0.52 0.02 70);"><span style="white-space:nowrap;">Now: <strong style="font-weight:700; color:oklch(0.28 0.02 70);">G#</strong></span><span>·</span><span style="white-space:nowrap;">Next: <strong style="font-weight:700; color:oklch(0.28 0.02 70);">C#</strong> in 3 beats</span><span style="margin-left:auto; font-variant-numeric:tabular-nums; letter-spacing:0.06em;">beat 1 / 3</span></div><span style="align-self:center; font-size:12px; color:oklch(0.52 0.02 70);">⌄ full sheet</span></div></div></div></div></div>
+<div id="5d" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:18px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+<div style="display:flex; align-items:center; gap:10px;"><span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">5d</span><span style="font-size:13px; font-weight:600;">Type rule</span><span style="font-size:12px; color:oklch(0.52 0.02 70);">serif for headers, sans for everything else</span></div>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:24px;">
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Fraunces · serif</span><span style="display:block; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:34px; line-height:1.1;">Wonderwall</span><span style="font-size:13px; line-height:1.55; color:oklch(0.40 0.02 70);">Headers and chord names in the grid: the wordmark, song titles, headings, and the chords you play.</span></div>
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">System sans</span><span style="display:block; font-size:22px; font-weight:600; line-height:1.3;">G# major · C#m7 · 112 bpm</span><span style="font-size:13px; line-height:1.55; color:oklch(0.40 0.02 70);">Everything else: key, tempo, scale, transpose, labels, steps, counters, buttons. Bold for values, regular for labels.</span></div>
+</div></div>
+</section>
+<section style="padding:56px 56px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column; gap:28px; max-width:1240px;">
+<div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px;">Round 4</span><span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);"><a href="#3a">3a</a> vs <a href="#3b">3b</a>, in context</span></div>
+<div id="4a" style="display:flex; flex-wrap:wrap; gap:28px;"><div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06); "><div style="display:flex; flex-direction:column; gap:22px;">
+<div style="display:flex; align-items:center; gap:10px;"><a href="#3a" style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px; text-decoration:none;">3a</a><span style="font-size:13px; font-weight:600;">Glyph “t”</span></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Tab favicon + pinned toolbar · 16px</span><div style="width:340px; border-radius:8px; overflow:hidden; background:oklch(0.93 0.005 250); font-size:11.5px; color:oklch(0.35 0.01 250);">
+<div style="display:flex; align-items:flex-end; gap:2px; padding:7px 8px 0;"><div style="display:flex; align-items:center; gap:7px; background:oklch(0.99 0 0); border-radius:7px 7px 0 0; padding:7px 10px; width:150px;"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">tabIt — Wonderwall</span></div><div style="display:flex; align-items:center; gap:7px; padding:7px 10px; opacity:0.7;"><span style="width:12px; height:12px; border-radius:3px; background:oklch(0.70 0.10 25);"></span><span>YouTube</span></div></div>
+<div style="display:flex; align-items:center; gap:10px; background:oklch(0.99 0 0); padding:7px 10px;"><div style="flex:1; background:oklch(0.96 0.004 250); border-radius:12px; padding:5px 10px; white-space:nowrap; overflow:hidden;">youtube.com/watch?v=…</div><div style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(0.92 0.005 250);"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div></div></div></div><div style="width:340px; border-radius:8px; overflow:hidden; background:oklch(0.22 0.01 250); font-size:11.5px; color:oklch(0.85 0.01 250);">
+<div style="display:flex; align-items:flex-end; gap:2px; padding:7px 8px 0;"><div style="display:flex; align-items:center; gap:7px; background:oklch(0.30 0.01 250); border-radius:7px 7px 0 0; padding:7px 10px; width:150px;"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">tabIt — Wonderwall</span></div><div style="display:flex; align-items:center; gap:7px; padding:7px 10px; opacity:0.7;"><span style="width:12px; height:12px; border-radius:3px; background:oklch(0.70 0.10 25);"></span><span>YouTube</span></div></div>
+<div style="display:flex; align-items:center; gap:10px; background:oklch(0.30 0.01 250); padding:7px 10px;"><div style="flex:1; background:oklch(0.18 0.01 250); border-radius:12px; padding:5px 10px; white-space:nowrap; overflow:hidden;">youtube.com/watch?v=…</div><div style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(0.36 0.01 250);"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div></div></div></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Web Store tile</span><div style="width:340px; height:216px; border-radius:6px; background:oklch(0.972 0.008 85); position:relative; overflow:hidden; display:flex; align-items:center; gap:20px; padding:0 26px; box-sizing:border-box; box-shadow:inset 0 0 0 1px oklch(0.88 0.015 85);">
+<div style="position:absolute; left:18px; top:0; bottom:0; width:2px; background:oklch(0.70 0.10 25); opacity:0.5;"></div>
+<div style="width:128px; height:128px; zoom:0.75; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+<div style="display:flex; flex-direction:column; gap:6px;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:30px; line-height:1; position:relative; isolation:isolate;">tab<span style="position:relative; display:inline-block; padding:0 3px;"><span style="position:absolute; left:-2px; right:-4px; top:22%; bottom:8%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative; z-index:1;">It</span></span></span><span style="font-size:12px; color:oklch(0.52 0.02 70); line-height:1.4;">Paste a song.<br>Follow the chords.</span></div></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Extension popup · 32px</span><div style="width:300px; border-radius:10px; background:oklch(0.988 0.006 85); box-shadow:0 2px 6px oklch(0.28 0.02 70 / 0.12), 0 14px 40px oklch(0.28 0.02 70 / 0.14); overflow:hidden;">
+<div style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid oklch(0.92 0.01 85);"><div style="width:128px; height:128px; zoom:0.25; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:20px;">tabIt</span></div>
+<div style="padding:16px; display:flex; flex-direction:column; gap:12px;"><span style="font-size:12px; color:oklch(0.52 0.02 70);">This tab</span><span style="font-family:'Fraunces',serif; font-size:16px; font-weight:600;">Oasis — Wonderwall</span>
+<div style="display:flex; gap:8px; align-items:baseline; font-family:'Fraunces',serif; font-weight:600; font-size:18px;"><span style="background:oklch(0.88 0.14 90); padding:0 5px; border-radius:2px;">Em7</span><span>G</span><span>Dsus4</span><span>A7sus4</span></div>
+<span style="align-self:flex-start; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.988 0.006 85); background:oklch(0.28 0.02 70); padding:9px 14px; border-radius:2px;">Open chord sheet</span></div></div></div></div><div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06); "><div style="display:flex; flex-direction:column; gap:22px;">
+<div style="display:flex; align-items:center; gap:10px;"><a href="#3b" style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px; text-decoration:none;">3b</a><span style="font-size:13px; font-weight:600;">Stacked “tab / it”</span></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Tab favicon + pinned toolbar · 16px</span><div style="width:340px; border-radius:8px; overflow:hidden; background:oklch(0.93 0.005 250); font-size:11.5px; color:oklch(0.35 0.01 250);">
+<div style="display:flex; align-items:flex-end; gap:2px; padding:7px 8px 0;"><div style="display:flex; align-items:center; gap:7px; background:oklch(0.99 0 0); border-radius:7px 7px 0 0; padding:7px 10px; width:150px;"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">tabIt — Wonderwall</span></div><div style="display:flex; align-items:center; gap:7px; padding:7px 10px; opacity:0.7;"><span style="width:12px; height:12px; border-radius:3px; background:oklch(0.70 0.10 25);"></span><span>YouTube</span></div></div>
+<div style="display:flex; align-items:center; gap:10px; background:oklch(0.99 0 0); padding:7px 10px;"><div style="flex:1; background:oklch(0.96 0.004 250); border-radius:12px; padding:5px 10px; white-space:nowrap; overflow:hidden;">youtube.com/watch?v=…</div><div style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(0.92 0.005 250);"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div></div></div></div><div style="width:340px; border-radius:8px; overflow:hidden; background:oklch(0.22 0.01 250); font-size:11.5px; color:oklch(0.85 0.01 250);">
+<div style="display:flex; align-items:flex-end; gap:2px; padding:7px 8px 0;"><div style="display:flex; align-items:center; gap:7px; background:oklch(0.30 0.01 250); border-radius:7px 7px 0 0; padding:7px 10px; width:150px;"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">tabIt — Wonderwall</span></div><div style="display:flex; align-items:center; gap:7px; padding:7px 10px; opacity:0.7;"><span style="width:12px; height:12px; border-radius:3px; background:oklch(0.70 0.10 25);"></span><span>YouTube</span></div></div>
+<div style="display:flex; align-items:center; gap:10px; background:oklch(0.30 0.01 250); padding:7px 10px;"><div style="flex:1; background:oklch(0.18 0.01 250); border-radius:12px; padding:5px 10px; white-space:nowrap; overflow:hidden;">youtube.com/watch?v=…</div><div style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(0.36 0.01 250);"><div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div></div></div></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Web Store tile</span><div style="width:340px; height:216px; border-radius:6px; background:oklch(0.972 0.008 85); position:relative; overflow:hidden; display:flex; align-items:center; gap:20px; padding:0 26px; box-sizing:border-box; box-shadow:inset 0 0 0 1px oklch(0.88 0.015 85);">
+<div style="position:absolute; left:18px; top:0; bottom:0; width:2px; background:oklch(0.70 0.10 25); opacity:0.5;"></div>
+<div style="width:128px; height:128px; zoom:0.75; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div>
+<div style="display:flex; flex-direction:column; gap:6px;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:30px; line-height:1; position:relative; isolation:isolate;">tab<span style="position:relative; display:inline-block; padding:0 3px;"><span style="position:absolute; left:-2px; right:-4px; top:22%; bottom:8%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative; z-index:1;">It</span></span></span><span style="font-size:12px; color:oklch(0.52 0.02 70); line-height:1.4;">Paste a song.<br>Follow the chords.</span></div></div>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Extension popup · 32px</span><div style="width:300px; border-radius:10px; background:oklch(0.988 0.006 85); box-shadow:0 2px 6px oklch(0.28 0.02 70 / 0.12), 0 14px 40px oklch(0.28 0.02 70 / 0.14); overflow:hidden;">
+<div style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid oklch(0.92 0.01 85);"><div style="width:128px; height:128px; zoom:0.25; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:20px;">tabIt</span></div>
+<div style="padding:16px; display:flex; flex-direction:column; gap:12px;"><span style="font-size:12px; color:oklch(0.52 0.02 70);">This tab</span><span style="font-family:'Fraunces',serif; font-size:16px; font-weight:600;">Oasis — Wonderwall</span>
+<div style="display:flex; gap:8px; align-items:baseline; font-family:'Fraunces',serif; font-weight:600; font-size:18px;"><span style="background:oklch(0.88 0.14 90); padding:0 5px; border-radius:2px;">Em7</span><span>G</span><span>Dsus4</span><span>A7sus4</span></div>
+<span style="align-self:flex-start; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.988 0.006 85); background:oklch(0.28 0.02 70); padding:9px 14px; border-radius:2px;">Open chord sheet</span></div></div></div></div></div>
+<div style="display:flex; flex-wrap:wrap; gap:28px;">
+<div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06); flex:1; min-width:340px;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:22px;">3a · glyph</span>
+<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px;">
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">For</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">Survives 16px. The toolbar and favicon are where people see an extension most, and this is the only one that stays crisp there.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">One letter, one gesture. Easy to reuse as a favicon, loading mark, watermark, or merch.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">The amber swipe is the app’s “current chord” highlight. Icon and UI share one idea.</span></div>
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Against</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty; color:oklch(0.40 0.02 70);">A lone “t” is generic. It depends on the italic serif and amber to be recognisable.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty; color:oklch(0.40 0.02 70);">It doesn’t say the name, so it needs the wordmark beside it until people know it.</span></div></div></div>
+<div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06); flex:1; min-width:340px;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:22px;">3b · stacked</span>
+<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px;">
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">For</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">Says the whole name. More character and easier to own on day one.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">Highlighting “it” tells the product story: this is the chord to play now.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty;">Great at 128px and above: store tile, splash screen, social.</span></div>
+<div style="display:flex; flex-direction:column; gap:8px;"><span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Against</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty; color:oklch(0.40 0.02 70);">At 16px it turns to mush, right where it’s seen most often.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty; color:oklch(0.40 0.02 70);">Two lines of type in a square is a wordmark, not an icon. Chrome’s icon guidance favours simple, text-free marks.</span><span style="font-size:13px; line-height:1.5; text-wrap:pretty; color:oklch(0.40 0.02 70);">Harder to adapt: a favicon or loading state would need a different mark anyway.</span></div></div></div>
+</div>
+<div style="background:oklch(0.988 0.006 85); border-radius:4px; padding:24px; display:flex; flex-direction:column; gap:16px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06); "><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:22px;">Recommendation: don’t pick one. Make them a pair.</span>
+<span style="font-size:14px; line-height:1.6; max-width:760px; text-wrap:pretty;">Use <strong>3a as the mark</strong> for the extension icon, favicon, toolbar, popup header, and loading states. Use <strong>3b as the lockup</strong> for the store tile, onboarding, splash, and social. Both rest on one device, the tilted amber swipe, and the app already uses it for the current chord. That gives the brand one rule: <em>amber swipe = now</em>.</span>
+<div style="display:flex; flex-wrap:wrap; align-items:center; gap:28px; padding-top:6px;">
+<div style="display:flex; align-items:center; gap:14px;"><div style="width:128px; height:128px; zoom:0.5; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div><span style="font-size:12px; color:oklch(0.52 0.02 70);">mark</span></div>
+<div style="display:flex; align-items:center; gap:14px;"><div style="width:128px; height:128px; zoom:0.75; display:flex; align-items:center; justify-content:center; flex:none;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div><span style="font-size:12px; color:oklch(0.52 0.02 70);">lockup</span></div>
+<div style="display:flex; align-items:center; gap:14px;"><span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:34px; position:relative; isolation:isolate;">tab<span style="position:relative; display:inline-block; padding:0 4px;"><span style="position:absolute; left:-2px; right:-4px; top:22%; bottom:8%; background:oklch(0.88 0.14 90); border-radius:3px; transform:rotate(-6deg); z-index:-1;"></span><span style="position:relative; z-index:1;">It</span></span></span><span style="font-size:12px; color:oklch(0.52 0.02 70);">inline wordmark</span></div>
+<div style="display:flex; gap:6px;"><span style="width:28px; height:28px; border-radius:50%; background:oklch(0.28 0.02 70); box-shadow:inset 0 0 0 1px oklch(0.28 0.02 70 / 0.15);"></span><span style="width:28px; height:28px; border-radius:50%; background:oklch(0.988 0.006 85); box-shadow:inset 0 0 0 1px oklch(0.28 0.02 70 / 0.15);"></span><span style="width:28px; height:28px; border-radius:50%; background:oklch(0.88 0.14 90); box-shadow:inset 0 0 0 1px oklch(0.28 0.02 70 / 0.15);"></span><span style="width:28px; height:28px; border-radius:50%; background:oklch(0.70 0.10 25); box-shadow:inset 0 0 0 1px oklch(0.28 0.02 70 / 0.15);"></span></div>
+</div></div>
+</section>
+<section style="padding:56px 56px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column; gap:28px;">
+  <div style="display:flex; align-items:baseline; gap:14px;">
+    <span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px;">Round 3</span>
+    <span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">riffs on <a href="#2a">2a</a>, rebalanced + stacked wordmarks</span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:28px;">
+
+    <div id="3a" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">3a</span>
+        <span style="font-size:13px; font-weight:600;">Centered swipe</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">2a with the stroke and “t” lifted to optical center</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="3a" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:10px; right:10px; top:40px; height:36px; background:oklch(0.88 0.14 90); transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="3b" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">3b</span>
+        <span style="font-size:13px; font-weight:600;">Stacked, “it” highlit</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">full name; legible to 32, mush at 16</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="3b" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-6deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);">
+                  <span>tab</span>
+                  <span style="padding-left:22px;">it</span>
+                </div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:30px; right:14px; top:62px; height:30px; background:oklch(0.88 0.14 90); transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="3c" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">3c</span>
+        <span style="font-size:13px; font-weight:600;">Stacked, two swipes</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">each line on its own stroke, like two chords</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="3c" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:8px; right:20px; top:26px; height:28px; background:oklch(0.88 0.14 90); border-radius:5px; transform:rotate(-5deg);"></div>
+                <div style="position:absolute; left:34px; right:22px; top:66px; height:28px; background:oklch(0.88 0.14 90 / 0.55); border-radius:5px; transform:rotate(-5deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; letter-spacing:-0.02em; color:oklch(0.28 0.02 70);">
+                  <span>tab</span>
+                  <span style="padding-left:22px;">it</span>
+                </div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:8px; right:20px; top:26px; height:28px; background:oklch(0.88 0.14 90); transform:rotate(-5deg);"></div><div style="position:absolute; left:34px; right:22px; top:66px; height:28px; background:oklch(0.88 0.14 90 / 0.55); transform:rotate(-5deg);"></div><div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 0 6px 18px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:50px; line-height:0.86; color:oklch(0.28 0.02 70);"><span>tab</span><span style="padding-left:22px;">it</span></div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="3d" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">3d</span>
+        <span style="font-size:13px; font-weight:600;">“tI” monogram</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">middle ground: both initials, still bold at 16</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="3d" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:10px; right:10px; top:42px; height:34px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:10px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px; line-height:1; letter-spacing:-0.04em; color:oklch(0.28 0.02 70);">tI</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:10px; right:10px; top:42px; height:34px; background:oklch(0.88 0.14 90); transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:10px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px; line-height:1; letter-spacing:-0.04em; color:oklch(0.28 0.02 70);">tI</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section style="padding:56px 56px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column; gap:28px;">
+  <div style="display:flex; align-items:baseline; gap:14px;">
+    <span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px;">Round 2</span>
+    <span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">riffs on <a href="#1a">1a</a>, borrowing the restraint of <a href="#1c">1c</a></span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:28px;">
+
+    <div id="2a" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">2a</span>
+        <span style="font-size:13px; font-weight:600;">Highlighter swipe</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">no margin line, one bold amber stroke</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="2a" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:10px; right:10px; top:54px; height:40px; background:oklch(0.88 0.14 90); border-radius:6px; transform:rotate(-6deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:10px; right:10px; top:54px; height:40px; background:oklch(0.88 0.14 90); transform:rotate(-6deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="2b" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">2b</span>
+        <span style="font-size:13px; font-weight:600;">Playhead margin</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">margin line becomes a playhead with an amber dot</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="2b" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:26px; top:0; bottom:0; width:7px; background:oklch(0.64 0.15 25);"></div>
+                <div style="position:absolute; left:15px; top:24px; width:29px; height:29px; border-radius:50%; background:oklch(0.86 0.15 88); box-shadow:0 0 0 3px oklch(0.988 0.006 85);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:30px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:26px; top:0; bottom:0; width:7px; background:oklch(0.64 0.15 25);"></div><div style="position:absolute; left:15px; top:24px; width:29px; height:29px; border-radius:50%; background:oklch(0.86 0.15 88);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:30px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="2c" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">2c</span>
+        <span style="font-size:13px; font-weight:600;">Amber page</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">whole tile is the highlight, red margin stays</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="2c" style="width:112px; height:112px; border-radius:22px; background:oklch(0.89 0.13 91); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.82 0.13 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:26px; top:0; bottom:0; width:6px; background:oklch(0.60 0.16 25);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:22px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.89 0.13 91); position:relative; overflow:hidden;"><div style="position:absolute; left:26px; top:0; bottom:0; width:6px; background:oklch(0.60 0.16 25);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:22px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div id="2d" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">2d</span>
+        <span style="font-size:13px; font-weight:600;">Torn corner</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">paper on ink, amber dog-ear</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="2d" style="width:112px; height:112px; border-radius:22px 4px 22px 22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; right:0; top:0; width:38px; height:38px; background:linear-gradient(225deg, oklch(0.972 0.008 85) 50%, oklch(0.86 0.15 88) 50%);"></div>
+                <div style="position:absolute; left:24px; top:0; bottom:0; width:5px; background:oklch(0.64 0.15 25);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:14px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <sc-for list="{{ toolbars }}" as="tb" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; background:{{ tb.bg }}; border-radius:8px; padding:6px 12px; font-size:12px; color:{{ tb.fg }};">
+            <span>youtube.com/watch…</span>
+            <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px 4px 22px 22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; right:0; top:0; width:38px; height:38px; background:linear-gradient(225deg, transparent 50%, oklch(0.86 0.15 88) 50%);"></div><div style="position:absolute; left:24px; top:0; bottom:0; width:5px; background:oklch(0.64 0.15 25);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:14px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:104px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section style="padding:56px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; color:oklch(0.28 0.02 70); display:flex; flex-direction:column; gap:28px;">
+  <div style="display:flex; align-items:baseline; gap:14px;">
+    <span style="font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:32px;">tabIt</span>
+    <span style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.52 0.02 70);">Chrome extension icon · 128 / 48 / 32 / 16</span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:28px;">
+
+    <div id="1a" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">1a</span>
+        <span style="font-size:13px; font-weight:600;">Margin page</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">notebook paper, red margin, amber-highlit “t”</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="1a" style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; left:24px; top:0; bottom:0; width:5px; background:oklch(0.70 0.10 25);"></div>
+                <div style="position:absolute; left:38px; right:14px; top:62px; height:30px; background:oklch(0.90 0.12 92); border-radius:3px; transform:rotate(-3deg);"></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:16px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:96px; line-height:1; color:oklch(0.28 0.02 70); font-variation-settings:'opsz' 144;">t</div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.96 0.004 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.45 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.88 0.015 85);"><div style="position:absolute; left:24px; top:0; bottom:0; width:5px; background:oklch(0.70 0.10 25);"></div><div style="position:absolute; left:38px; right:14px; top:62px; height:30px; background:oklch(0.90 0.12 92); transform:rotate(-3deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:16px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:96px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.26 0.01 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.75 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.988 0.006 85); position:relative; overflow:hidden;"><div style="position:absolute; left:24px; top:0; bottom:0; width:5px; background:oklch(0.70 0.10 25);"></div><div style="position:absolute; left:38px; right:14px; top:62px; height:30px; background:oklch(0.90 0.12 92); transform:rotate(-3deg);"></div><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-left:16px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:96px; line-height:1; color:oklch(0.28 0.02 70);">t</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="1b" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">1b</span>
+        <span style="font-size:13px; font-weight:600;">Current chord</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">amber tile + pencil underline, like the live chord</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="1b" style="width:112px; height:112px; border-radius:22px; background:oklch(0.90 0.12 92); position:relative; overflow:hidden; box-shadow:inset 0 0 0 3px oklch(0.82 0.13 85), 0 2px 4px oklch(0.28 0.02 70 / 0.18);">
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:10px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div>
+                <div style="position:absolute; left:26px; right:26px; bottom:20px; height:7px; border-radius:4px; background:oklch(0.28 0.02 70); transform:rotate(-2deg);"></div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.96 0.004 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.45 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.90 0.12 92); position:relative; overflow:hidden;"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:10px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div><div style="position:absolute; left:26px; right:26px; bottom:20px; height:7px; background:oklch(0.28 0.02 70);"></div></div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.26 0.01 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.75 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.90 0.12 92); position:relative; overflow:hidden;"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:10px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.28 0.02 70);">t</div><div style="position:absolute; left:26px; right:26px; bottom:20px; height:7px; background:oklch(0.28 0.02 70);"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="1c" style="background:oklch(0.988 0.006 85); border-radius:4px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 10px 30px oklch(0.28 0.02 70 / 0.06);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; font-weight:700; background:oklch(0.28 0.02 70); color:oklch(0.988 0.006 85); padding:3px 7px; border-radius:2px;">1c</span>
+        <span style="font-size:13px; font-weight:600;">Ink</span>
+        <span style="font-size:12px; color:oklch(0.52 0.02 70);">dark ink tile, cream “t”, amber edit dot</span>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:28px;">
+        <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="width:128px; height:128px; zoom:{{ s.zoom }}; display:flex; align-items:center; justify-content:center;">
+              <div data-icon="1c" style="width:112px; height:112px; border-radius:22px; background:oklch(0.28 0.02 70); position:relative; overflow:hidden; box-shadow:0 2px 4px oklch(0.28 0.02 70 / 0.25);">
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-right:8px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.988 0.006 85);">t</div>
+                <div style="position:absolute; right:20px; top:20px; width:22px; height:22px; border-radius:50%; background:oklch(0.90 0.12 92);"></div>
+              </div>
+            </div>
+            <span style="font-size:11px; color:oklch(0.52 0.02 70);">{{ s.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.96 0.004 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.45 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.28 0.02 70); position:relative; overflow:hidden;"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-right:8px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.988 0.006 85);">t</div><div style="position:absolute; right:20px; top:20px; width:22px; height:22px; border-radius:50%; background:oklch(0.90 0.12 92);"></div></div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; background:oklch(0.26 0.01 250); border-radius:8px; padding:6px 12px; font-size:12px; color:oklch(0.75 0.01 250);">
+          <span>youtube.com/watch…</span>
+          <div style="width:128px; height:128px; zoom:0.125; display:flex; align-items:center; justify-content:center;"><div style="width:112px; height:112px; border-radius:22px; background:oklch(0.28 0.02 70); position:relative; overflow:hidden; box-shadow:inset 0 0 0 4px oklch(0.45 0.02 70);"><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-right:8px; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:100px; line-height:1; color:oklch(0.988 0.006 85);">t</div><div style="position:absolute; right:20px; top:20px; width:22px; height:22px; border-radius:50%; background:oklch(0.90 0.12 92);"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      sizes: [
+        { label: '128', zoom: 1 },
+        { label: '48', zoom: 0.375 },
+        { label: '32', zoom: 0.25 },
+        { label: '16', zoom: 0.125 }
+      ],
+      toolbars: [
+        { bg: 'oklch(0.96 0.004 250)', fg: 'oklch(0.45 0.01 250)' },
+        { bg: 'oklch(0.26 0.01 250)', fg: 'oklch(0.75 0.01 250)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

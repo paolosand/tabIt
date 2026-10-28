@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&display=swap" rel="stylesheet">
+  <style>body{margin:0;background:#1a1714;} a{color:#2f271e;} a:hover{color:#d6857f;}</style>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
+
+<section data-label="Title" data-speaker-notes="tabIt brand and component system. This deck is the source of truth for the Claude Code implementation." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; display:flex; align-items:center; padding:0 160px; gap:96px; box-sizing:border-box; position:relative;">
+  <div style="position:absolute; left:120px; top:0; bottom:0; width:3px; background:#d6857f; opacity:0.55;"></div>
+  <img src="assets/icon-512.png" alt="tabIt mark" style="width:420px; height:420px; flex:none;">
+  <div style="display:flex; flex-direction:column; gap:36px;">
+    <img src="assets/wordmark.png" alt="tabIt" style="width:560px;">
+    <span style="font-size:44px; line-height:1.3; color:#71675d;">Brand and component system</span>
+    <span style="font-size:28px; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:#71675d;">Handoff · v1 · Oct 2026</span>
+  </div>
+</section>
+
+<section data-label="Principles" data-speaker-notes="Three rules cover almost every decision." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:72px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Three rules</h1>
+  <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:48px; flex:1;">
+    <div style="background:#fdfbf7; border-radius:8px; padding:56px; display:flex; flex-direction:column; gap:28px;">
+      <span style="font-size:28px; font-weight:700; color:#71675d;">01</span>
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:52px; line-height:1.1;">Amber means progress</span>
+      <span style="font-size:32px; line-height:1.45; color:#4a4037;">The current beat, completed steps, and the “It” in the logo. Nothing decorative is amber.</span>
+    </div>
+    <div style="background:#fdfbf7; border-radius:8px; padding:56px; display:flex; flex-direction:column; gap:28px;">
+      <span style="font-size:28px; font-weight:700; color:#71675d;">02</span>
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:52px; line-height:1.1;">Serif for headers and chords</span>
+      <span style="font-size:32px; line-height:1.45; color:#4a4037;">Fraunces for the wordmark, titles, and chord names in the grid. System sans for everything else.</span>
+    </div>
+    <div style="background:#fdfbf7; border-radius:8px; padding:56px; display:flex; flex-direction:column; gap:28px;">
+      <span style="font-size:28px; font-weight:700; color:#71675d;">03</span>
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:52px; line-height:1.1;">Paper on dark</span>
+      <span style="font-size:32px; line-height:1.45; color:#4a4037;">A warm paper card sitting on YouTube’s dark UI. Never dark-on-dark; red belongs to YouTube.</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Mark" data-speaker-notes="The mark: italic t on a tilted amber swipe. Used anywhere small." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:100px; align-items:center;">
+  <div style="display:flex; justify-content:center;"><img src="assets/icon-512.png" alt="mark" style="width:640px; height:640px;"></div>
+  <div style="display:flex; flex-direction:column; gap:40px;">
+    <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">The mark</h1>
+    <span style="font-size:34px; line-height:1.45; color:#4a4037;">Fraunces Bold Italic “t” over an amber swipe rotated −6°, on a paper tile.</span>
+    <div style="display:flex; flex-direction:column; gap:16px; font-size:30px;">
+      <span style="font-weight:700;">Use for</span>
+      <span style="color:#4a4037;">Extension icon · favicon · toolbar · popup header · loading</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:16px; font-size:30px;">
+      <span style="font-weight:700;">Geometry (112-unit tile)</span>
+      <span style="color:#4a4037;">Radius 22 · 3px inner border #dcd7cd · swipe 92×36, r6, top 40</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Lockup and wordmark" data-speaker-notes="Lockup for large surfaces, inline wordmark next to UI." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:64px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Lockup and wordmark</h1>
+  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:80px; flex:1; align-items:center;">
+    <div style="display:flex; flex-direction:column; gap:32px; align-items:flex-start;">
+      <img src="assets/lockup-512.png" alt="lockup" style="width:420px; height:420px;">
+      <span style="font-size:32px; font-weight:700;">Stacked lockup</span>
+      <span style="font-size:30px; color:#4a4037; line-height:1.4;">Store listing, onboarding, splash. Never below 64px.</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:32px; align-items:flex-start;">
+      <div style="background:#fdfbf7; border-radius:8px; padding:72px 80px; display:flex;"><img src="assets/wordmark.png" alt="wordmark" style="width:620px;"></div>
+      <span style="font-size:32px; font-weight:700;">Inline wordmark</span>
+      <span style="font-size:30px; color:#4a4037; line-height:1.4;">Component headers and popups. The swipe sits behind “It” in every state.</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Icon sizes" data-speaker-notes="Toolbar sizes are near full-bleed; the 128 follows Chrome's 96px art plus 16px padding." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:72px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Icon sizes</h1>
+  <div style="display:flex; align-items:flex-end; gap:96px;">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:24px;"><img src="assets/icon-128.png" alt="128" style="width:256px; height:256px;"><span style="font-size:28px; font-weight:700;">128</span><span style="font-size:26px; color:#71675d;">Store · install</span></div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:24px;"><img src="assets/icon-48.png" alt="48" style="width:96px; height:96px;"><span style="font-size:28px; font-weight:700;">48</span><span style="font-size:26px; color:#71675d;">Extensions page</span></div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:24px;"><img src="assets/icon-32.png" alt="32" style="width:64px; height:64px;"><span style="font-size:28px; font-weight:700;">32</span><span style="font-size:26px; color:#71675d;">Retina toolbar</span></div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:24px;"><img src="assets/icon-16.png" alt="16" style="width:32px; height:32px;"><span style="font-size:28px; font-weight:700;">16</span><span style="font-size:26px; color:#71675d;">Toolbar · favicon</span></div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:24px; margin-left:auto;"><img src="assets/promo-small-440x280.png" alt="promo tile" style="width:440px; height:280px; border-radius:6px; box-shadow:0 0 0 1px #dcd7cd;"><span style="font-size:28px; font-weight:700;">440 × 280</span><span style="font-size:26px; color:#71675d;">Store small promo tile</span></div>
+  </div>
+  <span style="font-size:28px; color:#71675d;">Shown at 2× · all files in assets/</span>
+</section>
+
+<section data-label="Colour" data-speaker-notes="Five tokens. Amber is a state colour, not a brand fill." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:72px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Colour</h1>
+  <div style="display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:32px; flex:1;">
+    <div style="display:flex; flex-direction:column; gap:20px;"><div style="flex:1; border-radius:8px; background:#2f271e;"></div><span style="font-size:32px; font-weight:700;">Ink</span><span style="font-size:26px; color:#4a4037;">#2F271E · text, buttons</span></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><div style="flex:1; border-radius:8px; background:#fdfbf7; box-shadow:inset 0 0 0 2px #dcd7cd;"></div><span style="font-size:32px; font-weight:700;">Paper</span><span style="font-size:26px; color:#4a4037;">#FDFBF7 · cards</span></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><div style="flex:1; border-radius:8px; background:#fbd35f;"></div><span style="font-size:32px; font-weight:700;">Amber</span><span style="font-size:26px; color:#4a4037;">#FBD35F · progress only</span></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><div style="flex:1; border-radius:8px; background:#71675d;"></div><span style="font-size:32px; font-weight:700;">Muted</span><span style="font-size:26px; color:#4a4037;">#71675D · labels</span></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><div style="flex:1; border-radius:8px; background:#dcd7cd;"></div><span style="font-size:32px; font-weight:700;">Line</span><span style="font-size:26px; color:#4a4037;">#DCD7CD · ticks, rings</span></div>
+  </div>
+</section>
+
+<section data-label="Typography" data-speaker-notes="Serif is reserved; everything operational is sans." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:72px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Typography</h1>
+  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:80px;">
+    <div style="display:flex; flex-direction:column; gap:28px;">
+      <span style="font-size:28px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#71675d;">Fraunces</span>
+      <span style="font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:96px; line-height:1;">Wonderwall</span>
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:96px; line-height:1;">G# · C#m7</span>
+      <span style="font-size:30px; line-height:1.45; color:#4a4037;">Italic 700: wordmark, titles. Roman 700: chord names in the grid.</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:28px;">
+      <span style="font-size:28px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#71675d;">System sans</span>
+      <span style="font-size:56px; line-height:1.25;">Key <strong>G# major</strong></span>
+      <span style="font-size:56px; line-height:1.25;"><strong>112</strong> bpm · no shift</span>
+      <span style="font-size:30px; line-height:1.45; color:#4a4037;">Regular for labels, bold for values. Buttons: 600, uppercase, 0.1em tracking.</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Component states" data-speaker-notes="The in-player component in its three states." style="background:#1a1714; color:#fdfbf7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:56px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Component states</h1>
+  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px 56px;">
+    <div style="display:flex; flex-direction:column; gap:20px;"><span style="font-size:30px; font-weight:700;">Idle</span><img src="assets/component-idle.png" alt="idle" style="width:100%; border-radius:8px;"></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><span style="font-size:30px; font-weight:700;">Processing</span><img src="assets/component-processing.png" alt="processing" style="width:100%; border-radius:8px;"></div>
+    <div style="display:flex; flex-direction:column; gap:20px;"><span style="font-size:30px; font-weight:700;">Synced</span><img src="assets/component-synced.png" alt="synced" style="width:100%; border-radius:8px;"></div>
+    <div style="display:flex; flex-direction:column; gap:20px; justify-content:center; font-size:28px; line-height:1.5; color:#d8d0c4;">
+      <span>Done step: amber fill, ink check</span>
+      <span>Current step: amber ring with ink arc</span>
+      <span>Current beat: flat amber cell, r3, beat dots</span>
+      <span>Next chord: muted serif</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Do and don't" data-speaker-notes="The common ways the system breaks." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:72px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Do and don’t</h1>
+  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:80px;">
+    <div style="display:flex; flex-direction:column; gap:32px; font-size:34px; line-height:1.4;">
+      <span style="font-size:28px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#71675d;">Do</span>
+      <span>Slant only the logo swipe (−6°)</span>
+      <span>Keep grid cells flat and square</span>
+      <span>Use the mark alone at 32px and below</span>
+      <span>Bold sans for data values</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:32px; font-size:34px; line-height:1.4; color:#4a4037;">
+      <span style="font-size:28px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#71675d;">Don’t</span>
+      <span>Use amber for decoration or hovers</span>
+      <span>Set key, tempo or scale in serif</span>
+      <span>Use the stacked lockup below 64px</span>
+      <span>Use red in tabIt UI</span>
+    </div>
+  </div>
+</section>
+
+<section data-label="Assets" data-speaker-notes="Everything ships in assets/." style="background:#f8f5f0; color:#2f271e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; padding:100px 120px 80px; box-sizing:border-box; display:flex; flex-direction:column; gap:64px;">
+  <h1 style="margin:0; font-family:'Fraunces',serif; font-style:italic; font-weight:700; font-size:80px;">Assets</h1>
+  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px 80px; font-size:30px;">
+    <span style="font-family:ui-monospace,Menlo,monospace;">icon-16 / 32 / 48 / 128.png</span><span style="color:#4a4037;">manifest.json “icons”</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">icon-512.png</span><span style="color:#4a4037;">Master raster, social</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">icon.svg</span><span style="color:#4a4037;">Mark, outlined vector</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">icon-lockup.svg · lockup-512.png</span><span style="color:#4a4037;">Stacked lockup</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">wordmark.svg · wordmark.png</span><span style="color:#4a4037;">Inline wordmark</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">promo-small-440x280.png</span><span style="color:#4a4037;">Web Store promo tile</span>
+    <span style="font-family:ui-monospace,Menlo,monospace;">component-*.png</span><span style="color:#4a4037;">State references</span>
+  </div>
+</section>
+
+</x-import>
+</x-dc>
+</body>
+</html>

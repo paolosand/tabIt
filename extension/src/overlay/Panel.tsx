@@ -3,6 +3,7 @@ import type { Chart } from '../../../web/src/lib/types';
 import { findCurrentIndex, formatLabel, transposeRoot, transposeScaleName } from '../../../web/src/lib/music';
 import { beatIndexAt, beatWithinChord, beatsUntil, chordBeatSpan } from '../../../web/src/lib/beats';
 import { useVideoTime } from './useVideoTime';
+import { Wordmark } from './Wordmark';
 import Ribbon from './Ribbon';
 
 export interface PanelProps {
@@ -105,7 +106,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
           not the page background. */}
       <div className="tabit-panel-card">
         <div className="tabit-panel-header tabit-panel-header-compact">
-          <span className="tabit-panel-wordmark">tabIt</span>
+          <Wordmark className="tabit-panel-wordmark" />
           <span className="tabit-inline-chip">Key <b>{keyLabel}</b></span>
           <span className="tabit-inline-chip">{bpmLabel}</span>
           <span className="tabit-inline-chip tabit-inline-chip-scales">Solo: <b>{scalesLabel}</b></span>
