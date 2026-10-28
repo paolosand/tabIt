@@ -8,6 +8,8 @@ import pytest
 
 import engine
 
+pytest.importorskip("setuptools")
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -49,6 +51,8 @@ def test_wheel_contents(wheel):
             assert required in names, required
         meta_name = next(n for n in names if n.endswith(".dist-info/METADATA"))
         meta = z.read(meta_name).decode()
+        ep_name = next(n for n in names if n.endswith(".dist-info/entry_points.txt"))
+        entry_points = z.read(ep_name).decode()
     assert "Provides-Extra: api" in meta
     assert any(
         line.startswith("Requires-Dist: torch") for line in meta.splitlines()
@@ -57,3 +61,14 @@ def test_wheel_contents(wheel):
         assert not n.endswith((".wav", ".pt", ".pth")), n
         assert not n.startswith("tests/") and "/tests/" not in n, n
         assert not n.startswith("docs/"), n
+        assert "__pycache__" not in n and not n.endswith(".pyc"), n
+        assert not n.startswith("benchmarks/") and "/benchmarks/" not in n, n
+    requires = [ln for ln in meta.splitlines() if ln.startswith("Requires-Dist:")]
+    joined = "\n".join(requires)
+    assert "torch<2.15" in joined.replace(" ", "")
+    assert "numpy<2" in joined.replace(" ", "")
+    for dep in ("numba<0.63", "llvmlite<0.46"):
+        line = next(ln for ln in requires if dep in ln.replace(" ", ""))
+        assert "darwin" in line and "x86_64" in line, line
+    assert "Provides-Extra: dev" in meta
+    assert "tabit = helper.cli:main" in entry_points
