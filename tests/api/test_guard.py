@@ -115,11 +115,44 @@ def test_health_plain():
     assert r.status_code == 200 and r.json()["engineVersion"] == engine_version()
 
 
-def test_websocket_with_bad_host_is_rejected():
-    from starlette.websockets import WebSocketDisconnect
-    with pytest.raises(WebSocketDisconnect):
-        with TestClient(app, base_url="http://evil.com").websocket_connect("/ws"):
-            pass
+async def _drive_ws(host, origin):
+    """Run the guard around a stub app with a raw websocket scope."""
+    reached, sent = [], []
+
+    async def stub(scope, receive, send):
+        reached.append(scope)
+
+    async def receive():
+        return {"type": "websocket.connect"}
+
+    async def send(msg):
+        sent.append(msg)
+
+    headers = [(b"host", host.encode())]
+    if origin is not None:
+        headers.append((b"origin", origin.encode()))
+    await LocalGuardMiddleware(stub)({"type": "websocket", "headers": headers}, receive, send)
+    return reached, sent
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("host,origin", [
+    ("evil.com", None),
+    ("evil.com", "chrome-extension://abcdef"),
+    ("localhost:28224", "https://evil.example"),
+    ("localhost:28224", "http://localhost:3000"),
+])
+async def test_websocket_bad_host_or_origin_is_closed_1008(host, origin):
+    reached, sent = await _drive_ws(host, origin)
+    assert reached == []
+    assert sent == [{"type": "websocket.close", "code": 1008}]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("origin", [None, "chrome-extension://abcdef", "http://localhost:5173"])
+async def test_websocket_allowed_reaches_the_app(origin):
+    reached, sent = await _drive_ws("localhost:28224", origin)
+    assert len(reached) == 1 and sent == []
 
 
 def test_guard_is_outermost_middleware():

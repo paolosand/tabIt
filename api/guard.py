@@ -6,7 +6,8 @@ This pure-ASGI middleware rejects both before any routing, CORS handling, or
 body reading happens:
 
 * the Host header must be a loopback name (defeats DNS rebinding);
-* a request that carries an Origin and is not GET/HEAD/OPTIONS must come from
+* a request that carries an Origin and is not GET/HEAD/OPTIONS (websocket
+  handshakes count as unsafe) must come from
   a Chrome extension or the dev web app (defeats cross-site writes).
 """
 import re
@@ -18,7 +19,7 @@ _DEV_ORIGIN = "http://localhost:5173"
 
 
 def host_is_allowed(host: str | None) -> bool:
-    return bool(host) and _HOST_RE.fullmatch(host.strip().lower()) is not None
+    return bool(host) and _HOST_RE.fullmatch(host.lower()) is not None
 
 
 def origin_is_allowed(origin: str | None, method: str) -> bool:
@@ -43,7 +44,9 @@ class LocalGuardMiddleware:
             elif name == b"origin" and origin is None:
                 origin = value.decode("latin-1")
 
-        method = scope.get("method", "GET") if scope["type"] == "http" else "GET"
+        # A websocket handshake is a GET, but it is a cross-site write channel:
+        # hold it to the same Origin rule as an unsafe method.
+        method = scope.get("method", "GET") if scope["type"] == "http" else "POST"
         if host_is_allowed(host) and origin_is_allowed(origin, method):
             await self.app(scope, receive, send)
             return
