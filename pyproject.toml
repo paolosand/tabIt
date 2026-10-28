@@ -16,7 +16,14 @@ dependencies = [
     "essentia>=2.1b6.dev1110 ; sys_platform != 'win32'",
     # BTC chord model (engine/vendor/btc + the allowlisted loader in
     # engine/chords_btc.py). The default PyPI wheel on macOS is already CPU/MPS.
-    "torch>=2.0,<3",
+    # Highest version covered by the real-weights test (2.14.1); raise the cap
+    # deliberately, after running `pytest -m integration` on the new torch.
+    "torch>=2.0,<2.15",
+    # Intel Macs: numba/llvmlite stopped shipping x86_64 macOS wheels after
+    # these lines, and uv would otherwise pick the newest and try to build the
+    # LLVM bindings from source. (Apple Silicon is unaffected.)
+    "numba<0.63 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "llvmlite<0.46 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 
 [project.optional-dependencies]
