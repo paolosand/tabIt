@@ -183,10 +183,12 @@ def _fake_layout(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "BIN_DIR", app_support / "bin")
     monkeypatch.setattr(paths, "CHARTS_DIR", app_support / "charts")
     monkeypatch.setattr(paths, "MODELS_DIR", app_support / "models")
+    monkeypatch.setattr(paths, "VERSION_FILE", app_support / "VERSION")
     monkeypatch.setattr(paths, "LOG_DIR", tmp_path / "Logs" / "tabIt")
     monkeypatch.setattr(paths, "TABIT_SYMLINK", tmp_path / "local-bin" / "tabit")
     monkeypatch.setattr(launchd, "uninstall_agent", lambda: None)
     (app_support / "models").mkdir(parents=True)
+    (app_support / "VERSION").write_text("0.4.0\n")
     (app_support / "models" / "btc_model_large_voca.pt").write_bytes(b"w")
     (app_support / "charts").mkdir()
     return paths
@@ -196,6 +198,7 @@ def test_uninstall_purge_removes_downloaded_models_and_app_support(tmp_path, mon
     paths = _fake_layout(tmp_path, monkeypatch)
     assert cli_main(["uninstall", "--purge"]) == 0
     assert not paths.MODELS_DIR.exists()
+    assert not paths.VERSION_FILE.exists()
     assert not paths.APP_SUPPORT.exists()
     assert f"removed {paths.MODELS_DIR}" in capsys.readouterr().out
 

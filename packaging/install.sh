@@ -6,6 +6,9 @@
 # Idempotent: rerunning upgrades in place. Development overrides:
 #   TABIT_REPO  git URL (or file:///abs/path) to install from
 #   TABIT_REF   git ref to install (pin this to a release tag when publishing)
+#   TABIT_WHEEL path or https URL of a tabit_engine-*.whl; overrides everything
+#               (otherwise the release wheel for TABIT_REF is used, and git only
+#               as a last resort)
 set -eu
 
 TABIT_REPO="${TABIT_REPO:-https://github.com/paolosand/tabIt}"
@@ -27,7 +30,56 @@ TABIT_PORT=28224
 HEALTH_URL="http://127.0.0.1:$TABIT_PORT/health"
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
-fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
+fail() {
+  [ -z "${WHEEL_DIR:-}" ] || rm -rf "$WHEEL_DIR"
+  printf 'error: %s\n' "$*" >&2
+  exit 1
+}
+
+# Is git safe to run? Decided WITHOUT running it: on a Mac that never had
+# developer tools /usr/bin/git is a shim whose mere execution pops Apple's
+# "install the command line tools" dialog. TABIT_ASSUME_NO_GIT=1 forces "no"
+# (used by the CI negative test).
+git_usable() {
+  if [ "${TABIT_ASSUME_NO_GIT:-}" = 1 ]; then return 1; fi
+  git_path="$(command -v git 2>/dev/null || true)"
+  if [ -n "$git_path" ] && [ "$git_path" != /usr/bin/git ]; then return 0; fi
+  xcode-select -p >/dev/null 2>&1
+}
+
+# Sets INSTALL_SPEC (what `uv pip install` is given). Order: TABIT_WHEEL, then
+# the GitHub release wheel for a default-repo vX.Y.Z tag, then git (only if it
+# can run without a dialog). Runs before anything is created on disk.
+select_install_source() {
+  no_download="tabIt can't download its engine. Check your internet connection and run the command again."
+  WHEEL_DIR=""
+  if [ -n "${TABIT_WHEEL:-}" ]; then
+    case "$TABIT_WHEEL" in
+      https://*)
+        WHEEL_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tabit-wheel.XXXXXX")" || fail "could not create a temporary directory"
+        wheel="$WHEEL_DIR/${TABIT_WHEEL##*/}"
+        curl -fsSL -o "$wheel" "$TABIT_WHEEL" || fail "$no_download" ;;
+      *)
+        [ -f "$TABIT_WHEEL" ] || fail "TABIT_WHEEL=$TABIT_WHEEL is not a file"
+        wheel="$TABIT_WHEEL" ;;
+    esac
+    INSTALL_SPEC="${wheel}[api]"
+    return 0
+  fi
+  if [ "$TABIT_REPO" = "https://github.com/paolosand/tabIt" ] &&
+     printf '%s' "$TABIT_REF" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+    WHEEL_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tabit-wheel.XXXXXX")" || fail "could not create a temporary directory"
+    wheel="$WHEEL_DIR/tabit_engine-${TABIT_REF#v}-py3-none-any.whl"
+    if curl -fsSL -o "$wheel" "$TABIT_REPO/releases/download/$TABIT_REF/tabit_engine-${TABIT_REF#v}-py3-none-any.whl"; then
+      INSTALL_SPEC="${wheel}[api]"
+      return 0
+    fi
+    rm -rf "$WHEEL_DIR"
+    WHEEL_DIR=""
+  fi
+  git_usable || fail "$no_download"
+  INSTALL_SPEC="tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
+}
 
 # 0.3.x environments carry ~2 GB of TensorFlow / Demucs / crema / CREPE packages
 # that 0.4 no longer uses. `uv pip install` never uninstalls what a new version
@@ -47,7 +99,7 @@ install_engine() {
     "$UV" venv --python 3.11 "$ENV_DIR" || return 1
   fi
   "$UV" pip install --python "$ENV_DIR/bin/python" \
-    "tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
+    "$INSTALL_SPEC"
 }
 
 # After the old environment has been put back, bring its login agent back too
@@ -90,6 +142,8 @@ main() {
       printf 'note: Intel Mac detected — analysis runs on CPU, slower than on Apple Silicon.\n' ;;
     *) fail "unsupported architecture: $(uname -m)" ;;
   esac
+
+  select_install_source
 
   # A previous upgrade that was killed mid-swap leaves env.old behind. env may then
   # be a half-built venv, so env.old is ALWAYS the one to trust: put it back
@@ -183,7 +237,14 @@ main() {
     step "Creating the Python 3.11 environment (first run downloads ~1 GB of wheels)"
   fi
 
-  if ! install_engine "$create_env"; then
+  if install_engine "$create_env"; then
+    install_ok=true
+  else
+    install_ok=false
+  fi
+  [ -z "$WHEEL_DIR" ] || rm -rf "$WHEEL_DIR"
+  WHEEL_DIR=""
+  if [ "$install_ok" = false ]; then
     if [ -n "$env_backup" ]; then
       trap - INT TERM HUP
       rm -rf "$ENV_DIR"
@@ -225,6 +286,11 @@ main() {
     # which the next run discards, never a truncated env.old that it would restore.
     mv "$env_backup" "$ENV_DIR.trash" && rm -rf "$ENV_DIR.trash"
   fi
+
+  # What is actually installed, whichever source it came from.
+  engine_version="$("$ENV_DIR/bin/python" -c 'import importlib.metadata as m; print(m.version("tabit-engine"))')" ||
+    fail "could not read the installed engine version"
+  printf '%s\n' "$engine_version" > "$APP_SUPPORT/VERSION"
 
   # --- service --------------------------------------------------------------------
   step "Installing the background service (starts at login, restarts on crash)"

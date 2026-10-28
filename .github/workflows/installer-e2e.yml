@@ -42,12 +42,62 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Dev-install pattern from the README: point the installer at this
-      # checkout instead of the pinned GitHub release.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # The installer installs the engine from a self-contained wheel and must
+      # never need git. Build the wheel from this checkout, the way release CI does.
+      - name: Build the engine wheel from this checkout
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip wheel . --no-deps -w "$RUNNER_TEMP/wheel"
+          ls "$RUNNER_TEMP/wheel"
+
+      # Negative case, BEFORE the real install, in a throwaway HOME: with no
+      # usable git and no wheel source the installer must stop with a plain
+      # sentence, having created nothing.
+      - name: No wheel and no git fails with a plain message
+        run: |
+          mkdir -p "$RUNNER_TEMP/h2"
+          set +e
+          HOME="$RUNNER_TEMP/h2" TABIT_ASSUME_NO_GIT=1 TABIT_REF=main \
+            TABIT_REPO=https://github.com/paolosand/tabIt \
+            sh packaging/install.sh >"$RUNNER_TEMP/neg.out" 2>"$RUNNER_TEMP/neg.err"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/neg.err"
+          [ "$status" -eq 1 ] || { echo "expected exit 1, got $status" >&2; exit 1; }
+          grep -q "tabIt can't download its engine" "$RUNNER_TEMP/neg.err"
+          if [ -n "$(ls -A "$RUNNER_TEMP/h2")" ]; then
+            echo "the failed install created files in HOME" >&2
+            exit 1
+          fi
+
+      # TABIT_WHEEL points the installer at the wheel built above instead of
+      # the GitHub release asset; TABIT_REPO/TABIT_REF are kept for the rest.
       - name: Run the installer against this checkout
         run: |
-          TABIT_REPO="file://$GITHUB_WORKSPACE" TABIT_REF="${{ github.sha }}" \
+          wheel="$(ls "$RUNNER_TEMP"/wheel/tabit_engine-*.whl)"
+          TABIT_WHEEL="$wheel" \
+            TABIT_REPO="file://$GITHUB_WORKSPACE" TABIT_REF="${{ github.sha }}" \
             sh packaging/install.sh
+
+      - name: VERSION file matches the installed engine
+        run: |
+          app="$HOME/Library/Application Support/tabIt"
+          want="$("$app/env/bin/python" -c 'import engine; print(engine.__version__)')"
+          got="$(cat "$app/VERSION")"
+          echo "engine=$want VERSION=$got"
+          [ -n "$want" ] && [ "$want" = "$got" ]
+
+      - name: Engine was installed from the wheel, not from git
+        run: |
+          app="$HOME/Library/Application Support/tabIt"
+          url="$("$app/env/bin/python" -c "import importlib.metadata as m; print(m.distribution('tabit-engine').read_text('direct_url.json') or '')")"
+          echo "$url"
+          case "$url" in *git+*) echo "installed from git" >&2; exit 1 ;; esac
+          case "$url" in *file://*) ;; *) echo "direct_url.json does not reference a file:// wheel" >&2; exit 1 ;; esac
 
       # install.sh deliberately doesn't touch PATH itself (it just prints a
       # note) — do it here so later steps can call `tabit` directly.

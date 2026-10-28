@@ -102,6 +102,10 @@ def _cmd_uninstall(args: argparse.Namespace) -> int:
             shutil.rmtree(d)
             print(f"removed {d}")
 
+    if paths.VERSION_FILE.exists():
+        paths.VERSION_FILE.unlink()
+        print(f"removed {paths.VERSION_FILE}")
+
     if paths.LOG_DIR.exists():
         shutil.rmtree(paths.LOG_DIR)
         print(f"removed {paths.LOG_DIR}")
