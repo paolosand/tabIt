@@ -12,4 +12,4 @@ Workflow: take a full-window screenshot in Chrome (window about 1280 px wide), t
 packaging/store/crop-screenshot.sh in.png out.png
 ```
 
-It crops the top 110 px and resizes to 1280x800 with `sips`. Check the result with `sips -g pixelWidth -g pixelHeight out.png`. If the source is not 1280:800 after the crop, the result is stretched slightly; capture at a window size of 1280x910 for an exact fit.
+It removes the top 110 px (the YouTube header), then crops the rest to 16:10 without stretching: full width and the top of the picture if tall enough, otherwise a centred crop of the width. It then resizes to exactly 1280x800. (One bottom pixel is dropped to work around a `sips` quirk.) It refuses to overwrite the input. Check the result with `sips -g pixelWidth -g pixelHeight out.png`.

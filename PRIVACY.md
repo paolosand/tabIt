@@ -22,13 +22,13 @@ tabIt is a Chrome extension that shows guitar chords for the YouTube video you a
 ## What the helper does (on your Mac)
 
 - For a video you ask about, it downloads that video's audio from YouTube onto your Mac (using yt-dlp), works out the chords there, and keeps the finished chart in a folder on your Mac so the same song is instant next time. Charts are stored in `~/Library/Application Support/tabIt/charts`, and the log is in `~/Library/Logs/tabIt/helper.log`.
-- The first time you set it up, it downloads software it needs: Python packages from PyPI, a copy of ffmpeg, and the chord model file (about 12 MB) from GitHub. These are ordinary downloads from those services; they are not sent to the developer.
+- The first time you set it up, it downloads the software it needs: the `uv` installer from astral.sh, Python and Python packages, a copy of ffmpeg and the chord model file (about 12 MB), from services such as GitHub, PyPI and astral.sh. These are ordinary downloads; they are not sent to the developer.
 - It only accepts requests from your own computer.
-- To remove it and everything it stored, run `tabit uninstall` in Terminal.
+- To remove the helper, run `tabit uninstall` in Terminal. It asks whether to delete your saved charts; run `tabit uninstall --purge` to delete them without asking. The installer also leaves the free `uv` tool in `~/.local/bin` and its download cache; delete those by hand if you want them gone.
 
 ## Who sees what
 
-Your Mac contacts YouTube (to fetch the audio you asked for), and PyPI and GitHub (during first-time setup). Those services see ordinary download requests from your computer, under their own privacy policies. The developer sees none of it.
+Your Mac contacts YouTube (to fetch the audio you asked for), and PyPI, GitHub (including raw.githubusercontent.com, where the chord model file is hosted) and astral.sh (during first-time setup). Those services see ordinary download requests from your computer, under their own privacy policies. The developer sees none of it.
 
 ## Platform
 

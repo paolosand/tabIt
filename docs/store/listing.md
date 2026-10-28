@@ -12,7 +12,7 @@ Taken from `extension/manifest.json`: **tabIt — chords for YouTube**
 Chords for the song you're watching on YouTube, synced as it plays. Needs the free tabIt helper for Mac.
 ```
 
-(104 characters. The 132 limit is the manifest `description` limit; the manifest's own description is separate.)
+(104 characters; the Web Store limit is 132, unconfirmed against the current dashboard.)
 
 ## Detailed description
 
