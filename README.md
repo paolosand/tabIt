@@ -102,6 +102,11 @@ the latest tagged release, not main:
 curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh
 ```
 
+When the Chrome extension is installed, it walks you through this itself: open Terminal,
+paste the command (there is a **Copy command** button), press Return, and the extension
+notices the helper as soon as it is running. The helper is macOS only for now. See
+[`PRIVACY.md`](PRIVACY.md) for what is and is not collected (nothing is sent to the developer).
+
 Manage it with `tabit status` / `tabit logs` / `tabit restart` /
 `tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
 logs to `~/Library/Logs/tabIt/helper.log`. If the helper is off, the extension
