@@ -161,6 +161,45 @@ export const OVERLAY_CSS = `
   color: var(--tabit-ink);
 }
 
+.tabit-bar-setup { align-items: flex-start; }
+.tabit-bar-setup p {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tabit-bar-setup ol {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tabit-muted);
+}
+.tabit-bar-setup code {
+  display: block;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border: 1.5px solid var(--tabit-border);
+  border-radius: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--tabit-ink);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.tabit-bar-unsupported span {
+  font: 13px/1.4 var(--tabit-sans);
+  color: var(--tabit-muted);
+}
+.tabit-copy-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.tabit-copy-row span {
+  font: 12px/1.4 var(--tabit-sans);
+  color: var(--tabit-muted);
+}
+
 /* Panel (Task 5) - ported from web/src/screens/Sheet.tsx. Values match 1:1; only the
  * font stack differs ('Fraunces' -> --tabit-serif system stack, same substitution the
  * rest of this file already makes - no custom webfont inside a content script). */
