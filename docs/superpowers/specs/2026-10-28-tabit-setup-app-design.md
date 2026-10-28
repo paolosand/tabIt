@@ -2,6 +2,19 @@
 
 **Status:** draft for owner approval · 2026-10-28 · builds on `2026-07-12-tabit-helper-packaging-design.md` (this is its "Phase 2", scoped down)
 
+## Scope decision (2026-10-28, owner): the setup app is v1.1, not V1
+
+The first priority is submitting the Chrome extension to the Web Store within days. For that release the helper keeps its Terminal installer, made as painless as a one-line paste can be. **V1 (before and during Web Store review):**
+
+1. Extension first-run panel: three plain steps ("open Terminal, paste this, press Return"), a one-click **Copy command** button, automatic detection when the helper comes up, and the macOS-only message on other platforms. States: never connected, connected-but-stopped, connected, helper too old ("Update tabIt").
+2. Installer fixes that both paths need: no git (the engine ships as a prebuilt wheel built by release CI), a version file, clearer step output.
+3. Release process: CI builds the wheel and the extension zip and creates a draft release; a short checklist says to publish after assets are attached.
+4. Web Store submission assets: 128 px icon and manifest `icons`, 1280×800 screenshots, privacy policy page, permission justification, reviewer test instructions that include the install steps.
+5. Localhost hardening of the helper's API (Host and Origin checks).
+6. Email to the BTC authors about the weights' licence.
+
+**v1.1 (after the Store submission):** the tabIt Setup app described in the rest of this document, unchanged except that it reuses the V1 installer work (wheel, version file, output format). Not in scope for either version: Windows/Linux, automatic updates, a menubar presence, splitting the repository (it stays a single repo so the extension and helper release under one tag).
+
 ## Intent
 
 tabIt's chord engine runs in a small helper on the user's own Mac. Today the helper is installed by pasting a `curl | sh` command into Terminal. tabIt's users are hobby guitar players, not programmers. A person who just added the extension from the Chrome Web Store must get from "no helper" to "chords on my video" without opening Terminal, typing anything, or making a decision other than pressing one button. The setup app is the only thing they install by hand.
