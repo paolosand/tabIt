@@ -5,6 +5,8 @@ APP_SUPPORT = Path.home() / "Library" / "Application Support" / "tabIt"
 ENV_DIR = APP_SUPPORT / "env"
 # The installer parks the previous environment here while it builds a new one.
 ENV_BACKUP_DIR = APP_SUPPORT / "env.old"
+# An env.old being deleted is renamed here first, so an interrupted delete is unambiguous.
+ENV_TRASH_DIR = APP_SUPPORT / "env.trash"
 BIN_DIR = APP_SUPPORT / "bin"
 CHARTS_DIR = APP_SUPPORT / "charts"
 # Downloaded model weights (BTC); re-fetched on first use, so uninstall always drops them.

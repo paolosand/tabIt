@@ -179,6 +179,7 @@ def _fake_layout(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "APP_SUPPORT", app_support)
     monkeypatch.setattr(paths, "ENV_DIR", app_support / "env")
     monkeypatch.setattr(paths, "ENV_BACKUP_DIR", app_support / "env.old")
+    monkeypatch.setattr(paths, "ENV_TRASH_DIR", app_support / "env.trash")
     monkeypatch.setattr(paths, "BIN_DIR", app_support / "bin")
     monkeypatch.setattr(paths, "CHARTS_DIR", app_support / "charts")
     monkeypatch.setattr(paths, "MODELS_DIR", app_support / "models")
@@ -214,6 +215,15 @@ def test_uninstall_drops_an_environment_left_by_an_interrupted_upgrade(tmp_path,
     monkeypatch.setattr("builtins.input", lambda prompt="": "n")
     assert cli_main(["uninstall"]) == 0
     assert not paths.ENV_BACKUP_DIR.exists()
+
+
+def test_uninstall_drops_a_half_deleted_env_trash(tmp_path, monkeypatch):
+    paths = _fake_layout(tmp_path, monkeypatch)
+    paths.ENV_TRASH_DIR.mkdir()
+    (paths.ENV_TRASH_DIR / "pyvenv.cfg").write_text("x")
+    monkeypatch.setattr("builtins.input", lambda prompt="": "n")
+    assert cli_main(["uninstall"]) == 0
+    assert not paths.ENV_TRASH_DIR.exists()
 
 
 def test_engine_models_dir_is_the_helpers(monkeypatch):

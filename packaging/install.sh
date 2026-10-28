@@ -50,6 +50,15 @@ install_engine() {
     "tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
 }
 
+# After the old environment has been put back, bring its login agent back too
+# (it was booted out so launchd couldn't respawn it mid-swap). `tabit start`
+# is idempotent; only attempted when an agent plist exists.
+resume_old_agent() {
+  if [ -f "$HOME/Library/LaunchAgents/com.tabit.helper.plist" ] && [ -x "$ENV_DIR/bin/tabit" ]; then
+    "$ENV_DIR/bin/tabit" start >/dev/null 2>&1 || true
+  fi
+}
+
 # Puts the parked 0.3.x environment back. Used when an upgrade is interrupted
 # (INT/TERM/HUP) while env.old exists; a hard kill is covered by the recovery at
 # the start of the next run.
@@ -58,6 +67,7 @@ restore_env() {
   if [ -n "${env_backup:-}" ] && [ -d "$env_backup" ]; then
     rm -rf "$ENV_DIR"
     mv "$env_backup" "$ENV_DIR"
+    resume_old_agent
     printf '\ninterrupted; your previous tabIt environment was restored (start it with: tabit start)\n' >&2
   fi
   exit 1
@@ -86,9 +96,13 @@ main() {
   # first, then let the normal detection below decide whether to rebuild (worst
   # case: one extra rebuild). Symlinks are refused rather than followed, since
   # rm -rf on a link would orphan its target.
-  for d in "$ENV_DIR" "$ENV_DIR.old"; do
+  for d in "$ENV_DIR" "$ENV_DIR.old" "$ENV_DIR.trash"; do
     if [ -L "$d" ]; then fail "$d is a symlink; replace it with a real directory (or remove it) and rerun"; fi
   done
+  # env.trash is an env.old whose deletion was interrupted: by construction
+  # garbage (a half-deleted tree), never something to restore. Drop it BEFORE
+  # looking at env.old.
+  rm -rf "$ENV_DIR.trash"
   if [ -d "$ENV_DIR.old" ]; then
     printf 'restoring the environment left by an interrupted upgrade…\n'
     launchctl bootout "gui/$(id -u)/com.tabit.helper" 2>/dev/null || true
@@ -174,7 +188,8 @@ main() {
       trap - INT TERM HUP
       rm -rf "$ENV_DIR"
       mv "$env_backup" "$ENV_DIR"
-      fail "installing tabIt failed; your previous environment was restored (start it with: tabit start)"
+      resume_old_agent
+      fail "installing tabIt failed; your previous environment was restored (and restarted if it was running; otherwise: tabit start)"
     fi
     fail "installing tabIt failed"
   fi
@@ -206,7 +221,9 @@ main() {
     fail "the model download / test inference failed; check your connection and rerun the installer"
   if [ -n "$env_backup" ]; then
     trap - INT TERM HUP
-    rm -rf "$env_backup"
+    # Rename first (atomic), then delete: an interrupted delete leaves env.trash,
+    # which the next run discards, never a truncated env.old that it would restore.
+    mv "$env_backup" "$ENV_DIR.trash" && rm -rf "$ENV_DIR.trash"
   fi
 
   # --- service --------------------------------------------------------------------
