@@ -122,6 +122,11 @@ test('manual retry from the offline bar polls immediately', async () => {
 
 describe('first-run states', () => {
   const INSTALL = /curl -fsSL/;
+  const realClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  afterEach(() => {
+    if (realClipboard) Object.defineProperty(navigator, 'clipboard', realClipboard);
+    else delete (navigator as unknown as { clipboard?: unknown }).clipboard;
+  });
 
   test('helper down and never seen shows the setup bar on mount, no click needed', async () => {
     statusResponses.mockResolvedValue({ state: 'down', everSeen: false });
@@ -174,10 +179,67 @@ describe('first-run states', () => {
     expect(screen.getByText('tabit restart')).toBeInTheDocument();
   });
 
+  test('a helper that dies during an update poll returns to a plain collapsed bar', async () => {
+    vi.useFakeTimers();
+    statusResponses
+      .mockResolvedValueOnce({ state: 'up', tooOld: true })
+      .mockResolvedValue({ state: 'down', everSeen: true });
+    render(<App videoId="vid00000001" />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByText('tabIt needs a quick update')).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); });
+    expect(screen.getByRole('button', { name: /get chords/i })).toBeInTheDocument();
+    expect(screen.queryByText('Helper connected')).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  test('update mode flips to "Helper connected" once the helper is current', async () => {
+    vi.useFakeTimers();
+    statusResponses
+      .mockResolvedValueOnce({ state: 'up', tooOld: true })
+      .mockResolvedValue({ state: 'up', tooOld: false });
+    render(<App videoId="vid00000001" />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByText('tabIt needs a quick update')).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); });
+    expect(screen.getByText('Helper connected')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  test('status polling stops after "Helper connected"', async () => {
+    vi.useFakeTimers();
+    statusResponses
+      .mockResolvedValueOnce({ state: 'down', everSeen: false })
+      .mockResolvedValue({ state: 'up', tooOld: false });
+    render(<App videoId="vid00000001" />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); });
+    expect(screen.getByText('Helper connected')).toBeInTheDocument();
+    const send = chrome.runtime.sendMessage as Mock;
+    const n = statusCalls(send).length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(120000); });
+    expect(statusCalls(send)).toHaveLength(n);
+    vi.useRealTimers();
+  });
+
+  test('Get chords clicked while the status probe is in flight is not clobbered by its answer', async () => {
+    let resolve!: (v: unknown) => void;
+    statusResponses.mockReturnValue(new Promise((r) => { resolve = r; }));
+    chartResponses.mockReturnValue(new Promise(() => {})); // chart stays pending
+    render(<App videoId="vid00000001" />);
+    await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
+    expect(screen.getByText('Fetch audio')).toBeInTheDocument();
+    await act(async () => { resolve({ state: 'down', everSeen: false }); });
+    expect(screen.queryByText(INSTALL)).not.toBeInTheDocument();
+    expect(screen.getByText('Fetch audio')).toBeInTheDocument();
+  });
+
   test('not a Mac shows the unsupported bar and sends no status message', async () => {
     (platform.isMac as Mock).mockReturnValue(false);
     render(<App videoId="vid00000001" />);
-    expect(await screen.findByText('tabIt needs a Mac for now')).toBeInTheDocument();
+    // first render, before any effect/microtask: never offers Get chords
+    expect(screen.queryByRole('button', { name: /get chords/i })).not.toBeInTheDocument();
+    expect(screen.getByText('tabIt needs a Mac for now')).toBeInTheDocument();
     expect(statusCalls(chrome.runtime.sendMessage as Mock)).toHaveLength(0);
   });
 

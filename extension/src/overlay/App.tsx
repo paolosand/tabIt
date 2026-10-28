@@ -44,7 +44,9 @@ export interface AppProps {
  *  3s) -> sheet | error. Session-cached charts resolve on the first poll, so a chart
  *  that's already been analyzed once feels effectively instant. */
 export function App({ videoId }: AppProps) {
-  const [state, setState] = useState<State>({ kind: 'collapsed' });
+  const [state, setState] = useState<State>(() =>
+    isMac() ? { kind: 'collapsed' } : { kind: 'unsupported' },
+  );
   // Latest state for async callbacks (timers/promises) that must not use stale closures.
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -98,7 +100,11 @@ export function App({ videoId }: AppProps) {
           return;
         }
         statusAttemptRef.current = 0;
-        if (prev.kind === 'setup') setState({ kind: 'collapsed', justConnected: true });
+        if (prev.kind === 'setup') {
+          // Only a live, current helper counts as "connected"; a helper that died
+          // mid-update just returns to the plain bar.
+          setState(response.state === 'up' ? { kind: 'collapsed', justConnected: true } : { kind: 'collapsed' });
+        }
       })
       .catch(() => {
         if (!aliveRef.current) return;
@@ -107,10 +113,7 @@ export function App({ videoId }: AppProps) {
   }, []);
 
   useEffect(() => {
-    if (!isMac()) {
-      setState({ kind: 'unsupported' });
-      return;
-    }
+    if (stateRef.current.kind === 'unsupported') return;
     checkStatus();
   }, [checkStatus]);
 

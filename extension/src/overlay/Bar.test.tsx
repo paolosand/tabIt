@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { Bar } from './Bar';
@@ -117,4 +117,36 @@ test('collapsed bar can note that the helper just connected', () => {
 test('collapsed bar shows no connected note by default', () => {
   render(<Bar variant="collapsed" onGetChords={() => {}} />);
   expect(screen.queryByText('Helper connected')).not.toBeInTheDocument();
+});
+
+test('"Copied" reverts to "Copy command" after 2s; clicking again restarts the timer', async () => {
+  vi.useFakeTimers();
+  try {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<Bar variant="setup" mode="install" onCopy={vi.fn().mockResolvedValue(true)} />);
+    await user.click(screen.getByRole('button', { name: 'Copy command' }));
+    expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500); });
+    await user.click(screen.getByRole('button', { name: 'Copied' })); // restart
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500); }); // 3s since first click
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+    expect(screen.getByRole('button', { name: 'Copy command' })).toBeInTheDocument();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('unmounting while "Copied" is showing leaves no pending timer', async () => {
+  vi.useFakeTimers();
+  try {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { unmount } = render(<Bar variant="setup" mode="install" onCopy={vi.fn().mockResolvedValue(true)} />);
+    await user.click(screen.getByRole('button', { name: 'Copy command' }));
+    await screen.findByRole('button', { name: 'Copied' });
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
 });

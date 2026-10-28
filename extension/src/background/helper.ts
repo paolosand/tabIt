@@ -10,7 +10,7 @@ export async function getHelperStatus(): Promise<
     const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS) });
     if (!res.ok) return { state: 'down' };
     const body = await res.json();
-    if (typeof body?.engineVersion !== 'string') return { state: 'down' };
+    if (body?.status !== 'ok' || typeof body?.engineVersion !== 'string') return { state: 'down' };
     return { state: 'up', engineVersion: body.engineVersion };
   } catch {
     return { state: 'down' };

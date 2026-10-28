@@ -3,7 +3,7 @@
  *  (shadow DOM has no access to a global stylesheet, and pseudo-states like :hover need
  *  real CSS classes rather than inline styles). */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { INSTALL_COMMAND } from '../install';
 import * as copy from './copy';
 
@@ -50,9 +50,22 @@ function LoadingBar({ step }: { step?: string }) {
   );
 }
 
+const COPIED_REVERT_MS = 2000;
+
 /** A Copy button plus, when the clipboard is unavailable, a plain "select it yourself" line. */
 function CopyRow({ onCopy }: { onCopy: () => Promise<boolean> }) {
   const [result, setResult] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimer = () => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = null;
+  };
+  useEffect(() => clearTimer, []);
+  const showCopied = () => {
+    clearTimer();
+    setResult('copied');
+    timer.current = setTimeout(() => setResult('idle'), COPIED_REVERT_MS);
+  };
   return (
     <span className="tabit-copy-row">
       <button
@@ -60,8 +73,17 @@ function CopyRow({ onCopy }: { onCopy: () => Promise<boolean> }) {
         className="tabit-btn tabit-btn-primary"
         onClick={() => {
           onCopy().then(
-            (ok) => setResult(ok ? 'copied' : 'failed'),
-            () => setResult('failed'),
+            (ok) => {
+              if (ok) showCopied();
+              else {
+                clearTimer();
+                setResult('failed');
+              }
+            },
+            () => {
+              clearTimer();
+              setResult('failed');
+            },
           );
         }}
       >
