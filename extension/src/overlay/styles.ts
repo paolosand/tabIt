@@ -144,6 +144,8 @@ export const OVERLAY_CSS = `
 }
 
 .tabit-bar-error .tabit-error-message {
+  min-width: 0;
+  overflow-wrap: anywhere; /* long server errors (paths, URLs) wrap instead of overflowing */
   font-size: 13px;
   color: var(--tabit-error);
   line-height: 1.4;

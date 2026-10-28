@@ -88,7 +88,7 @@ export function Bar(props: BarProps) {
   return (
     <div className="tabit-bar tabit-bar-error" data-state="error">
       <Wordmark />
-      <span className="tabit-error-message">{props.message}</span>
+      <span className="tabit-error-message" title={props.message}>{props.message}</span>
       <button
         type="button"
         className="tabit-btn tabit-btn-secondary"

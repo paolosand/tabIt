@@ -48,3 +48,14 @@ test('the checklist lists only the steps that really run', () => {
     expect.stringContaining('Build chart'),
   ]);
 });
+
+test('a long server error (missing model weights) is shown in full, not cut off', () => {
+  const message =
+    'BTC chord weights are not in /Users/x/Library/Application Support/tabIt/models and could not be ' +
+    'downloaded (offline). Connect to the internet and retry (`tabit warmup` fetches them), or download ' +
+    'https://raw.githubusercontent.com/jayg996/BTC-ISMIR19/2682317/test/btc_model_large_voca.pt yourself.';
+  render(<Bar variant="error" message={message} onRetry={() => {}} />);
+  const el = screen.getByText(message);
+  expect(el).toHaveAttribute('title', message);
+  expect(el.textContent).toBe(message);
+});
