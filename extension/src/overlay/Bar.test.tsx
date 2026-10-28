@@ -17,16 +17,14 @@ test('loading checklist marks earlier steps done, current active, later pending'
   const items = screen.getAllByRole('listitem');
   expect(items.map((el) => el.textContent)).toEqual([
     expect.stringContaining('Fetch audio'),
-    expect.stringContaining('Separate instruments'),
     expect.stringContaining('Find chords'),
     expect.stringContaining('Build chart'),
   ]);
   expect(items[0]).toHaveClass('tabit-check-done');
-  expect(items[1]).toHaveClass('tabit-check-done');
-  expect(items[2]).toHaveClass('tabit-check-active');
-  expect(items[2]).toHaveAttribute('aria-current', 'step');
-  expect(items[3]).toHaveClass('tabit-check-pending');
-  expect(items[3]).not.toHaveAttribute('aria-current');
+  expect(items[1]).toHaveClass('tabit-check-active');
+  expect(items[1]).toHaveAttribute('aria-current', 'step');
+  expect(items[2]).toHaveClass('tabit-check-pending');
+  expect(items[2]).not.toHaveAttribute('aria-current');
 });
 
 test('missing step defaults to the first step active', () => {
@@ -41,23 +39,23 @@ test('unknown step id defaults to the first step active', () => {
   expect(screen.getAllByRole('listitem')[0]).toHaveClass('tabit-check-active');
 });
 
-test('btc backend: ingest straight to chords drops the separation step', () => {
-  const { rerender } = render(<Bar variant="loading" step="ingest" />);
-  expect(screen.getByText('Separate instruments')).toBeInTheDocument();
-  rerender(<Bar variant="loading" step="chords" />);
+test('the checklist lists only the steps that really run', () => {
+  render(<Bar variant="loading" step="ingest" />);
   expect(screen.queryByText('Separate instruments')).not.toBeInTheDocument();
-  const items = screen.getAllByRole('listitem');
-  expect(items.map((el) => el.textContent)).toEqual([
+  expect(screen.getAllByRole('listitem').map((el) => el.textContent)).toEqual([
     expect.stringContaining('Fetch audio'),
     expect.stringContaining('Find chords'),
     expect.stringContaining('Build chart'),
   ]);
-  expect(items[1]).toHaveClass('tabit-check-active');
 });
 
-test('crema backend: separate reported, so the full checklist stays', () => {
-  const { rerender } = render(<Bar variant="loading" step="ingest" />);
-  rerender(<Bar variant="loading" step="separate" />);
-  rerender(<Bar variant="loading" step="chords" />);
-  expect(screen.getByText('Separate instruments')).toHaveClass('tabit-check-done');
+test('a long server error (missing model weights) is shown in full, not cut off', () => {
+  const message =
+    'BTC chord weights are not in /Users/x/Library/Application Support/tabIt/models and could not be ' +
+    'downloaded (offline). Connect to the internet and retry (`tabit warmup` fetches them), or download ' +
+    'https://raw.githubusercontent.com/jayg996/BTC-ISMIR19/2682317/test/btc_model_large_voca.pt yourself.';
+  render(<Bar variant="error" message={message} onRetry={() => {}} />);
+  const el = screen.getByText(message);
+  expect(el).toHaveAttribute('title', message);
+  expect(el.textContent).toBe(message);
 });

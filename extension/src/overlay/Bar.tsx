@@ -2,7 +2,6 @@
  *  Rendered inside the shadow root; all visual styling lives in classes from styles.ts
  *  (shadow DOM has no access to a global stylesheet, and pseudo-states like :hover need
  *  real CSS classes rather than inline styles). */
-import { useRef } from 'react';
 
 export type BarProps =
   | { variant: 'collapsed'; onGetChords: () => void }
@@ -15,21 +14,12 @@ export type BarProps =
  *  on the field being absent). */
 const PIPELINE_STEPS = [
   { id: 'ingest', label: 'Fetch audio' },
-  { id: 'separate', label: 'Separate instruments' },
   { id: 'chords', label: 'Find chords' },
   { id: 'finalize', label: 'Build chart' },
 ] as const;
 
-/** The BTC chord backend never separates stems, so the server goes straight from
- *  `ingest` to `chords`. Having watched exactly that jump, drop the separation step
- *  rather than show it as a fake completed one. Cold renders (no `ingest` seen) and
- *  the crema backend, which reports `separate`, keep the full checklist. */
 function LoadingBar({ step }: { step?: string }) {
-  const seen = useRef(new Set<string>());
-  if (step) seen.current.add(step);
-  const skipSeparate = seen.current.has('ingest') && !seen.current.has('separate')
-    && (step === 'chords' || step === 'finalize');
-  const steps = PIPELINE_STEPS.filter((s) => !(skipSeparate && s.id === 'separate'));
+  const steps = PIPELINE_STEPS;
   const active = Math.max(0, steps.findIndex((s) => s.id === step));
   return (
     <div className="tabit-bar tabit-bar-loading" data-state="loading">
@@ -98,7 +88,7 @@ export function Bar(props: BarProps) {
   return (
     <div className="tabit-bar tabit-bar-error" data-state="error">
       <Wordmark />
-      <span className="tabit-error-message">{props.message}</span>
+      <span className="tabit-error-message" title={props.message}>{props.message}</span>
       <button
         type="button"
         className="tabit-btn tabit-btn-secondary"

@@ -58,3 +58,18 @@ Plan: [`superpowers/plans/2026-07-09-tabit-extension.md`](superpowers/plans/2026
 - [x] Beat ribbon compact view (spec 2026-07-10): beat-grid strip default, full sheet behind a toggle — live-verified to fit under the player at 1440×900 with no page scroll
 - [x] Conservative chords + meter (spec 2026-07-11, engine 0.2.0): slash chords gated to confident chord-tone bass (30→16 slashes on the demo song, all survivors legit), low-confidence exotics simplified (7→0), flicker segments merged (2→0), meter detected from chord-change/downbeat alignment (correctly found 3 beats/bar on a non-4/4 song) — ribbon bar lines now follow real downbeats; panel spans the full video width at ~172px tall
 - [x] Ingestion speedup, 270s→36s for a 3.5-min song (2026-07-11): Demucs on MPS with 4-stem htdemucs + CPU retry (208s→24s; MPS stems verified ≈ CPU, bass corr 0.956), CREPE `small` for bass pitch (45s→7s, 91.5% pitch-class agreement on confident frames), key ∥ separation and bass ∥ beats ∥ chords via thread pool (TF's lazy `tensorflow.keras` init is racy — pre-imported before workers), single yt-dlp call (`--write-info-json`), process-wide model singletons + API startup warmup. CREPE small A/B'd against full on the 4 real test songs: 93.5–99.6% time-weighted label agreement (83.4% on Three Little Birds — one recurring A ↔ A/C# inversion flip), and every disagreement is slash-only — the base chord never changes; all slashes either way pass the chord-tone gate. Known pre-existing failure surfaced (not introduced here): `test_majmin_accuracy_on_synthetic_clip` also fails on main — the drum-less 8s synthetic clip yields a 3-beat/30 BPM grid and `merge_short` collapses all four chords into one
+
+## BTC-only engine, v0.4.0 (2026-10-27)
+
+BTC (already the default since the BTC backend landed) becomes the only chord backend; the
+Demucs / crema / CREPE path and the `TABIT_CHORD_BACKEND` switch with its silent fallback are
+deleted. Engine and package are 0.4.0 and the cache key is the bare version, so charts cached by
+0.3.x are re-analyzed rather than served. Dependencies drop demucs, crepe, crema, tensorflow,
+keras and the setuptools/scikit-learn pins (plus `constraints-build.txt`); torch is now explicit
+(`>=2.0,<3`; verified on 2.0.1 and 2.14.1). Installed environment: ~2.2 GB -> ~0.95 GB. The
+installer rebuilds a 0.3.x environment (old one parked as `env.old` and restored on failure;
+charts and models kept), its warm step downloads the BTC weights and runs one tiny inference,
+and the free-disk check is 3 GB (5 GB when replacing a 0.3.x env). Progress steps are now
+ingest -> chords -> finalize; the extension drops "Separate instruments". Missing weights raise
+an error naming the models dir, the pinned URL and `tabit warmup`. The previous pipeline stays
+reachable with `TABIT_REF=v0.3.1`.

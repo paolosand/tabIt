@@ -17,7 +17,7 @@ followed karaoke-style as the music plays.
 
 <img src="docs/assets/extension-demo.gif" alt="Live demo of the tabIt Chrome extension on youtube.com: clicking the Get chords bar under the video expands a beat ribbon that sweeps chord to chord in time with the song, showing the current chord, the next chord, and key, tempo, and scale chips" width="100%">
 
-<p align="center"><sub>A real recording on youtube.com. Click the "♪ Get chords" bar under the video you're already watching, and the bar walks through the pipeline live: fetch audio, separate instruments, find chords, build chart (recorded on the opt-in crema backend, which has the separation step; sped up here, about 36 seconds in real time). Then the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
+<p align="center"><sub>A real recording on youtube.com. Click the "♪ Get chords" bar under the video you're already watching, and the bar walks through the pipeline live: fetch audio, find chords, build chart (recorded on the older 0.3 pipeline, which also had an instrument-separation step and took about 36 seconds in real time; sped up here). Then the beat ribbon embeds itself, sweeping beat by beat with the next chord always in sight.</sub></p>
 
 ## Why this exists
 
@@ -37,23 +37,18 @@ itself, so you can play along to practically anything.
   sheet is one click away.
 - **Karaoke-style following.** The current chord is always obvious at a glance; the next
   chord is flagged before it arrives, so your hands are ready.
-- **Slash chords (opt-in).** The default BTC backend has no slash chords. Set
-  `TABIT_CHORD_BACKEND=crema` and the chord model runs on the drums-removed harmonic mix
-  while a pitch tracker follows the isolated bass stem; the two are reconciled to emit
-  inversions like `A/C#`, at the cost of the much slower separation pipeline.
 - **Honest confidence.** Chord detection is imperfect (state of the art is ~72% on
   7th chords; human experts only agree ~54% on complex ones). Low-confidence chords are
   visibly softer with a dotted underline, never hidden. Click any chord to correct it;
   edits persist locally.
 - **Practice-friendly.** Key, tempo, and scale chips at the top; one-tap transpose;
   auto-scroll that keeps the current line in view.
-- **Fast after the first time.** With the default BTC backend, analysis of a ~3.5-minute
-  song took about 1.8 s of compute with models warm on an Apple-Silicon Mac (measured),
-  plus the download; the first run also fetches the BTC weights. The opt-in crema backend
-  (`TABIT_CHORD_BACKEND=crema`) took about 27 s warm on the same machine, because it
-  runs GPU source separation and bass tracking first. While it runs, the bar shows each
-  pipeline step live (download, chords, plus separation on crema) instead of a blank spinner. Every repeat of
-  the same song is served instantly from a disk cache.
+- **Fast, and light.** Analysis of a ~3.5-minute song takes a few seconds of compute
+  on an Apple-Silicon Mac (measured: 1 to 5 s for the engine itself on 15 songs, plus the
+  download), and the installed environment is about 1 GB. The first run also fetches the
+  12 MB BTC weights (the installer does this up front). While it runs, the bar shows each
+  pipeline step live (download, chords, build chart) instead of a blank spinner. Every
+  repeat of the same song is served instantly from a disk cache.
 
 ## How it works
 
@@ -69,19 +64,14 @@ flowchart LR
     BTC --> POST["post-process"]
     BE --> POST
     KEY --> POST
-    ING -. "TABIT_CHORD_BACKEND=crema" .-> SEP["Demucs<br/>source separation"]
-    SEP -- harmonic mix --> CH["crema<br/>chord model"]
-    SEP -- bass stem --> BA["CREPE<br/>bass tracking"]
-    CH --> REC["reconcile<br/>slash chords"]
-    BA --> REC
-    REC --> POST
     POST --> JSON[("chart JSON")]
     JSON --> WEB["React web app"]
     JSON --> EXT["Chrome extension<br/>(overlay on youtube.com)"]
 ```
 
-The solid path is the default. The dotted path is the opt-in crema backend, the only
-one that produces slash chords.
+Chords come from BTC alone, read straight from the original mix. For the previous
+Demucs + crema pipeline (slash chords, but a ~2 GB install and ~30 s per song), see
+[Older versions](#older-versions).
 
 | Layer | What | Status |
 |---|---|---|
@@ -93,19 +83,19 @@ one that produces slash chords.
 
 ### 1. Engine + API
 
-Requires Python 3.11. Plain `pip install -e ".[dev]"` is **not sufficient**: crema's
-legacy build needs an old `setuptools`, so the build step is constrained separately.
+Requires Python 3.11 and ffmpeg.
 
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]" --build-constraint constraints-build.txt
+pip install -e ".[dev]"
 ```
 
 #### Or: one-line install (macOS, beta)
 
 Skip the manual environment entirely. The installer provisions Python 3.11
-via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and all model weights,
-then runs the API as a background service that starts at login. It installs
+via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and the chord-model weights
+(about 1 GB for the environment, plus about 1 GB of download cache, a couple of minutes), then runs the API as a
+background service that starts at login. It installs
 the latest tagged release, not main:
 
 ```bash
@@ -115,7 +105,9 @@ curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/inst
 Manage it with `tabit status` / `tabit logs` / `tabit restart` /
 `tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
 logs to `~/Library/Logs/tabIt/helper.log`. If the helper is off, the extension
-bar says so and recovers by itself once the service is back.
+bar says so and recovers by itself once the service is back. Rerunning the installer
+upgrades in place; a 0.3.x install is rebuilt so its ~2 GB of old TensorFlow/Demucs
+packages are removed (your chart cache is kept).
 
 ### 2. Chrome extension
 
@@ -166,7 +158,7 @@ python -m engine.cli <youtube-url|audio-file> -o chart.json
 
 This is a portfolio and learning project, and it doesn't pretend otherwise. On a
 pilot sample of 11 Beatles songs (Isophonics hand-labeled annotations, scored
-against the live YouTube pipeline with `mir_eval`), the engine measures **0.75
+against the live YouTube pipeline with `mir_eval`), the engine (then at 0.2.1, the Demucs + crema pipeline; not yet re-run on the BTC-only 0.4.0 engine) measured **0.75
 duration-weighted majmin accuracy** (0.65 sevenths) — see
 [`benchmarks/results/latest.md`](benchmarks/results/latest.md) for the per-song
 breakdown and [`benchmarks/README.md`](benchmarks/README.md) for the methodology.
@@ -175,11 +167,11 @@ a **synthetic** Am→F→C→G fixture, out-of-distribution for a model trained 
 recordings. 11 songs, all from one artist/era, is a pilot, not a claim about
 accuracy across genres — treat it as a directional signal, not a spec. What the
 product does instead of promising precision: it shows per-chord confidence and
-makes corrections one click away. Since
-engine 0.2.0, a conservatism pass also keeps the noise down: on the crema backend slash chords appear
-only when the detected bass is confident *and* a chord tone (BTC emits none), low-confidence exotic qualities
-simplify to plain triads, flicker segments merge away (sub-2-beat on crema, sub-0.5 s on BTC), and a meter detector
+makes corrections one click away. A
+conservatism pass also keeps the noise down: low-confidence exotic qualities
+simplify to plain triads, flicker segments (under 0.5 s) merge away, and a meter detector
 (chord changes land on downbeats) gives the chart real bar lines instead of assuming 4/4.
+BTC emits no slash chords, so every chord's bass is its root.
 
 ## Project layout
 
@@ -196,11 +188,11 @@ docs/        design specs, implementation plans, progress ledger
 
 - [x] Extension: degraded mount fallback + live-stream guard
 - [x] Extension: headful Playwright e2e against real YouTube
-- [x] Quieter slash chords (crema backend): emit `X/Y` only when the bass is confident *and* on a chord tone
 - [x] Animated demo in this README (screen-recorded GIF of the ribbon sweeping in time)
 - [x] Live pipeline-step checklist in the extension bar while a song analyzes
 - [x] macOS helper: one-line installer, launchd service, `tabit` CLI, extension offline state
 - [x] Real-song accuracy floor (Isophonics-labeled pilot benchmark, 11 songs)
+- [x] BTC-only engine (0.4.0): no TensorFlow, Demucs or crema; ~1 GB install instead of ~2 GB
 - [ ] Song sections (verse/chorus) via allin1
 - [ ] Package the extension for the Chrome Web Store (pre-built zip release as a stopgap)
 - [ ] Signed menubar app — download, guided setup, no terminal (packaging Phase 2)
@@ -212,23 +204,20 @@ design specs and implementation plans in [`docs/superpowers/`](docs/superpowers/
 
 | | |
 |---|---|
-| [Demucs](https://github.com/facebookresearch/demucs) | source separation (harmonic mix + bass stem) |
-| [BTC](https://github.com/jayg996/BTC-ISMIR19) | chord recognition (default; see below) |
-| [crema](https://github.com/bmcfee/crema) | chord recognition (`TABIT_CHORD_BACKEND=crema`) |
+| [BTC](https://github.com/jayg996/BTC-ISMIR19) | chord recognition (see below) |
+| [PyTorch](https://pytorch.org) | runs the BTC model |
 | [librosa](https://librosa.org) | beat and tempo tracking |
 | [Essentia](https://essentia.upf.edu) | key detection |
-| [CREPE](https://github.com/marl/crepe) | bass pitch tracking |
 | [mir_eval](https://github.com/mir-evaluation/mir_eval) | accuracy harness |
 | [FastAPI](https://fastapi.tiangolo.com) · [React 19](https://react.dev) · [Vite](https://vite.dev) · [esbuild](https://esbuild.github.io) | the app around the engine |
 
 ## Chord recognition
 
-The default chord backend is **BTC**, the Bi-directional Transformer for Chord
+Chords are recognized by **BTC**, the Bi-directional Transformer for Chord
 recognition by Park et al. (ISMIR 2019), <https://github.com/jayg996/BTC-ISMIR19>.
 Its code (MIT, (c) 2019 Jonggwon Park) is vendored, trimmed to inference, in
 [`engine/vendor/btc`](engine/vendor/btc) with the upstream licence and a notice.
-BTC reads the original mix, so it skips source separation and bass tracking
-(about 1 s instead of about 30 s per song) and emits no slash chords. Segments
+BTC reads the original mix (about 1 s per song) and emits no slash chords. Segments
 shorter than 0.5 s are merged into their neighbours.
 
 The pretrained weights are by the authors. They are not in this repository: they
@@ -238,9 +227,9 @@ against a pinned SHA-256, and stored under `~/Library/Application Support/tabIt/
 which were trained on commercial recordings, so their terms for commercial use are
 unconfirmed; tabIt is non-commercial.
 
-Choose the backend with `TABIT_CHORD_BACKEND=btc|crema`. If BTC's weights can't be
-fetched and you didn't ask for btc explicitly, tabIt falls back to crema with a
-logged warning; an explicit `btc` raises instead.
+If the weights can't be fetched (offline first run), analysis fails with a message
+naming the models folder and the pinned URL; connect and run `tabit warmup` (or just
+retry) and it picks up where it left off. There is no fallback model.
 
 Park, J., Choi, K., Jeon, S., Kim, D., Park, J. (2019). A Bi-directional Transformer for
 Musical Chord Recognition. ISMIR.
@@ -258,9 +247,17 @@ Musical Chord Recognition. ISMIR.
 }
 ```
 
-The crema backend (`TABIT_CHORD_BACKEND=crema`) is the model from McFee & Bello,
+## Older versions
+
+Release v0.3.1 and earlier ran Demucs source separation, then crema (McFee & Bello,
 "Structured training for large-vocabulary chord recognition", 18th ISMIR, Suzhou,
-China, 2017, pp. 188-194.
+China, 2017, pp. 188-194) on the harmonic mix and CREPE on the bass stem, which gave
+slash chords like `A/C#` at the cost of a ~2 GB install and ~30 s per song. To keep
+that pipeline, install the pinned tag:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/v0.3.1/packaging/install.sh | TABIT_REF=v0.3.1 sh
+```
 
 ## License
 

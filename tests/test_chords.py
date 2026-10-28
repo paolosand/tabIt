@@ -1,4 +1,3 @@
-import pytest
 from engine.chords import parse_harte, RawChord, raw_to_segments
 
 
@@ -36,12 +35,3 @@ def test_raw_to_segments_builds_labels():
     assert segs[0].label == "Am"
     assert segs[1].label == "C/G"
     assert segs[1].confidence == 0.6
-
-
-@pytest.mark.integration
-def test_crema_model_predicts(tone_440_wav):
-    from engine.chords import CremaChordModel
-    raws = CremaChordModel().predict(tone_440_wav)
-    assert isinstance(raws, list)
-    for r in raws:
-        assert r.end >= r.start

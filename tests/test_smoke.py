@@ -3,7 +3,7 @@ import pytest
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("mod", ["essentia.standard", "demucs.api", "crepe", "crema.analyze"])
+@pytest.mark.parametrize("mod", ["essentia.standard", "torch"])
 def test_heavy_deps_import(mod):
     importlib.import_module(mod)
 

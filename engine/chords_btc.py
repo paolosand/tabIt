@@ -1,7 +1,6 @@
 """BTC chord recognition (Park et al., ISMIR 2019) from the original mix.
 
-Replaces the Demucs -> crema -> CREPE chain: ~1 s warm on CPU instead of ~29 s.
-The vocabulary has no slash chords, so every segment's bass equals its root.
+Runs on the original mix, ~1 s warm on CPU. The vocabulary has no slash chords, so every segment's bass equals its root.
 Model code is vendored in engine/vendor/btc; the weights are fetched from the
 authors' repository on first use (see ensure_weights).
 """
@@ -91,14 +90,14 @@ def ensure_weights(directory: Path | None = None, *, fetch=_download) -> Path:
         data = fetch(WEIGHTS_URL)
     except (OSError, http.client.HTTPException) as exc:   # IncompleteRead is not an OSError
         raise BtcWeightsUnavailable(
-            f"BTC chord weights are not downloaded and could not be fetched ({exc}). "
-            f"Connect to the internet and retry, download {WEIGHTS_URL} to {target} "
-            f"yourself, or set TABIT_CHORD_BACKEND=crema to use the slower crema backend."
+            f"BTC chord weights are not in {directory} and could not be downloaded "
+            f"({exc}). Connect to the internet and retry (`tabit warmup` fetches "
+            f"them), or download {WEIGHTS_URL} to {target} yourself."
         ) from exc
     if _sha256(data) != WEIGHTS_SHA256:
         raise BtcWeightsUnavailable(
             f"Downloaded BTC weights failed the sha256 check (expected {WEIGHTS_SHA256}); "
-            f"refusing to load them. Retry, or set TABIT_CHORD_BACKEND=crema.")
+            f"refusing to load them. Retry with `tabit warmup`.")
     directory.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=directory, suffix=".part")
     try:
@@ -184,10 +183,7 @@ def _restricted_pickle():
 
 
 class BtcChordModel:
-    """Chord estimator backed by BTC; same predict() contract as CremaChordModel,
-    but takes the ORIGINAL mix (no stem separation needed)."""
-
-    backend = "btc"
+    """Chord estimator backed by BTC; predict() takes the ORIGINAL mix."""
 
     def __init__(self, weights_path: Path | None = None, config: dict | None = None,
                  sha256: str | None = None):

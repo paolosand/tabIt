@@ -14,7 +14,7 @@ python -m benchmarks.chord_accuracy        # uses benchmarks/manifest.yaml
 Optional: `--manifest path/to/other.yaml`.
 
 **Local-only.** yt-dlp is blocked from datacenter IPs, so this never runs in CI
-(this is why tabIt is local-first). The first run is ~40s/song; the engine caches
+(this is why tabIt is local-first). The first run takes a few seconds of compute per song plus the download; the engine caches
 charts by videoId + engine version, so re-runs are near-instant.
 
 Results are written to `results/latest.json` (full detail) and `results/latest.md`

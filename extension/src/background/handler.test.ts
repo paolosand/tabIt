@@ -98,7 +98,7 @@ test('stale job: pollJobOnce throwing (e.g. API 404 after SW restart lost the in
 
 test('pending job passes the pipeline step through', async () => {
   await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
-  (api.pollJobOnce as Mock).mockResolvedValue({ status: 'pending', step: 'separate' });
+  (api.pollJobOnce as Mock).mockResolvedValue({ status: 'pending', step: 'chords' });
   const res = await handleGetChart('vid00000001');
-  expect(res).toEqual({ status: 'pending', step: 'separate' });
+  expect(res).toEqual({ status: 'pending', step: 'chords' });
 });

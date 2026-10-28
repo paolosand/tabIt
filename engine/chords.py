@@ -67,23 +67,3 @@ def raw_to_segments(raws: list[RawChord]) -> list[ChordSegment]:
         for r in raws
     ]
 
-
-class CremaChordModel:
-    """Chord estimator backed by crema (large-vocabulary, structured, slash-capable)."""
-
-    backend = "crema"
-
-    def predict(self, wav_path: str) -> list[RawChord]:
-        from crema.analyze import analyze
-
-        jam = analyze(filename=wav_path)
-        ann = jam.annotations.search(namespace="chord")[0]
-        raws: list[RawChord] = []
-        for obs in ann.data:
-            root, quality, bass = parse_harte(obs.value)
-            raws.append(RawChord(
-                start=float(obs.time), end=float(obs.time + obs.duration),
-                root=root, quality=quality, bass=bass,
-                confidence=float(obs.confidence) if obs.confidence is not None else 0.5,
-            ))
-        return raws

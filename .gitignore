@@ -22,7 +22,6 @@ build/
 *.flac
 *.ogg
 /tmp_analysis/
-separated/
 .cache/
 *.pt
 *.onnx

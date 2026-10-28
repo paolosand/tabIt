@@ -1,6 +1,6 @@
 [project]
 name = "tabit-engine"
-version = "0.3.1"
+version = "0.4.0"
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "pydantic>=2,<3",
@@ -14,27 +14,16 @@ dependencies = [
     "mir_eval==0.8.2",
     # Heavy / native — validated in this task's smoke test:
     "essentia>=2.1b6.dev1110 ; sys_platform != 'win32'",
-    # PyPI's latest demucs release (4.0.1) predates the `demucs.api` module the
-    # engine needs (it only exists on the GitHub main branch, unreleased as of
-    # 2026-07-09). Pinned to a specific commit for reproducibility.
-    "demucs @ git+https://github.com/facebookresearch/demucs.git@e976d93ecc3865e5757426930257e200846a520a",
-    "crepe>=0.0.15",
-    "crema>=0.2",
-    # crema's 2019-era code imports `keras.models.model_from_config`, which was
-    # removed in the Keras 3 rewrite that ships by default with tensorflow>=2.16.
-    # Pin both to the last Keras-2-compatible release pair with Python 3.11 wheels.
-    "tensorflow==2.15.0",
-    "keras==2.15.0",
-    # crema also does `from pkg_resources import resource_filename` at import
-    # time; setuptools>=81 dropped pkg_resources. Needed at runtime (this pin)
-    # AND at build time for crepe's legacy setup.py — see constraints-build.txt.
-    "setuptools<81",
-    # pumpp 0.6.0's LabelEncoder (used internally by crema) duck-types the
-    # sklearn transformer API without inheriting from BaseEstimator. sklearn
-    # 1.6 made check_is_fitted() call estimator.__sklearn_tags__(), which
-    # such classes don't have, so CremaChordModel.predict() raises
-    # AttributeError deep inside pumpp's chord task. Pin below the 1.6 cutover.
-    "scikit-learn<1.6",
+    # BTC chord model (engine/vendor/btc + the allowlisted loader in
+    # engine/chords_btc.py). The default PyPI wheel on macOS is already CPU/MPS.
+    # Highest version covered by the real-weights test (2.14.1); raise the cap
+    # deliberately, after running `pytest -m integration` on the new torch.
+    "torch>=2.0,<2.15",
+    # Intel Macs: numba/llvmlite stopped shipping x86_64 macOS wheels after
+    # these lines, and uv would otherwise pick the newest and try to build the
+    # LLVM bindings from source. (Apple Silicon is unaffected.)
+    "numba<0.63 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "llvmlite<0.46 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 
 [project.optional-dependencies]

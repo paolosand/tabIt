@@ -50,14 +50,14 @@ def test_set_step_surfaces_on_pending_job_and_clears_when_done():
     stepped = threading.Event()
 
     def work(job_id):
-        store.set_step(job_id, "separate")
+        store.set_step(job_id, "chords")
         stepped.set()
         release.wait(timeout=5)
         return {"ok": True}
 
     job_id = store.submit(work)
     assert stepped.wait(5)
-    assert store.get(job_id) == {"status": "pending", "step": "separate"}
+    assert store.get(job_id) == {"status": "pending", "step": "chords"}
 
     release.set()
     deadline = time.time() + 5
@@ -71,7 +71,7 @@ def test_set_step_surfaces_on_pending_job_and_clears_when_done():
 def test_set_step_on_resolved_or_unknown_job_is_noop():
     store = JobStore()
     job_id = store.submit_done({"cached": True})
-    store.set_step(job_id, "separate")
+    store.set_step(job_id, "chords")
     assert store.get(job_id) == {"status": "done", "chart": {"cached": True}}
-    store.set_step("nope", "separate")  # must not raise or create a job
+    store.set_step("nope", "chords")  # must not raise or create a job
     assert store.get("nope") is None

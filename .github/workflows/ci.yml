@@ -25,11 +25,11 @@ jobs:
         run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends ffmpeg
       # CPU-only torch first: the default PyPI wheel drags in multi-GB CUDA
       # deps the runner neither has nor needs; pre-installing from the CPU
-      # index satisfies demucs's requirement so pip doesn't re-resolve it.
+      # index satisfies the engine's torch requirement so pip doesn't re-resolve it.
       - name: Install CPU-only torch
         run: pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - name: Install package (build-constrained, same as README)
-        run: pip install -e ".[dev,api]" --build-constraint constraints-build.txt
+      - name: Install package
+        run: pip install -e ".[dev,api]"
       # Integration tests (real models/audio) are deselected by the repo's
       # pytest addopts; this runs the same 120+ unit tests as local dev.
       - name: pytest

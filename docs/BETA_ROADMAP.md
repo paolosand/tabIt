@@ -12,8 +12,8 @@ Beatles songs** — a single-genre/era pilot, not a broad accuracy claim. In nor
 are generally right but miss some changes "every now and then."
 
 Known engine gaps on record: tempo doubling on slow/drum-less tracks (reggae specifically —
-no cheap fix found, would need a trained perceptual-tempo model), slash-chord bass detection
-tuned but still occasionally noisy, `allin1` section labels deferred (Python/NATTEN install
+no cheap fix found, would need a trained perceptual-tempo model), no slash chords since v0.4.0 (BTC-only engine;
+v0.3.1 had them via Demucs + crema), `allin1` section labels deferred (Python/NATTEN install
 pain), accuracy only validated on one genre/era so far.
 
 ## What "beta" means here
@@ -50,9 +50,9 @@ fixing anything.
   the-floor). Failure modes outside 60s British rock are unknown territory right now.
 - Log specific YouTube URLs where misses were noticed during normal use — real anecdotal
   failures the benchmark won't catch.
-- Bucket failures into categories. Likely candidates already on record: `merge_short`
-  collapsing genuinely short chord changes, tempo-doubling on slow/drum-less tracks,
-  `BASS_CONF_MIN` edge cases.
+- Bucket failures into categories. Likely candidates already on record: tempo-doubling on slow/drum-less tracks, and
+  BTC's 0.5 s minimum segment folding away genuinely short chord changes. (`merge_short`
+  and `BASS_CONF_MIN` were removed with the crema pipeline in v0.4.0.)
 - *In parallel, no engineering time*: register a Chrome Web Store developer account and open
   a draft listing so the review clock can start later without blocking on this.
 
