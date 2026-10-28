@@ -50,6 +50,19 @@ install_engine() {
     "tabit-engine[api] @ git+$TABIT_REPO@$TABIT_REF"
 }
 
+# Puts the parked 0.3.x environment back. Used when an upgrade is interrupted
+# (INT/TERM/HUP) while env.old exists; a hard kill is covered by the recovery at
+# the start of the next run.
+restore_env() {
+  trap - INT TERM HUP
+  if [ -n "${env_backup:-}" ] && [ -d "$env_backup" ]; then
+    rm -rf "$ENV_DIR"
+    mv "$env_backup" "$ENV_DIR"
+    printf '\ninterrupted; your previous tabIt environment was restored (start it with: tabit start)\n' >&2
+  fi
+  exit 1
+}
+
 # Wrapping the whole install in main(), called only as the literal last line,
 # means a truncated `curl | sh` (network cut off mid-stream) hits a shell
 # syntax error while parsing the function body instead of executing whatever
@@ -64,9 +77,24 @@ main() {
     x86_64)
       FFMPEG_ARCH=x64
       FFMPEG_SHA256="$FFMPEG_SHA256_X64"
-      printf 'note: Intel Mac detected — analysis runs on CPU (several minutes per song).\n' ;;
+      printf 'note: Intel Mac detected — analysis runs on CPU, slower than on Apple Silicon.\n' ;;
     *) fail "unsupported architecture: $(uname -m)" ;;
   esac
+
+  # A previous upgrade that was killed mid-swap leaves env.old behind. env may then
+  # be a half-built venv, so env.old is ALWAYS the one to trust: put it back
+  # first, then let the normal detection below decide whether to rebuild (worst
+  # case: one extra rebuild). Symlinks are refused rather than followed, since
+  # rm -rf on a link would orphan its target.
+  for d in "$ENV_DIR" "$ENV_DIR.old"; do
+    if [ -L "$d" ]; then fail "$d is a symlink; replace it with a real directory (or remove it) and rerun"; fi
+  done
+  if [ -d "$ENV_DIR.old" ]; then
+    printf 'restoring the environment left by an interrupted upgrade…\n'
+    launchctl bootout "gui/$(id -u)/com.tabit.helper" 2>/dev/null || true
+    rm -rf "$ENV_DIR"
+    mv "$ENV_DIR.old" "$ENV_DIR"
+  fi
 
   # Measured for 0.4.0: the environment is ~1 GB and uv's wheel cache another
   # ~1 GB, plus ffmpeg and the 12 MB model: a fresh install needs ~2 GB, so
@@ -119,20 +147,18 @@ main() {
 
   # --- python environment --------------------------------------------------------
   mkdir -p "$APP_SUPPORT" "$BIN_DIR"
-  # A run interrupted mid-swap leaves the old environment behind: put it back if
-  # the new one never got created, otherwise drop it.
-  if [ -d "$ENV_DIR.old" ]; then
-    if [ -e "$ENV_DIR" ]; then rm -rf "$ENV_DIR.old"; else mv "$ENV_DIR.old" "$ENV_DIR"; fi
-  fi
-
   env_backup=""
   if legacy_env; then
     step "Replacing the 0.3.x Python environment (TensorFlow, Demucs and crema are no longer used)"
     # Charts and downloaded models live beside the environment, not in it, and
-    # are kept. The old environment is only deleted once the new one works.
+    # are kept. The old environment is only deleted once the new one is built,
+    # ffmpeg is in place and the model warmup has passed; if ffmpeg or the warmup
+    # fail it stays, and rerunning the installer restores it and tries again.
     launchctl bootout "gui/$(id -u)/com.tabit.helper" 2>/dev/null || true
     mv "$ENV_DIR" "$ENV_DIR.old"
     env_backup="$ENV_DIR.old"
+    # Until the install fully succeeds, an interrupt puts the old env back.
+    trap restore_env INT TERM HUP
   fi
 
   create_env=true
@@ -145,13 +171,13 @@ main() {
 
   if ! install_engine "$create_env"; then
     if [ -n "$env_backup" ]; then
+      trap - INT TERM HUP
       rm -rf "$ENV_DIR"
       mv "$env_backup" "$ENV_DIR"
       fail "installing tabIt failed; your previous environment was restored (start it with: tabit start)"
     fi
     fail "installing tabIt failed"
   fi
-  [ -z "$env_backup" ] || rm -rf "$env_backup"
 
   # --- ffmpeg --------------------------------------------------------------------
   step "Installing ffmpeg (static build $FFMPEG_RELEASE)"
@@ -168,15 +194,20 @@ main() {
       "https://github.com/eugeneware/ffmpeg-static/releases/download/$FFMPEG_RELEASE/ffmpeg-darwin-$FFMPEG_ARCH"
     if ! echo "$FFMPEG_SHA256  $BIN_DIR/ffmpeg" | shasum -a 256 -c - >/dev/null 2>&1; then
       rm -f "$BIN_DIR/ffmpeg"
-      fail "downloaded ffmpeg failed checksum verification"
+      fail "downloaded ffmpeg failed checksum verification; rerun the installer"
     fi
     chmod +x "$BIN_DIR/ffmpeg"
   fi
-  "$BIN_DIR/ffmpeg" -version >/dev/null 2>&1 || fail "downloaded ffmpeg does not run"
+  "$BIN_DIR/ffmpeg" -version >/dev/null 2>&1 || fail "downloaded ffmpeg does not run; rerun the installer"
 
   # --- models ---------------------------------------------------------------------
   step "Downloading the chord model and running a test inference (one-time; ~12 MB)"
-  "$ENV_DIR/bin/tabit" warmup
+  "$ENV_DIR/bin/tabit" warmup ||
+    fail "the model download / test inference failed; check your connection and rerun the installer"
+  if [ -n "$env_backup" ]; then
+    trap - INT TERM HUP
+    rm -rf "$env_backup"
+  fi
 
   # --- service --------------------------------------------------------------------
   step "Installing the background service (starts at login, restarts on crash)"
