@@ -101,16 +101,33 @@ test('sweeps per beat when the chart has real beat data', () => {
   expect(now.getAttribute('data-beat-index')).toBe('6');
 });
 
-test('manual scroll pauses auto-scroll for the idle window', () => {
+test('manual scroll pauses auto-scroll for the idle window, then resumes after it', () => {
   vi.useFakeTimers();
-  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6);
-  render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+  const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6); // beat index 6
+  const { rerender } = render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
   const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
+  const originalScrollIntoView = Element.prototype.scrollIntoView;
   const scrollIntoViewSpy = vi.fn();
   Element.prototype.scrollIntoView = scrollIntoViewSpy;
+
+  // Let the mount's own auto-scroll animation window lapse before the user scrolls
+  // manually, so this scroll event isn't mistaken for that animation's trailing events.
+  vi.advanceTimersByTime(1500);
   scrollArea.dispatchEvent(new Event('scroll'));
+
+  // The beat advances while still inside the 3s idle window following the manual
+  // scroll - auto-scroll must not fire.
   vi.advanceTimersByTime(1000);
-  // still within the 3s idle window - auto-scroll must not have fired again
+  timeSpy.mockReturnValue(7); // beat index 7
+  rerender(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
   expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+
+  // The beat advances again once the idle window has elapsed - auto-scroll resumes.
+  vi.advanceTimersByTime(2500); // 3.5s total since the manual scroll
+  timeSpy.mockReturnValue(8); // beat index 8
+  rerender(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+  expect(scrollIntoViewSpy).toHaveBeenCalled();
+
+  Element.prototype.scrollIntoView = originalScrollIntoView;
   vi.useRealTimers();
 });

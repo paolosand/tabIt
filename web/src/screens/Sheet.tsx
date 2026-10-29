@@ -99,16 +99,17 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   });
 
   const lastManualScrollAt = useRef(0);
-  const programmaticScroll = useRef(false);
+  const programmaticUntil = useRef(0);
 
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
     const onScroll = () => {
-      if (programmaticScroll.current) {
-        programmaticScroll.current = false;
-        return;
-      }
+      // scrollIntoView({ behavior: 'smooth' }) fires a 'scroll' event per animation
+      // frame, not once - a one-shot flag would catch only the first of those and
+      // misread the rest as manual. Ignore every scroll event for a window covering
+      // the animation instead, so none of its trailing events count as manual.
+      if (Date.now() < programmaticUntil.current) return;
       lastManualScrollAt.current = Date.now();
     };
     container.addEventListener('scroll', onScroll);
@@ -120,7 +121,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     const container = scrollRef.current;
     const cell = container?.querySelector(`[data-beat-index="${currentBeatIndex}"]`);
     if (cell) {
-      programmaticScroll.current = true;
+      programmaticUntil.current = Date.now() + 1000;
       cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [currentBeatIndex]);
