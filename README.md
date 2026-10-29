@@ -45,7 +45,7 @@ itself, so you can play along to practically anything.
   auto-scroll that keeps the current line in view.
 - **Fast, and light.** Analysis of a ~3.5-minute song takes a few seconds of compute
   on an Apple-Silicon Mac (measured: 1 to 5 s for the engine itself on 15 songs, plus the
-  download), and the installed environment is about 1 GB. The first run also fetches the
+  download), and the installed environment is about 1 GB (about 2 GB of disk with the download cache). The first run also fetches the
   12 MB BTC weights (the installer does this up front). While it runs, the bar shows each
   pipeline step live (download, chords, build chart) instead of a blank spinner. Every
   repeat of the same song is served instantly from a disk cache.
@@ -94,7 +94,7 @@ pip install -e ".[dev]"
 
 Skip the manual environment entirely. The installer provisions Python 3.11
 via [uv](https://docs.astral.sh/uv/), a static ffmpeg, and the chord-model weights
-(about 1 GB for the environment, plus about 1 GB of download cache, a couple of minutes), then runs the API as a
+(about 2 GB of disk: a 1 GB environment plus the download cache; a couple of minutes), then runs the API as a
 background service that starts at login. It installs
 the latest tagged release, not main:
 
@@ -102,8 +102,13 @@ the latest tagged release, not main:
 curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh
 ```
 
-Manage it with `tabit status` / `tabit logs` / `tabit restart` /
-`tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
+When the Chrome extension is installed, it walks you through this itself: open Terminal,
+paste the command (there is a **Copy command** button), press Return, and the extension
+notices the helper as soon as it is running. The helper is macOS only for now. See
+[`PRIVACY.md`](PRIVACY.md) for what is and is not collected (nothing is sent to the developer).
+
+Manage it with `~/.local/bin/tabit status` / `~/.local/bin/tabit logs` / `~/.local/bin/tabit restart` /
+`~/.local/bin/tabit uninstall`. Charts cache to `~/Library/Application Support/tabIt/charts`,
 logs to `~/Library/Logs/tabIt/helper.log`. If the helper is off, the extension
 bar says so and recovers by itself once the service is back. Rerunning the installer
 upgrades in place; a 0.3.x install is rebuilt so its ~2 GB of old TensorFlow/Demucs

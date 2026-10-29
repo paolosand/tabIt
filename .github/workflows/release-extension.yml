@@ -3,19 +3,28 @@ name: Release extension
 on:
   release:
     types: [published]
+  # Re-run for an existing release (e.g. after fixing the workflow).
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build and attach to (e.g. v0.4.1)
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
   build-and-attach:
-    name: build extension zip + attach to release
+    name: build extension zip + engine wheel, attach to release
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
@@ -35,17 +44,35 @@ jobs:
       - name: Verify the build output before shipping it
         working-directory: extension/dist
         run: |
-          for f in manifest.json content.js background.js; do
+          for f in manifest.json content.js background.js icons/icon128.png; do
             [ -f "$f" ] || { echo "missing dist/$f — build produced an incomplete extension" >&2; exit 1; }
           done
 
       - name: Zip the extension
         working-directory: extension/dist
-        run: zip -r "../../tabit-extension-${{ github.event.release.tag_name }}.zip" .
+        run: zip -r "../../tabit-extension-${TAG}.zip" .
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build the engine wheel
+        run: python -m pip wheel . --no-deps -w wheel-dist
+
+      # The installer downloads tabit_engine-<version>-py3-none-any.whl from
+      # this release, so the wheel version must match the tag. Catches a
+      # release tagged without bumping the version files.
+      - name: Verify the wheel matches the tag
+        run: |
+          expected="tabit_engine-${TAG#v}-py3-none-any.whl"
+          actual="$(ls wheel-dist)"
+          if [ "$actual" != "$expected" ]; then
+            echo "wheel is '$actual' but tag $TAG requires '$expected' - bump the versions (docs/RELEASING.md)" >&2
+            exit 1
+          fi
 
       - name: Attach to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
-            "tabit-extension-${{ github.event.release.tag_name }}.zip"
+          gh release upload "$TAG" wheel-dist/*.whl "tabit-extension-${TAG}.zip" --clobber
