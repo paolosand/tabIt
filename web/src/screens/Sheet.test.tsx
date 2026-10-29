@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 import Sheet from './Sheet';
@@ -29,7 +29,7 @@ test('renders chords, marks current, N is a dash', () => {
   render(<Sheet chart={chart as never} mediaFile={null} onBack={() => {}} />);
   expect(screen.getByText('Am')).toBeInTheDocument();
   expect(screen.getByText('—')).toBeInTheDocument();
-  expect(screen.getByTestId('marker').parentElement).toHaveTextContent('F');
+  expect(screen.getByTestId('beat-now').textContent).toBe('F');
   expect(screen.getByText(/Now:/).parentElement).toHaveTextContent('F');
 });
 
@@ -86,4 +86,105 @@ test('reset restores the detected chord', async () => {
   await userEvent.click(screen.getByRole('button', { name: /reset to detected/i }));
   expect(screen.getByRole('button', { name: 'F' })).toBeInTheDocument();
   expect(localStorage.getItem('tabit:overrides:x')).toBe('{}');
+});
+
+const chartWithBeats = {
+  ...chart,
+  beats: Array.from({ length: 20 }, (_, i) => i), // 1 beat/sec, 0..19s
+  meter: { beatsPerBar: 4, confidence: 1 },
+};
+
+test('sweeps per beat when the chart has real beat data', () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6); // beat index 6, inside F (chord start 4)
+  render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+  const now = screen.getByTestId('beat-now');
+  expect(now.getAttribute('data-beat-index')).toBe('6');
+});
+
+// rowLen = beatsPerBar(4) * 4 = 16, so rows are beats [0-15] (row 0), [16-31]
+// (row 1), [32-47] (row 2), [48-63] (row 3) - three row-crossing points to
+// exercise pause-across-multiple-crossings, then resume.
+const chartManyBeats = {
+  ...chart,
+  beats: Array.from({ length: 64 }, (_, i) => i), // 1 beat/sec, 0..63s
+  meter: { beatsPerBar: 4, confidence: 1 },
+};
+
+test('per-beat playback alone never triggers a scroll within the same row', () => {
+  const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(5); // beat 5, row 0
+  const { rerender } = render(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+  const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
+  // Mount's own initial auto-scroll (row 0, nothing manual yet) isn't under test here.
+  const scrollToSpy = vi.spyOn(scrollArea, 'scrollTo').mockImplementation(() => {});
+
+  // Beat advances several times but stays inside row 0 - nothing has left the
+  // viewport, so the row-change-gated effect must not re-fire at all.
+  for (const beat of [8, 10, 13, 15]) {
+    timeSpy.mockReturnValue(beat);
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+  }
+  expect(scrollToSpy).not.toHaveBeenCalled();
+});
+
+test('manual input pauses auto-scroll for the idle window, then resumes once it elapses', () => {
+  vi.useFakeTimers();
+  try {
+    const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(5); // beat 5, row 0
+    const { rerender } = render(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
+    const scrollToSpy = vi.spyOn(scrollArea, 'scrollTo').mockImplementation(() => {});
+
+    // User scrolls manually (mouse wheel) over the sheet.
+    scrollArea.dispatchEvent(new Event('wheel'));
+
+    // Beat crosses into row 1 while still inside the 3s idle window following
+    // the manual scroll - auto-scroll must not pull the view back.
+    vi.advanceTimersByTime(500);
+    timeSpy.mockReturnValue(16); // row 1
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).not.toHaveBeenCalled();
+
+    // A second row crossing, still inside the idle window - still must not scroll.
+    vi.advanceTimersByTime(500);
+    timeSpy.mockReturnValue(33); // row 2
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).not.toHaveBeenCalled();
+
+    // Idle window has now elapsed (3.5s since the manual scroll) and the beat
+    // crosses into row 3 - auto-scroll resumes.
+    vi.advanceTimersByTime(2500);
+    timeSpy.mockReturnValue(50); // row 3
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).toHaveBeenCalled();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('narrows to 2 bars per row when the grid container is measured narrow', () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(0);
+  const callbacks: ResizeObserverCallback[] = [];
+  class FakeResizeObserver {
+    constructor(cb: ResizeObserverCallback) {
+      callbacks.push(cb);
+    }
+    observe() {}
+    disconnect() {}
+  }
+  const original = globalThis.ResizeObserver;
+  (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = FakeResizeObserver;
+  try {
+    render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+    const row = screen.getByTestId('beat-now').closest('[data-row]') as HTMLElement;
+    expect(row.style.gridTemplateColumns).toBe('repeat(16, minmax(0, 1fr))');
+
+    act(() => {
+      callbacks[0]([{ contentRect: { width: 500 } }] as unknown as ResizeObserverEntry[], null as never);
+    });
+
+    const narrowRow = screen.getByTestId('beat-now').closest('[data-row]') as HTMLElement;
+    expect(narrowRow.style.gridTemplateColumns).toBe('repeat(8, minmax(0, 1fr))');
+  } finally {
+    globalThis.ResizeObserver = original;
+  }
 });

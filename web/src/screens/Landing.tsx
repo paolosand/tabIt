@@ -36,19 +36,11 @@ export default function Landing({ value, onChange, onSubmitUrl, onSubmitFile, er
         animation: 'tabit-fade-in 0.4s ease-out',
       }}
     >
-      <div
-        style={{
-          fontFamily: "'Fraunces', serif",
-          fontStyle: 'italic',
-          fontWeight: 600,
-          fontSize: 56,
-          color: 'oklch(0.28 0.02 70)',
-          letterSpacing: '-0.01em',
-          marginBottom: 6,
-        }}
-      >
-        tabIt
-      </div>
+      <img
+        src="/icon-lockup.svg"
+        alt="tabIt"
+        style={{ height: 120, width: 120, display: 'block', marginBottom: 18 }}
+      />
       <div
         style={{
           fontSize: 14,

@@ -2,6 +2,7 @@
  *  Rendered inside the shadow root; all visual styling lives in classes from styles.ts
  *  (shadow DOM has no access to a global stylesheet, and pseudo-states like :hover need
  *  real CSS classes rather than inline styles). */
+import { Wordmark } from './Wordmark';
 
 import { useEffect, useRef, useState } from 'react';
 import { INSTALL_COMMAND } from '../install';
@@ -29,7 +30,7 @@ function LoadingBar({ step }: { step?: string }) {
   const active = Math.max(0, steps.findIndex((s) => s.id === step));
   return (
     <div className="tabit-bar tabit-bar-loading" data-state="loading">
-      <Wordmark />
+      <Wordmark className="tabit-wordmark" />
       <div className="tabit-checklist" role="list" aria-label="analysis progress">
         {steps.map((s, i) => {
           const state = i < active ? 'done' : i === active ? 'active' : 'pending';
@@ -94,13 +95,11 @@ function CopyRow({ onCopy }: { onCopy: () => Promise<boolean> }) {
   );
 }
 
-const Wordmark = () => <span className="tabit-wordmark">tabIt</span>;
-
 export function Bar(props: BarProps) {
   if (props.variant === 'collapsed') {
     return (
       <div className="tabit-bar" data-state="collapsed">
-        <Wordmark />
+        <Wordmark className="tabit-wordmark" />
         <button
           type="button"
           className="tabit-btn tabit-btn-primary"
@@ -120,7 +119,7 @@ export function Bar(props: BarProps) {
   if (props.variant === 'offline') {
     return (
       <div className="tabit-bar tabit-bar-offline" data-state="offline">
-        <Wordmark />
+        <Wordmark className="tabit-wordmark" />
         <span className="tabit-offline-message">
           {copy.OFFLINE_MESSAGE} <code>{copy.RESTART_COMMAND}</code>
         </span>
@@ -139,7 +138,7 @@ export function Bar(props: BarProps) {
   if (props.variant === 'setup') {
     return (
       <div className="tabit-bar tabit-bar-setup" data-state="setup">
-        <Wordmark />
+        <Wordmark className="tabit-wordmark" />
         <div>
           <p>
             {props.mode === 'update' ? copy.SETUP_TITLE_UPDATE : copy.SETUP_TITLE_INSTALL}
@@ -159,7 +158,7 @@ export function Bar(props: BarProps) {
   if (props.variant === 'unsupported') {
     return (
       <div className="tabit-bar tabit-bar-unsupported" data-state="unsupported">
-        <Wordmark />
+        <Wordmark className="tabit-wordmark" />
         <span>{copy.UNSUPPORTED_MESSAGE}</span>
       </div>
     );
@@ -167,7 +166,7 @@ export function Bar(props: BarProps) {
 
   return (
     <div className="tabit-bar tabit-bar-error" data-state="error">
-      <Wordmark />
+      <Wordmark className="tabit-wordmark" />
       <span className="tabit-error-message" title={props.message}>{props.message}</span>
       <button
         type="button"

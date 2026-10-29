@@ -17,11 +17,15 @@ Never `#000`/`#fff`; every neutral tinted warm.
 | Ink | `oklch(0.28 0.02 70)` | primary text, warm sepia-black |
 | Ink muted | `oklch(0.52 0.02 70)` | secondary text, metadata |
 | Rule line | `oklch(0.88 0.015 250)` | faint notebook feint-blue horizontal rules |
-| Margin line | `oklch(0.70 0.10 25)` | notebook red margin, used once, sparingly |
-| Highlighter | `oklch(0.90 0.12 92)` | warm amber marker behind the CURRENT chord |
+| Margin line | `oklch(0.70 0.10 25)` | notebook red margin — web app / landing pages only, never in the extension's in-player component |
+| Highlighter | `oklch(0.90 0.12 92)` | browser text-selection highlight (`::selection` in `web/src/index.css`) only; no longer the current-chord highlight, and not the edited-chord indicator either — `BeatGrid`'s edited dot uses Margin line, above |
+| Amber (progress) | `oklch(0.88 0.14 90)` | the in-player component's progress state (done/current pipeline steps) and the web app's `BeatGrid` current-beat cell. Never decorative, never a hover or background fill |
+| Amber dot | `oklch(0.55 0.13 70)` | active beat-dot inside the amber current-beat cell |
 | Graphite | `oklch(0.55 0.02 70)` | pencil underline / "next" chord marker |
 
 **Confidence encoding:** high-confidence chords in full Ink; confidence lowers → ink lightens toward Ink-muted and a faint dotted underline appears. Never hide a low-confidence chord; soften it.
+
+**Brand rule (in-player component):** amber means progress — it's the only color used for the done/current pipeline steps and the current-beat cell. Margin red belongs to the notebook-margin motif on app/landing pages; it never appears in the extension's in-player strip (see `docs/design/TabIt Brand Handoff.dc.html`).
 
 ## Typography
 
@@ -32,20 +36,26 @@ Serif for content (songbook feel), clean sans for controls (product legibility).
 - Chord labels are the largest, boldest type on the page — they are the data.
 - Fixed rem scale, ratio ~1.25. Cap prose at 65ch.
 
+## Mark and wordmark
+
+The mark is a Fraunces bold-italic "t" over an amber swipe rotated −6°, on a paper tile; the wordmark is the same swipe sitting behind "It" in every state. Both are outlined vector assets (`docs/design/assets/icon.svg`, `wordmark.svg`), not live text — recreate the swipe only where no asset exists. Only the swipe slants; everything else (grid cells, icon borders) stays flat and square. Source assets and Chrome Web Store sizes live in `docs/design/assets/`; built-extension copies in `extension/icons/`; store-submission-only sizes in `packaging/store/`.
+
 ## Layout
 
 - **Chord sheet is the hero**, laid out as bars on ruled-paper lines like a real chart. The video is a small, quiet companion (compact player, not dominant).
 - Generous margins, notebook rhythm. Vary spacing; no uniform padding.
 - No card grids. The sheet is one warm paper surface, not a grid of tiles.
-- Responsive: on narrow screens the player collapses to a slim sticky bar; the sheet reflows to fewer bars per line.
+- Responsive: on narrow screens the player collapses to a slim sticky bar; the beat grid measures its own rendered width and drops from 4 bars/row to 2 below ~900px, so chord labels stay readable instead of truncating.
 
 ## Motion (state only, 150–250ms)
 
-- The **current-chord highlighter** and the **playhead** move smoothly as playback advances — this motion IS the karaoke-follow state, so it earns its place.
+- The **amber beat cell** (see Signature moments, below) and the **playhead** move smoothly as playback advances — this motion IS the karaoke-follow state, so it earns its place.
 - Control transitions (hover/focus/press) 150–200ms, ease-out. No bounce, no page-load choreography.
 
 ## Signature moments
 
-- The amber **highlighter sweep** landing on the current chord as the song plays.
+- The amber beat cell sweeping through the song's wrapped beat grid (web app and
+  extension both use this now — see "Amber (progress)" above and
+  `docs/superpowers/specs/2026-10-28-tabit-web-beat-grid-design.md`).
 - **Ruled paper** with a red margin line — instantly reads "notebook," not "app."
 - A dimmed, dotted-underline chord that quietly admits "I'm not sure about this one."

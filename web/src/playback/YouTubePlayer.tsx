@@ -99,7 +99,7 @@ export default function YouTubePlayer({ videoId, onReady }: YouTubePlayerProps) 
         boxShadow: '0 6px 18px oklch(0.28 0.02 70 / 0.18)',
       }}
     >
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+      <div className="tabit-yt-embed" style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
         <div ref={mountRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
     </div>

@@ -16,6 +16,8 @@ export const OVERLAY_CSS = `
   --tabit-dot: oklch(0.55 0.02 70);
   --tabit-border: oklch(0.88 0.015 250);
   --tabit-accent: oklch(0.70 0.10 25);
+  --tabit-amber: oklch(0.88 0.14 90);
+  --tabit-amber-dot: oklch(0.55 0.13 70);
   --tabit-error: oklch(0.55 0.12 25);
   --tabit-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --tabit-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -42,6 +44,10 @@ export const OVERLAY_CSS = `
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes tabit-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}
 @keyframes tabit-spin {
   to { transform: rotate(360deg); }
 }
@@ -66,13 +72,43 @@ export const OVERLAY_CSS = `
 }
 
 .tabit-wordmark {
-  font-family: var(--tabit-serif);
-  font-style: italic;
+  height: 16px;
+  width: auto;
+  display: block;
+  flex: none;
+}
+
+/* A brief, self-dismissing confirmation after the chart-polling path recovers from
+ * offline (see App.tsx's justReconnected) - plain ink, not amber: amber is reserved
+ * for pipeline/beat progress, and this is a connectivity confirmation, not progress. */
+.tabit-reconnect-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 14px;
+  margin: 0 0 8px;
+  background: var(--tabit-paper);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);
+  font-family: var(--tabit-sans);
+  font-size: 12px;
   font-weight: 600;
-  font-size: 16px;
   color: var(--tabit-ink);
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+  animation: tabit-fade-in 0.25s ease-out, tabit-fade-out 0.3s ease-in 2.7s forwards;
+}
+
+.tabit-reconnect-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tabit-ink);
+  color: var(--tabit-paper);
+  font-size: 9px;
+  flex: none;
 }
 
 .tabit-btn {
@@ -133,12 +169,12 @@ export const OVERLAY_CSS = `
   transition: border-color 0.3s, background 0.3s, color 0.3s;
 }
 .tabit-check-done .tabit-check-icon {
-  background: var(--tabit-accent);
-  border-color: var(--tabit-accent);
-  color: var(--tabit-paper);
+  background: var(--tabit-amber);
+  border-color: var(--tabit-amber);
+  color: var(--tabit-ink);
 }
 .tabit-check-active .tabit-check-icon {
-  border-color: var(--tabit-accent);
+  border-color: var(--tabit-amber);
   border-top-color: transparent;
   animation: tabit-spin 0.9s linear infinite;
 }
@@ -240,11 +276,10 @@ export const OVERLAY_CSS = `
 }
 
 .tabit-panel-wordmark {
-  font-family: var(--tabit-serif);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 26px;
-  color: var(--tabit-ink);
+  height: 26px;
+  width: auto;
+  display: block;
+  flex: none;
 }
 
 .tabit-ad-tag {
@@ -408,7 +443,7 @@ export const OVERLAY_CSS = `
 }
 .tabit-beat-bar { border-left: 2px solid oklch(0.82 0.012 90); }
 .tabit-beat-done { background: oklch(0.965 0.012 90); }
-.tabit-beat-now { background: oklch(0.87 0.14 85); border-radius: 4px; }
+.tabit-beat-now { background: var(--tabit-amber); border-radius: 4px; }
 .tabit-beat-chord {
   position: absolute; left: 6px; top: 6px; z-index: 2;
   font-family: var(--tabit-serif); font-weight: 600;
@@ -417,7 +452,7 @@ export const OVERLAY_CSS = `
 .tabit-beat-chord-muted { color: oklch(0.62 0.015 60); }
 .tabit-beat-pips { position: absolute; bottom: 4px; left: 8px; display: flex; gap: 5px; z-index: 2; }
 .tabit-beat-pip { width: 5px; height: 5px; border-radius: 50%; background: oklch(0.85 0.02 85); }
-.tabit-beat-pip-hit { background: oklch(0.55 0.12 70); }
+.tabit-beat-pip-hit { background: var(--tabit-amber-dot); }
 .tabit-ribbon-fade {
   position: absolute; right: 0; top: 0; bottom: 0; width: 70px; pointer-events: none;
   background: linear-gradient(to right, transparent, oklch(0.985 0.008 90));

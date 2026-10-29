@@ -12,17 +12,7 @@ export default function Analyzing() {
         animation: 'tabit-fade-in 0.35s ease-out',
       }}
     >
-      <div
-        style={{
-          fontFamily: "'Fraunces', serif",
-          fontStyle: 'italic',
-          fontWeight: 600,
-          fontSize: 32,
-          color: 'oklch(0.28 0.02 70)',
-        }}
-      >
-        tabIt
-      </div>
+      <img src="/wordmark.svg" alt="tabIt" style={{ height: 32, width: 'auto', display: 'block' }} />
       <div
         style={{
           display: 'flex',
@@ -93,7 +83,7 @@ export default function Analyzing() {
         />
       </div>
       <div style={{ fontSize: 12, color: 'oklch(0.52 0.02 70)', letterSpacing: '0.02em' }}>
-        first listen takes a minute or two — after that it&apos;s instant
+        first listen takes about 30 seconds — after that it&apos;s instant
       </div>
     </div>
   );

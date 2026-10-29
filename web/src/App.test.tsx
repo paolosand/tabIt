@@ -6,7 +6,7 @@ import * as api from './lib/api';
 
 test('renders', () => {
   render(<App />);
-  expect(screen.getByText(/tabIt/)).toBeInTheDocument();
+  expect(screen.getByAltText(/tabIt/)).toBeInTheDocument();
 });
 
 const FAKE_CHART = {
