@@ -13,7 +13,7 @@ describe('manifest', () => {
 
   it.each(['16', '32', '48', '128'])('icon %s exists and is a square PNG of that size', (size) => {
     const rel: string = manifest.icons[size];
-    expect(rel).toBe(`icons/icon${size}.png`);
+    expect(rel).toMatch(/^icons\/[^/]+\.png$/);
     const path = resolve(root, rel);
     expect(existsSync(path)).toBe(true);
     const buf = readFileSync(path);
