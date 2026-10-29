@@ -71,4 +71,5 @@ Music & Audio is not confirmed against the current dashboard list; choose the cl
 
 - Store icon 128x128: `extension/icons/icon-128.png`
 - Screenshots: see `docs/store/screenshots.md`
+- Promo video (YouTube, unlisted; the dashboard field takes a YouTube link, not a file): `https://www.youtube.com/watch?v=IlwDmLb8KxE` (uploaded as a Short, so the `/shorts/` form also works). If the dashboard rejects an unlisted video, make it public.
 - Reviewer notes: `docs/store/reviewer-instructions.md`
