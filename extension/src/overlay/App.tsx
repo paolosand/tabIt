@@ -9,13 +9,14 @@ import type {
 } from '../messages';
 import { INSTALL_COMMAND } from '../install';
 import { isMac } from '../platform';
-import { RESTART_COMMAND } from './copy';
+import { CONNECTED_NOTE, RESTART_COMMAND } from './copy';
 import { Bar } from './Bar';
 import Panel from './Panel';
 
 const POLL_INTERVAL_MS = 3000;
 const OFFLINE_POLL_BASE_MS = 3000;
 const OFFLINE_POLL_MAX_MS = 30000;
+const RECONNECT_TOAST_MS = 3000;
 // A single failed health probe can just be a busy or still-starting helper, so the
 // first down on the mount/status path is tentative: re-probe once, quickly.
 const TENTATIVE_RECHECK_MS = 1500;
@@ -58,6 +59,13 @@ export function App({ videoId }: AppProps) {
   // SPA navigation) and against a stale setTimeout firing after retry/unmount.
   const aliveRef = useRef(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Brief "Helper connected" confirmation after a chart-offline retry recovers -
+  // the checkStatus/setup path already has its own (justConnected on the
+  // collapsed bar); this is the chart-polling path's equivalent, shown
+  // regardless of which state the recovered poll() lands on next (loading,
+  // sheet, or error), since a GET_CHART retry can resolve to any of those.
+  const [justReconnected, setJustReconnected] = useState(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Consecutive offline polls, for backoff; any non-offline response resets it.
   const offlineAttemptRef = useRef(0);
   // Consecutive status polls spent in setup, for backoff.
@@ -70,6 +78,7 @@ export function App({ videoId }: AppProps) {
     return () => {
       aliveRef.current = false;
       if (timerRef.current !== null) clearTimeout(timerRef.current);
+      if (reconnectTimerRef.current !== null) clearTimeout(reconnectTimerRef.current);
     };
   }, []);
 
@@ -163,6 +172,11 @@ export function App({ videoId }: AppProps) {
             .catch(() => {});
           return;
         }
+        if (offlineAttemptRef.current > 0) {
+          setJustReconnected(true);
+          if (reconnectTimerRef.current !== null) clearTimeout(reconnectTimerRef.current);
+          reconnectTimerRef.current = setTimeout(() => setJustReconnected(false), RECONNECT_TOAST_MS);
+        }
         offlineAttemptRef.current = 0;
         if (response.status === 'done') {
           setState({ kind: 'sheet', chart: response.chart });
@@ -187,24 +201,38 @@ export function App({ videoId }: AppProps) {
     poll();
   }, [poll]);
 
-  switch (state.kind) {
-    case 'collapsed':
-      return (
-        <Bar variant="collapsed" onGetChords={startPolling} justConnected={state.justConnected} />
-      );
-    case 'setup':
-      return <Bar variant="setup" mode={state.mode} onCopy={() => copyText(INSTALL_COMMAND)} />;
-    case 'unsupported':
-      return <Bar variant="unsupported" />;
-    case 'loading':
-      return <Bar variant="loading" step={state.step} />;
-    case 'offline':
-      return <Bar variant="offline" onRetry={startPolling} onCopy={() => copyText(RESTART_COMMAND)} />;
-    case 'error':
-      return <Bar variant="error" message={state.message} onRetry={startPolling} />;
-    case 'sheet':
-      return <Panel chart={state.chart} onCollapse={() => setState({ kind: 'collapsed' })} />;
-  }
+  const bar = (() => {
+    switch (state.kind) {
+      case 'collapsed':
+        return (
+          <Bar variant="collapsed" onGetChords={startPolling} justConnected={state.justConnected} />
+        );
+      case 'setup':
+        return <Bar variant="setup" mode={state.mode} onCopy={() => copyText(INSTALL_COMMAND)} />;
+      case 'unsupported':
+        return <Bar variant="unsupported" />;
+      case 'loading':
+        return <Bar variant="loading" step={state.step} />;
+      case 'offline':
+        return <Bar variant="offline" onRetry={startPolling} onCopy={() => copyText(RESTART_COMMAND)} />;
+      case 'error':
+        return <Bar variant="error" message={state.message} onRetry={startPolling} />;
+      case 'sheet':
+        return <Panel chart={state.chart} onCollapse={() => setState({ kind: 'collapsed' })} />;
+    }
+  })();
+
+  return (
+    <>
+      {justReconnected && (
+        <div className="tabit-reconnect-toast" data-testid="reconnect-toast">
+          <span className="tabit-reconnect-check" aria-hidden="true">✓</span>
+          {CONNECTED_NOTE}
+        </div>
+      )}
+      {bar}
+    </>
+  );
 }
 
 /** Mounts the overlay React tree into `shadowRoot` for the given `videoId` and returns

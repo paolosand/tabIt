@@ -45,7 +45,7 @@ The mark is a Fraunces bold-italic "t" over an amber swipe rotated −6°, on a 
 - **Chord sheet is the hero**, laid out as bars on ruled-paper lines like a real chart. The video is a small, quiet companion (compact player, not dominant).
 - Generous margins, notebook rhythm. Vary spacing; no uniform padding.
 - No card grids. The sheet is one warm paper surface, not a grid of tiles.
-- Responsive: on narrow screens the player collapses to a slim sticky bar; the beat grid's row length is fixed (4 bars per row, meter-aware) and does not reflow on narrow screens — revisit if it reads poorly on small screens.
+- Responsive: on narrow screens the player collapses to a slim sticky bar; the beat grid measures its own rendered width and drops from 4 bars/row to 2 below ~900px, so chord labels stay readable instead of truncating.
 
 ## Motion (state only, 150–250ms)
 

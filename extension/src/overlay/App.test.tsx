@@ -109,6 +109,36 @@ test('offline response shows the helper-offline bar, backs off, and auto-recover
   vi.useRealTimers();
 });
 
+test('recovering from a chart-offline retry shows a brief "Helper connected" toast, which clears itself', async () => {
+  vi.useFakeTimers();
+  chartResponses
+    .mockResolvedValueOnce({ status: 'offline' })
+    .mockResolvedValueOnce({ status: 'done', chart: CHART });
+  render(<App videoId="vid00000001" />);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  await user.click(screen.getByRole('button', { name: /get chords/i }));
+  await waitFor(() => expect(screen.getByText(/tabIt isn't running/)).toBeInTheDocument());
+  expect(screen.queryByTestId('reconnect-toast')).not.toBeInTheDocument();
+
+  // the 3s retry succeeds: chart renders, and the toast appears alongside it
+  await vi.advanceTimersByTimeAsync(3100);
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  expect(screen.getByTestId('reconnect-toast')).toHaveTextContent('Helper connected');
+
+  // it clears itself a couple of seconds later, without user interaction
+  await vi.advanceTimersByTimeAsync(3000);
+  expect(screen.queryByTestId('reconnect-toast')).not.toBeInTheDocument();
+  vi.useRealTimers();
+});
+
+test('a chart that resolves without ever going offline never shows the reconnect toast', async () => {
+  chartResponses.mockResolvedValue({ status: 'done', chart: CHART });
+  render(<App videoId="vid00000001" />);
+  await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  expect(screen.queryByTestId('reconnect-toast')).not.toBeInTheDocument();
+});
+
 test('manual retry from the offline bar polls immediately', async () => {
   chartResponses
     .mockResolvedValueOnce({ status: 'offline' })

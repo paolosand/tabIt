@@ -44,6 +44,10 @@ export const OVERLAY_CSS = `
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes tabit-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}
 @keyframes tabit-spin {
   to { transform: rotate(360deg); }
 }
@@ -71,6 +75,39 @@ export const OVERLAY_CSS = `
   height: 16px;
   width: auto;
   display: block;
+  flex: none;
+}
+
+/* A brief, self-dismissing confirmation after the chart-polling path recovers from
+ * offline (see App.tsx's justReconnected) - plain ink, not amber: amber is reserved
+ * for pipeline/beat progress, and this is a connectivity confirmation, not progress. */
+.tabit-reconnect-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 14px;
+  margin: 0 0 8px;
+  background: var(--tabit-paper);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);
+  font-family: var(--tabit-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tabit-ink);
+  animation: tabit-fade-in 0.25s ease-out, tabit-fade-out 0.3s ease-in 2.7s forwards;
+}
+
+.tabit-reconnect-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--tabit-ink);
+  color: var(--tabit-paper);
+  font-size: 9px;
   flex: none;
 }
 
