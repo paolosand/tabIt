@@ -13,6 +13,7 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 from engine import engine_version
 from engine.chord_backend import select_chord_model
 from api.cache import ChartCache
+from api.guard import LocalGuardMiddleware
 from api.jobs import JobStore
 from api.videoid import extract_video_id
 
@@ -57,10 +58,12 @@ async def _lifespan(app: FastAPI):
 app = FastAPI(title="tabIt API", lifespan=_lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Added last = outermost: the guard runs before CORS handling and routing.
+app.add_middleware(LocalGuardMiddleware)
 
 cache = ChartCache(os.environ.get("TABIT_CACHE_DIR", "data/charts"))
 jobs = JobStore()

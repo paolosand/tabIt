@@ -7,3 +7,9 @@ export type GetChartResponse =
   | { status: 'pending'; step?: string }
   | { status: 'offline' }
   | { status: 'error'; error: string };
+
+export interface GetHelperStatusRequest { type: 'GET_HELPER_STATUS'; }
+
+export type HelperStatusResponse =
+  | { state: 'up'; tooOld: boolean }
+  | { state: 'down'; everSeen: boolean };

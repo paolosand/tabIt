@@ -1,5 +1,7 @@
 import type { Chart } from '../../../web/src/lib/types';
-import type { GetChartResponse } from '../messages';
+import type { GetChartResponse, HelperStatusResponse } from '../messages';
+import { MIN_ENGINE_VERSION, isOlderThan } from '../version';
+import { getHelperStatus } from './helper';
 import { fetchCachedChart, pollJobOnce, submitAnalysis } from './api';
 
 async function sessionGet<T>(key: string): Promise<T | undefined> {
@@ -56,4 +58,27 @@ export async function handleGetChart(videoId: string): Promise<GetChartResponse>
     if (e instanceof TypeError) return { status: 'offline' };
     return { status: 'error', error: e instanceof Error ? e.message : String(e) };
   }
+}
+
+/** Reports whether the local helper is up (and too old), remembering in
+ *  chrome.storage.local that it was ever seen so the UI can tell first-run
+ *  from "helper stopped". */
+export async function handleGetHelperStatus(): Promise<HelperStatusResponse> {
+  const status = await getHelperStatus();
+  if (status.state === 'up') {
+    try {
+      await chrome.storage.local.set({ helperSeen: true });
+    } catch {
+      // Remembering is best-effort; the helper is up regardless.
+    }
+    return { state: 'up', tooOld: isOlderThan(status.engineVersion, MIN_ENGINE_VERSION) };
+  }
+  let everSeen = false;
+  try {
+    const { helperSeen } = await chrome.storage.local.get('helperSeen');
+    everSeen = helperSeen === true;
+  } catch {
+    // Unreadable storage: treat as never seen.
+  }
+  return { state: 'down', everSeen };
 }

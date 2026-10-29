@@ -8,6 +8,8 @@ import api.main as m
 from api.main import app
 from engine import engine_version
 
+BASE = "http://localhost:28224"  # the guard only admits loopback Hosts
+
 
 def test_chord_model_is_a_process_singleton(monkeypatch):
     """Model weights must load once per process, not once per analysis job."""
@@ -53,7 +55,7 @@ def test_startup_warms_models_in_background(monkeypatch):
     warmed = threading.Event()
     monkeypatch.setattr(m, "_warm_models", lambda: warmed.set())
 
-    with TestClient(app) as client:
+    with TestClient(app, base_url=BASE) as client:
         assert client.get("/health").status_code == 200  # serving before warm
         assert warmed.wait(2.0)
 
@@ -70,7 +72,7 @@ FAKE_CHART = {
 
 
 def test_health():
-    client = TestClient(app)
+    client = TestClient(app, base_url=BASE)
     r = client.get("/health")
     assert r.status_code == 200
     body = r.json()
@@ -83,7 +85,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(m, "cache", m.ChartCache(str(tmp_path)))
     monkeypatch.setattr(m, "jobs", m.JobStore())
     monkeypatch.setattr(m, "_run_analysis", lambda src, on_step=None: FAKE_CHART)
-    return TestClient(app)
+    return TestClient(app, base_url=BASE)
 
 
 def _poll_done(client, job_id, timeout=5.0):
@@ -198,7 +200,7 @@ def test_charts_cached_by_an_older_engine_are_not_served(tmp_path, monkeypatch, 
     ran = []
     monkeypatch.setattr(m, "_run_analysis",
                         lambda src, on_step=None: ran.append(src) or FAKE_CHART)
-    client = TestClient(app)
+    client = TestClient(app, base_url=BASE)
 
     m.cache.put(_stale_chart(old))
     assert client.get("/chart/dQw4w9WgXcQ").status_code == 404
@@ -212,7 +214,7 @@ def test_health_reports_the_engine_version_without_loading_a_model(monkeypatch):
     monkeypatch.setattr(m, "_chord_model", None)
     monkeypatch.setattr(m, "select_chord_model",
                         lambda: pytest.fail("health must not load or download weights"))
-    assert TestClient(app).get("/health").json()["engineVersion"] == engine_version()
+    assert TestClient(app, base_url=BASE).get("/health").json()["engineVersion"] == engine_version()
 
 
 def test_cache_lookup_does_not_need_the_weights(tmp_path, monkeypatch):
@@ -223,7 +225,7 @@ def test_cache_lookup_does_not_need_the_weights(tmp_path, monkeypatch):
     monkeypatch.setattr(m, "select_chord_model",
                         lambda: pytest.fail("a cache hit must not load the model"))
     m.cache.put(FAKE_CHART)
-    r = TestClient(app).post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
+    r = TestClient(app, base_url=BASE).post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
     assert r.status_code == 202
 
 
@@ -236,7 +238,7 @@ def test_missing_weights_fail_the_job_with_the_actionable_message(tmp_path, monk
     def offline():
         raise BtcWeightsUnavailable("BTC chord weights are missing; run `tabit warmup`")
     monkeypatch.setattr(m, "select_chord_model", offline)
-    client = TestClient(app)
+    client = TestClient(app, base_url=BASE)
     r = client.post("/analyze", json={"url": "https://youtu.be/dQw4w9WgXcQ"})
     body = _poll_done(client, r.json()["jobId"])
     assert body["status"] == "error" and "tabit warmup" in body["error"]

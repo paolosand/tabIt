@@ -3,10 +3,16 @@
  *  (shadow DOM has no access to a global stylesheet, and pseudo-states like :hover need
  *  real CSS classes rather than inline styles). */
 
+import { useEffect, useRef, useState } from 'react';
+import { INSTALL_COMMAND } from '../install';
+import * as copy from './copy';
+
 export type BarProps =
-  | { variant: 'collapsed'; onGetChords: () => void }
+  | { variant: 'collapsed'; onGetChords: () => void; justConnected?: boolean }
   | { variant: 'loading'; step?: string }
-  | { variant: 'offline'; onRetry: () => void }
+  | { variant: 'offline'; onRetry: () => void; onCopy: () => Promise<boolean> }
+  | { variant: 'setup'; mode: 'install' | 'update'; onCopy: () => Promise<boolean> }
+  | { variant: 'unsupported' }
   | { variant: 'error'; message: string; onRetry: () => void };
 
 /** Server-reported pipeline step ids in run order, with user-facing labels.
@@ -44,6 +50,50 @@ function LoadingBar({ step }: { step?: string }) {
   );
 }
 
+const COPIED_REVERT_MS = 2000;
+
+/** A Copy button plus, when the clipboard is unavailable, a plain "select it yourself" line. */
+function CopyRow({ onCopy }: { onCopy: () => Promise<boolean> }) {
+  const [result, setResult] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearTimer = () => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = null;
+  };
+  useEffect(() => clearTimer, []);
+  const showCopied = () => {
+    clearTimer();
+    setResult('copied');
+    timer.current = setTimeout(() => setResult('idle'), COPIED_REVERT_MS);
+  };
+  return (
+    <span className="tabit-copy-row">
+      <button
+        type="button"
+        className="tabit-btn tabit-btn-primary"
+        onClick={() => {
+          onCopy().then(
+            (ok) => {
+              if (ok) showCopied();
+              else {
+                clearTimer();
+                setResult('failed');
+              }
+            },
+            () => {
+              clearTimer();
+              setResult('failed');
+            },
+          );
+        }}
+      >
+        {result === 'copied' ? copy.COPIED_LABEL : copy.COPY_BUTTON}
+      </button>
+      {result === 'failed' && <span>{copy.COPY_FALLBACK}</span>}
+    </span>
+  );
+}
+
 const Wordmark = () => <span className="tabit-wordmark">tabIt</span>;
 
 export function Bar(props: BarProps) {
@@ -58,6 +108,7 @@ export function Bar(props: BarProps) {
         >
           ♪ Get chords
         </button>
+        {props.justConnected && <span>{copy.CONNECTED_NOTE}</span>}
       </div>
     );
   }
@@ -71,16 +122,45 @@ export function Bar(props: BarProps) {
       <div className="tabit-bar tabit-bar-offline" data-state="offline">
         <Wordmark />
         <span className="tabit-offline-message">
-          tabIt helper isn&apos;t running — open the app, or run <code>tabit restart</code> in
-          a terminal.
+          {copy.OFFLINE_MESSAGE} <code>{copy.RESTART_COMMAND}</code>
         </span>
+        <CopyRow onCopy={props.onCopy} />
         <button
           type="button"
           className="tabit-btn tabit-btn-secondary"
           onClick={props.onRetry}
         >
-          Retry
+          {copy.RETRY_LABEL}
         </button>
+      </div>
+    );
+  }
+
+  if (props.variant === 'setup') {
+    return (
+      <div className="tabit-bar tabit-bar-setup" data-state="setup">
+        <Wordmark />
+        <div>
+          <p>
+            {props.mode === 'update' ? copy.SETUP_TITLE_UPDATE : copy.SETUP_TITLE_INSTALL}
+          </p>
+          <ol>
+            {copy.SETUP_STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <code>{INSTALL_COMMAND}</code>
+          <CopyRow onCopy={props.onCopy} />
+        </div>
+      </div>
+    );
+  }
+
+  if (props.variant === 'unsupported') {
+    return (
+      <div className="tabit-bar tabit-bar-unsupported" data-state="unsupported">
+        <Wordmark />
+        <span>{copy.UNSUPPORTED_MESSAGE}</span>
       </div>
     );
   }
