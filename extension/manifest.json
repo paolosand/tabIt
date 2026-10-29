@@ -16,6 +16,6 @@
     }
   ],
   "web_accessible_resources": [
-    { "resources": ["icons/wordmark.svg", "icons/icon.svg"], "matches": ["https://www.youtube.com/*"] }
+    { "resources": ["icons/wordmark.svg", "icons/icon.svg", "worklet.js"], "matches": ["https://www.youtube.com/*"] }
   ]
 }

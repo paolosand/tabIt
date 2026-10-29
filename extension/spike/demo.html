@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8"><title>tabIt transpose spike</title>
+<style>body{font:16px system-ui;max-width:32rem;margin:3rem auto;padding:0 1rem}button{font-size:1.4rem;padding:.4rem 1rem}#label{font-size:2rem;margin:0 1rem}</style>
+<h1>Transpose spike</h1>
+<p>Press play, then ± to shift the pitch live. Tempo stays the same.</p>
+<video id="media" controls style="width:100%;height:3rem"></video>
+<p><button id="down">♭ −1</button><span id="label">0</span><button id="up">♯ +1</button> <button id="reset">reset</button></p>
+<p id="status">idle</p>
+<p>Or try your own file: <input id="file" type="file" accept="audio/*,video/*"></p>
+<script src="demo.js"></script>
