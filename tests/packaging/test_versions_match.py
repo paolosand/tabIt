@@ -12,7 +12,7 @@ from pathlib import Path
 import engine
 
 ROOT = Path(__file__).resolve().parents[2]
-RELEASE = "0.4.1"
+RELEASE = "0.5.0"
 
 
 def _json(rel):

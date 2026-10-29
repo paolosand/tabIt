@@ -111,7 +111,7 @@ jobs:
         run: tabit status
 
       - name: /health responds with an engine version
-        run: curl -sf http://127.0.0.1:28224/health | grep -q '"engineVersion":"0.4.1"'
+        run: curl -sf http://127.0.0.1:28224/health | grep -q '"engineVersion":"0.5.0"'
 
       - name: tabit uninstall --purge leaves nothing behind
         run: |
