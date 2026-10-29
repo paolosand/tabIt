@@ -18,7 +18,7 @@ Never `#000`/`#fff`; every neutral tinted warm.
 | Ink muted | `oklch(0.52 0.02 70)` | secondary text, metadata |
 | Rule line | `oklch(0.88 0.015 250)` | faint notebook feint-blue horizontal rules |
 | Margin line | `oklch(0.70 0.10 25)` | notebook red margin — web app / landing pages only, never in the extension's in-player component |
-| Highlighter | `oklch(0.90 0.12 92)` | warm amber marker behind the CURRENT chord |
+| Highlighter | `oklch(0.90 0.12 92)` | the EditPopover "edited" indicator and other small accent marks; no longer the current-chord highlight (see beat grid, below) |
 | Amber (progress) | `oklch(0.88 0.14 90)` | the in-player component's progress state only: done/current pipeline steps, current beat cell. Never decorative, never a hover or background fill |
 | Amber dot | `oklch(0.55 0.13 70)` | active beat-dot inside the amber current-beat cell |
 | Graphite | `oklch(0.55 0.02 70)` | pencil underline / "next" chord marker |
@@ -54,6 +54,8 @@ The mark is a Fraunces bold-italic "t" over an amber swipe rotated −6°, on a 
 
 ## Signature moments
 
-- The amber **highlighter sweep** landing on the current chord as the song plays.
+- The amber beat cell sweeping through the song's wrapped beat grid (web app and
+  extension both use this now — see "Amber (progress)" above and
+  `docs/superpowers/specs/2026-10-28-tabit-web-beat-grid-design.md`).
 - **Ruled paper** with a red margin line — instantly reads "notebook," not "app."
 - A dimmed, dotted-underline chord that quietly admits "I'm not sure about this one."
