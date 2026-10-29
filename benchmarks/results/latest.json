@@ -1,5 +1,5 @@
 {
-  "engineVersion": "0.2.1",
+  "engineVersion": "0.5.1",
   "metrics": [
     "majmin",
     "sevenths",
@@ -10,9 +10,9 @@
       "id": "twist_and_shout",
       "title": "The Beatles \u2014 Twist and Shout",
       "scores": {
-        "majmin": 0.7044947976204371,
-        "sevenths": 0.6916837092496958,
-        "root": 0.7044947976204371
+        "majmin": 0.868388962098101,
+        "sevenths": 0.8549823797382117,
+        "root": 0.8734792589725773
       },
       "weight": 153.155918,
       "warning": null,
@@ -23,9 +23,9 @@
       "id": "a_hard_days_night",
       "title": "The Beatles \u2014 A Hard Day's Night",
       "scores": {
-        "majmin": 0.5053541266479296,
-        "sevenths": 0.4999717651944393,
-        "root": 0.5034920205934714
+        "majmin": 0.47579884665748007,
+        "sevenths": 0.4653468303600864,
+        "root": 0.4740439526037622
       },
       "weight": 152.555102,
       "warning": null,
@@ -36,9 +36,9 @@
       "id": "ob_la_di_ob_la_da",
       "title": "The Beatles \u2014 Ob-La-Di, Ob-La-Da",
       "scores": {
-        "majmin": 0.7984625685306447,
-        "sevenths": 0.788017053781005,
-        "root": 0.7982984070723658
+        "majmin": 0.8546602808416424,
+        "sevenths": 0.8062646452408562,
+        "root": 0.8530951969732525
       },
       "weight": 188.839184,
       "warning": null,
@@ -49,9 +49,9 @@
       "id": "with_a_little_help_from_my_friends",
       "title": "The Beatles \u2014 With a Little Help from My Friends",
       "scores": {
-        "majmin": 0.7962542261291494,
-        "sevenths": 0.6744385237565695,
-        "root": 0.7962542261291494
+        "majmin": 0.8569900630794001,
+        "sevenths": 0.7963750558819803,
+        "root": 0.8726969106952063
       },
       "weight": 164.022857,
       "warning": null,
@@ -62,9 +62,9 @@
       "id": "let_it_be",
       "title": "The Beatles \u2014 Let It Be",
       "scores": {
-        "majmin": 0.7806513197921375,
-        "sevenths": 0.7398852635762625,
-        "root": 0.7806513197921375
+        "majmin": 0.7923914018848257,
+        "sevenths": 0.7530990961183291,
+        "root": 0.7923914018848257
       },
       "weight": 243.330612,
       "warning": null,
@@ -75,9 +75,9 @@
       "id": "come_together",
       "title": "The Beatles \u2014 Come Together",
       "scores": {
-        "majmin": 0.8222818491949462,
-        "sevenths": 0.5037147662084558,
-        "root": 0.8516350594079641
+        "majmin": 0.7417737844638075,
+        "sevenths": 0.6928217323081126,
+        "root": 0.7826352243061916
       },
       "weight": 260.649796,
       "warning": null,
@@ -88,9 +88,9 @@
       "id": "here_comes_the_sun",
       "title": "The Beatles \u2014 Here Comes the Sun",
       "scores": {
-        "majmin": 0.8013293953992386,
-        "sevenths": 0.7730893124522343,
-        "root": 0.807495138108274
+        "majmin": 0.8696412216255559,
+        "sevenths": 0.7902920512095212,
+        "root": 0.8721466691583546
       },
       "weight": 185.573878,
       "warning": null,
@@ -101,9 +101,9 @@
       "id": "yesterday",
       "title": "The Beatles \u2014 Yesterday",
       "scores": {
-        "majmin": 0.6614097692581264,
-        "sevenths": 0.5272329469344904,
-        "root": 0.6553710332429319
+        "majmin": 0.8252583269184309,
+        "sevenths": 0.6898472173900798,
+        "root": 0.8118117562115628
       },
       "weight": 127.451429,
       "warning": null,
@@ -114,9 +114,9 @@
       "id": "eleanor_rigby",
       "title": "The Beatles \u2014 Eleanor Rigby",
       "scores": {
-        "majmin": 0.8123143243212944,
-        "sevenths": 0.6405544928839475,
-        "root": 0.8123143243212944
+        "majmin": 0.8976901468501192,
+        "sevenths": 0.8358995721140948,
+        "root": 0.8976901468501192
       },
       "weight": 127.686531,
       "warning": null,
@@ -127,9 +127,9 @@
       "id": "something",
       "title": "The Beatles \u2014 Something",
       "scores": {
-        "majmin": 0.7366195555662902,
-        "sevenths": 0.5501897763662704,
-        "root": 0.7113476892841006
+        "majmin": 0.8012927961898424,
+        "sevenths": 0.7045329841230765,
+        "root": 0.7611567132721929
       },
       "weight": 183.013878,
       "warning": null,
@@ -140,9 +140,9 @@
       "id": "while_my_guitar_gently_weeps",
       "title": "The Beatles \u2014 While My Guitar Gently Weeps",
       "scores": {
-        "majmin": 0.7593542021048632,
-        "sevenths": 0.7365432857926022,
-        "root": 0.7664142855401057
+        "majmin": 0.728080939795718,
+        "sevenths": 0.7655532823845503,
+        "root": 0.7362618815083002
       },
       "weight": 285.309388,
       "warning": null,
@@ -152,14 +152,14 @@
   ],
   "aggregate": {
     "all": {
-      "majmin": 0.7524893199052685,
-      "sevenths": 0.6546944045028827,
-      "root": 0.754951003420928
+      "majmin": 0.7864795488988745,
+      "sevenths": 0.7420982063009371,
+      "root": 0.7899469121657848
     },
     "aligned": {
-      "majmin": 0.7524893199052685,
-      "sevenths": 0.6546944045028827,
-      "root": 0.754951003420928
+      "majmin": 0.7864795488988745,
+      "sevenths": 0.7420982063009371,
+      "root": 0.7899469121657848
     }
   }
 }
