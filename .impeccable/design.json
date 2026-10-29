@@ -1,0 +1,534 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T21:05:08+00:00",
+  "title": "Design System: tabIt",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Sepia Ink",
+        "canonical": "oklch(0.28 0.02 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70.0)",
+          "oklch(0.27 0.016 70.0)",
+          "oklch(0.39 0.019 70.0)",
+          "oklch(0.51 0.020 70.0)",
+          "oklch(0.63 0.019 70.0)",
+          "oklch(0.75 0.015 70.0)",
+          "oklch(0.86 0.010 70.0)",
+          "oklch(0.95 0.004 70.0)"
+        ]
+      },
+      "ink-pressed": {
+        "role": "neutral",
+        "displayName": "Pressed Ink",
+        "canonical": "oklch(0.36 0.03 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 70.0)",
+          "oklch(0.27 0.024 70.0)",
+          "oklch(0.39 0.029 70.0)",
+          "oklch(0.51 0.030 70.0)",
+          "oklch(0.63 0.028 70.0)",
+          "oklch(0.75 0.022 70.0)",
+          "oklch(0.86 0.014 70.0)",
+          "oklch(0.95 0.006 70.0)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(0.45 0.02 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70.0)",
+          "oklch(0.27 0.016 70.0)",
+          "oklch(0.39 0.019 70.0)",
+          "oklch(0.51 0.020 70.0)",
+          "oklch(0.63 0.019 70.0)",
+          "oklch(0.75 0.015 70.0)",
+          "oklch(0.86 0.010 70.0)",
+          "oklch(0.95 0.004 70.0)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Brown",
+        "canonical": "oklch(0.52 0.02 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70.0)",
+          "oklch(0.27 0.016 70.0)",
+          "oklch(0.39 0.019 70.0)",
+          "oklch(0.51 0.020 70.0)",
+          "oklch(0.63 0.019 70.0)",
+          "oklch(0.75 0.015 70.0)",
+          "oklch(0.86 0.010 70.0)",
+          "oklch(0.95 0.004 70.0)"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(0.55 0.02 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70.0)",
+          "oklch(0.27 0.016 70.0)",
+          "oklch(0.39 0.019 70.0)",
+          "oklch(0.51 0.020 70.0)",
+          "oklch(0.63 0.019 70.0)",
+          "oklch(0.75 0.015 70.0)",
+          "oklch(0.86 0.010 70.0)",
+          "oklch(0.95 0.004 70.0)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(0.988 0.006 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 85.0)",
+          "oklch(0.27 0.005 85.0)",
+          "oklch(0.39 0.006 85.0)",
+          "oklch(0.51 0.006 85.0)",
+          "oklch(0.63 0.006 85.0)",
+          "oklch(0.75 0.005 85.0)",
+          "oklch(0.86 0.003 85.0)",
+          "oklch(0.95 0.001 85.0)"
+        ]
+      },
+      "desk": {
+        "role": "neutral",
+        "displayName": "Desk",
+        "canonical": "oklch(0.972 0.008 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 85.0)",
+          "oklch(0.27 0.006 85.0)",
+          "oklch(0.39 0.008 85.0)",
+          "oklch(0.51 0.008 85.0)",
+          "oklch(0.63 0.007 85.0)",
+          "oklch(0.75 0.006 85.0)",
+          "oklch(0.86 0.004 85.0)",
+          "oklch(0.95 0.002 85.0)"
+        ]
+      },
+      "wash": {
+        "role": "neutral",
+        "displayName": "Wash",
+        "canonical": "oklch(0.94 0.01 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.005 85.0)",
+          "oklch(0.27 0.008 85.0)",
+          "oklch(0.39 0.010 85.0)",
+          "oklch(0.51 0.010 85.0)",
+          "oklch(0.63 0.009 85.0)",
+          "oklch(0.75 0.007 85.0)",
+          "oklch(0.86 0.005 85.0)",
+          "oklch(0.95 0.002 85.0)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Warm Hairline",
+        "canonical": "oklch(0.85 0.015 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 85.0)",
+          "oklch(0.27 0.012 85.0)",
+          "oklch(0.39 0.014 85.0)",
+          "oklch(0.51 0.015 85.0)",
+          "oklch(0.63 0.014 85.0)",
+          "oklch(0.75 0.011 85.0)",
+          "oklch(0.86 0.007 85.0)",
+          "oklch(0.95 0.003 85.0)"
+        ]
+      },
+      "rule-blue": {
+        "role": "secondary",
+        "displayName": "Notebook Rule Blue",
+        "canonical": "oklch(0.88 0.015 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 250.0)",
+          "oklch(0.27 0.012 250.0)",
+          "oklch(0.39 0.014 250.0)",
+          "oklch(0.51 0.015 250.0)",
+          "oklch(0.63 0.014 250.0)",
+          "oklch(0.75 0.011 250.0)",
+          "oklch(0.86 0.007 250.0)",
+          "oklch(0.95 0.003 250.0)"
+        ]
+      },
+      "beat-tick": {
+        "role": "neutral",
+        "displayName": "Beat Tick",
+        "canonical": "oklch(0.93 0.008 90)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 90.0)",
+          "oklch(0.27 0.006 90.0)",
+          "oklch(0.39 0.008 90.0)",
+          "oklch(0.51 0.008 90.0)",
+          "oklch(0.63 0.007 90.0)",
+          "oklch(0.75 0.006 90.0)",
+          "oklch(0.86 0.004 90.0)",
+          "oklch(0.95 0.002 90.0)"
+        ]
+      },
+      "bar-line": {
+        "role": "neutral",
+        "displayName": "Bar Line",
+        "canonical": "oklch(0.82 0.012 90)",
+        "tonalRamp": [
+          "oklch(0.15 0.006 90.0)",
+          "oklch(0.27 0.009 90.0)",
+          "oklch(0.39 0.011 90.0)",
+          "oklch(0.51 0.012 90.0)",
+          "oklch(0.63 0.011 90.0)",
+          "oklch(0.75 0.009 90.0)",
+          "oklch(0.86 0.006 90.0)",
+          "oklch(0.95 0.002 90.0)"
+        ]
+      },
+      "beat-done": {
+        "role": "neutral",
+        "displayName": "Beat Done",
+        "canonical": "oklch(0.965 0.012 90)",
+        "tonalRamp": [
+          "oklch(0.15 0.006 90.0)",
+          "oklch(0.27 0.009 90.0)",
+          "oklch(0.39 0.011 90.0)",
+          "oklch(0.51 0.012 90.0)",
+          "oklch(0.63 0.011 90.0)",
+          "oklch(0.75 0.009 90.0)",
+          "oklch(0.86 0.006 90.0)",
+          "oklch(0.95 0.002 90.0)"
+        ]
+      },
+      "amber": {
+        "role": "primary",
+        "displayName": "Progress Amber",
+        "canonical": "oklch(0.88 0.14 90)",
+        "tonalRamp": [
+          "oklch(0.15 0.071 90.0)",
+          "oklch(0.27 0.110 90.0)",
+          "oklch(0.39 0.133 90.0)",
+          "oklch(0.51 0.140 90.0)",
+          "oklch(0.63 0.131 90.0)",
+          "oklch(0.75 0.105 90.0)",
+          "oklch(0.86 0.067 90.0)",
+          "oklch(0.95 0.027 90.0)"
+        ]
+      },
+      "amber-dot": {
+        "role": "primary",
+        "displayName": "Beat-dot Amber",
+        "canonical": "oklch(0.55 0.13 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.066 70.0)",
+          "oklch(0.27 0.102 70.0)",
+          "oklch(0.39 0.124 70.0)",
+          "oklch(0.51 0.130 70.0)",
+          "oklch(0.63 0.121 70.0)",
+          "oklch(0.75 0.098 70.0)",
+          "oklch(0.86 0.063 70.0)",
+          "oklch(0.95 0.025 70.0)"
+        ]
+      },
+      "highlighter": {
+        "role": "functional",
+        "displayName": "Highlighter",
+        "canonical": "oklch(0.90 0.12 92)",
+        "tonalRamp": [
+          "oklch(0.15 0.061 92.0)",
+          "oklch(0.27 0.095 92.0)",
+          "oklch(0.39 0.114 92.0)",
+          "oklch(0.51 0.120 92.0)",
+          "oklch(0.63 0.112 92.0)",
+          "oklch(0.75 0.090 92.0)",
+          "oklch(0.86 0.058 92.0)",
+          "oklch(0.95 0.023 92.0)"
+        ]
+      },
+      "margin-red": {
+        "role": "secondary",
+        "displayName": "Margin Red",
+        "canonical": "oklch(0.70 0.10 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.051 25.0)",
+          "oklch(0.27 0.079 25.0)",
+          "oklch(0.39 0.095 25.0)",
+          "oklch(0.51 0.100 25.0)",
+          "oklch(0.63 0.093 25.0)",
+          "oklch(0.75 0.075 25.0)",
+          "oklch(0.86 0.048 25.0)",
+          "oklch(0.95 0.019 25.0)"
+        ]
+      },
+      "error": {
+        "role": "functional",
+        "displayName": "Error",
+        "canonical": "oklch(0.55 0.12 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.061 25.0)",
+          "oklch(0.27 0.095 25.0)",
+          "oklch(0.39 0.114 25.0)",
+          "oklch(0.51 0.120 25.0)",
+          "oklch(0.63 0.112 25.0)",
+          "oklch(0.75 0.090 25.0)",
+          "oklch(0.86 0.058 25.0)",
+          "oklch(0.95 0.023 25.0)"
+        ]
+      },
+      "link": {
+        "role": "functional",
+        "displayName": "Link Ink-Blue",
+        "canonical": "oklch(0.42 0.09 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.046 250.0)",
+          "oklch(0.27 0.071 250.0)",
+          "oklch(0.39 0.086 250.0)",
+          "oklch(0.51 0.090 250.0)",
+          "oklch(0.63 0.084 250.0)",
+          "oklch(0.75 0.068 250.0)",
+          "oklch(0.86 0.043 250.0)",
+          "oklch(0.95 0.017 250.0)"
+        ]
+      },
+      "link-hover": {
+        "role": "functional",
+        "displayName": "Link Hover",
+        "canonical": "oklch(0.32 0.11 250)",
+        "tonalRamp": [
+          "oklch(0.15 0.056 250.0)",
+          "oklch(0.27 0.087 250.0)",
+          "oklch(0.39 0.105 250.0)",
+          "oklch(0.51 0.110 250.0)",
+          "oklch(0.63 0.103 250.0)",
+          "oklch(0.75 0.083 250.0)",
+          "oklch(0.86 0.053 250.0)",
+          "oklch(0.95 0.021 250.0)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "chord-current": {
+        "displayName": "Chord, current",
+        "purpose": "Chord under the playhead in the web beat grid."
+      },
+      "chord": {
+        "displayName": "Chord",
+        "purpose": "Every other chord in the beat grid and sheet."
+      },
+      "chord-compact": {
+        "displayName": "Chord, compact",
+        "purpose": "Extension beat ribbon; 20px in the edit popover."
+      },
+      "serif-input": {
+        "displayName": "Serif input",
+        "purpose": "Landing YouTube-link field; writing on a ruled line."
+      },
+      "value": {
+        "displayName": "Value",
+        "purpose": "Bold sans data values in Key / Tempo chips."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Messages, setup steps, drop zone."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Status lines, helper notes."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Uppercase tracked primary actions (11px/0.06em compact in extension)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels and the back link."
+      },
+      "label-micro": {
+        "displayName": "Label micro",
+        "purpose": "Chip captions and popover titles."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Terminal commands in setup/offline states only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet",
+        "value": "0 1px 2px oklch(0.28 0.02 70 / 0.05), 0 10px 30px oklch(0.28 0.02 70 / 0.06)",
+        "purpose": "Chord sheet and extension panel card."
+      },
+      {
+        "name": "bar",
+        "value": "0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06)",
+        "purpose": "Landing card, extension status bar and toast."
+      },
+      {
+        "name": "popover",
+        "value": "0 4px 14px oklch(0.28 0.02 70 / 0.22)",
+        "purpose": "Chord edit popover (floats over content)."
+      },
+      {
+        "name": "player",
+        "value": "0 6px 18px oklch(0.28 0.02 70 / 0.18)",
+        "purpose": "Compact YouTube / audio player companion."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": "180ms ease-out",
+        "purpose": "Hover/press on buttons, drop zone."
+      },
+      {
+        "name": "state-fade",
+        "value": "200ms ease-out",
+        "purpose": "Opacity/color state changes (ad dim, chord color)."
+      },
+      {
+        "name": "ribbon-track",
+        "value": "transform 200ms linear",
+        "purpose": "Beat ribbon sliding with playback."
+      },
+      {
+        "name": "enter",
+        "value": "tabit-fade-in 0.3–0.4s ease-out (opacity + translateY 6px)",
+        "purpose": "Bar/panel/sheet entering."
+      },
+      {
+        "name": "spinner",
+        "value": "tabit-spin 0.9s linear infinite",
+        "purpose": "Current pipeline step ring."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation-duration: 0.01ms",
+        "purpose": "Global prefers-reduced-motion override on both surfaces."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "beat-grid-2-bars",
+        "value": "~900px (measured container width)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-filled primary action, tracked uppercase sans.",
+      "html": "<button class=\"ds-btn-primary\">Find the chords</button>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-btn-primary{font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--paper);background:var(--ink);border:none;border-radius:2px;padding:12px 22px;cursor:pointer;transition:background 180ms ease-out,transform 180ms ease-out}.ds-btn-primary:hover{background:oklch(0.36 0.03 70);transform:translateY(-1px)}.ds-btn-primary:active{transform:translateY(0)}.ds-btn-primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined compact action with a rule-blue border.",
+      "html": "<button class=\"ds-btn-secondary\">Retry</button>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-btn-secondary{font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:transparent;border:1.5px solid var(--rule);border-radius:2px;padding:8px 16px;cursor:pointer;transition:background 180ms ease-out}.ds-btn-secondary:hover{background:var(--wash)}.ds-btn-secondary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Round Stepper",
+      "kind": "button",
+      "refersTo": "button-round",
+      "description": "26px circular +/- control for transpose and chord root.",
+      "html": "<span class=\"ds-stepper\"><button class=\"ds-round\" aria-label=\"Transpose down\">–</button><span class=\"ds-step-val\">no shift</span><button class=\"ds-round\" aria-label=\"Transpose up\">+</button></span>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-stepper{display:inline-flex;align-items:center;gap:12px;font-family:var(--sans);color:var(--ink)}.ds-round{width:26px;height:26px;border-radius:50%;border:1.5px solid oklch(0.52 0.02 70 / .4);background:var(--paper);color:var(--ink);font-size:15px;line-height:1;cursor:pointer}.ds-round:hover{background:var(--wash)}.ds-round:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.ds-step-val{font-weight:600;font-size:15px;min-width:56px;text-align:center}"
+    },
+    {
+      "name": "Data Chip",
+      "kind": "chip",
+      "refersTo": "data-chip",
+      "description": "Micro-caps caption over a bold sans value (Key, Tempo).",
+      "html": "<div class=\"ds-chip\"><span class=\"ds-chip-cap\">Key</span><span class=\"ds-chip-val\">G# major</span></div>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-chip{display:inline-flex;flex-direction:column;gap:2px;padding:8px 14px;background:var(--paper);border-radius:2px;font-family:var(--sans);color:var(--ink)}.ds-chip-cap{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.ds-chip-val{font-weight:600;font-size:17px}"
+    },
+    {
+      "name": "Link Input",
+      "kind": "input",
+      "refersTo": "input-link",
+      "description": "Serif text on a ruled line; no box.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">YouTube link</span><input class=\"ds-input\" placeholder=\"https://youtube.com/watch?v=…\"></label>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-field{display:block;max-width:420px;padding:20px;background:var(--paper)}.ds-field-label{display:block;font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}.ds-input{width:100%;border:none;border-bottom:1.5px solid var(--rule);background:transparent;font:400 20px var(--serif);color:var(--ink);padding:6px 2px 12px;outline:none;transition:border-color 180ms ease-out}.ds-input:focus-visible{border-bottom-color:var(--ink)}.ds-input::placeholder{color:oklch(0.52 0.02 70 / .6)}"
+    },
+    {
+      "name": "Beat Grid",
+      "kind": "custom",
+      "refersTo": "beat-cell-now",
+      "description": "Signature: serif chords in flat beat cells; amber cell = now.",
+      "html": "<div class=\"ds-grid\"><div class=\"ds-cell ds-bar ds-done\"><span class=\"ds-chord\">Em</span></div><div class=\"ds-cell ds-done\"></div><div class=\"ds-cell ds-now\"><span class=\"ds-chord ds-cur\">G</span><span class=\"ds-pips\"><i class=\"ds-hit\"></i><i></i><i></i></span></div><div class=\"ds-cell\"></div><div class=\"ds-cell ds-bar\"><span class=\"ds-chord ds-next\">D</span></div><div class=\"ds-cell\"></div><div class=\"ds-cell\"><span class=\"ds-chord ds-low\">Am7</span></div><div class=\"ds-cell\"></div></div>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--paper);padding:16px;max-width:420px}.ds-cell{position:relative;height:64px;padding:8px;border-left:1px solid oklch(0.93 0.008 90);border-bottom:1px solid oklch(0.93 0.008 90)}.ds-bar{border-left:2px solid oklch(0.82 0.012 90)}.ds-done{background:oklch(0.965 0.012 90)}.ds-now{background:var(--amber);border-radius:4px}.ds-chord{font:600 20px/1 var(--serif);color:var(--ink);padding-bottom:3px;border-bottom:1.5px solid transparent;white-space:nowrap;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis}.ds-cur{font-size:24px}.ds-next{border-bottom:2px solid oklch(0.55 0.02 70)}.ds-low{color:var(--muted);border-bottom:1.5px dotted var(--muted)}.ds-pips{position:absolute;bottom:6px;left:8px;display:flex;gap:5px}.ds-pips i{width:5px;height:5px;border-radius:50%;background:oklch(0.85 0.02 85)}.ds-pips i.ds-hit{background:oklch(0.55 0.13 70)}"
+    },
+    {
+      "name": "Status Bar",
+      "kind": "card",
+      "refersTo": "status-bar",
+      "description": "Extension paper bar with processing checklist (amber = progress).",
+      "html": "<div class=\"ds-bar-card\"><b class=\"ds-wm\">tab<span>It</span></b><span class=\"ds-step ds-step-done\"><i>✓</i>Fetch audio</span><span class=\"ds-step ds-step-cur\"><i></i>Find chords</span><span class=\"ds-step\"><i></i>Build chart</span></div>",
+      "css": ":host{--ink:oklch(0.28 0.02 70);--paper:oklch(0.988 0.006 85);--muted:oklch(0.52 0.02 70);--wash:oklch(0.94 0.01 85);--rule:oklch(0.88 0.015 250);--amber:oklch(0.88 0.14 90);--sans:-apple-system,BlinkMacSystemFont,\"Segoe UI\",system-ui,sans-serif;--serif:Fraunces,\"Iowan Old Style\",\"Palatino Linotype\",Palatino,Georgia,serif}.ds-bar-card{display:inline-flex;max-width:100%;overflow-x:auto;align-items:center;gap:14px;padding:10px 16px;background:var(--paper);border-radius:3px;box-shadow:0 1px 2px oklch(0.28 0.02 70 / .06),0 8px 24px oklch(0.28 0.02 70 / .06);font:12px var(--sans);color:var(--muted)}.ds-wm{font:italic 700 16px var(--serif);color:var(--ink)}.ds-wm span{background:linear-gradient(transparent 35%,var(--amber) 35%,var(--amber) 90%,transparent 90%)}.ds-step{display:inline-flex;white-space:nowrap;align-items:center;gap:6px}.ds-step i{width:14px;height:14px;border-radius:50%;border:1.5px solid oklch(0.85 0.015 85);font:normal 9px/11px var(--sans);text-align:center;color:transparent}.ds-step-done{color:oklch(0.45 0.02 70)}.ds-step-done i{background:var(--amber);border-color:var(--amber);color:var(--ink)}.ds-step-cur{color:var(--ink);font-weight:600}.ds-step-cur i{border-color:var(--amber);border-top-color:transparent;animation:ds-spin .9s linear infinite}@keyframes ds-spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.ds-step-cur i{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Brand Handoff, v1",
+    "overview": "**Creative North Star: \"The Brand Handoff, v1\": a paper card that follows the song.**\n\ntabIt is a warm paper card with ink on it and one amber mark that shows where you are in the song. It has a few notebook touches: ruled lines, a red margin on the web app, a pencil underline. They add character. The base is still clean and calm, and should never look like a SaaS dashboard or \"music tech\". The north star is `docs/design/TabIt Brand Handoff.dc.html` (Handoff v1, Oct 2026), and its three rules hold everywhere: **amber means progress**, **serif for headers and chords**, **paper on dark**.\n\nThe scene is a guitarist in a warm-lit room with the instrument in hand, glancing at the screen the way they would glance at a songbook on a music stand. That's why the theme is always light and the paper is always warm. On YouTube's dark UI the paper card stays light. It never becomes dark-on-dark. Density is low: the chord sheet is the hero, and everything else (video, metadata, controls) is a quiet companion.\n\nCharacter comes from a few precise details rather than decoration. The mark's amber swipe is the one slanted element. A low-confidence chord is visibly softer, which admits uncertainty instead of hiding it. The amber cell moves through the beat grid in step with the music.",
+    "keyCharacteristics": [
+      "Light only: warm cream desk, lighter paper card, sepia-black ink. Never `#000` or `#fff`; every neutral is warm.",
+      "One accent, used with purpose: amber means progress and nothing else.",
+      "Serif (Fraunces) for headers and chord names; system sans for everything else.",
+      "Square, flat geometry with 2–4px radii. Only the logo swipe slants.",
+      "State-only motion, 150–250ms, ease-out, with reduced motion respected."
+    ],
+    "rules": [
+      {
+        "name": "The Amber-Means-Progress Rule",
+        "body": "Amber marks where you are in the song or the pipeline. Never use it for decoration, hover, focus, backgrounds, or emphasis. A connectivity confirmation such as \"Helper connected\" is ink, not amber.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red-Belongs-To-YouTube Rule",
+        "body": "The in-player extension component uses no red for UI (spinners, accents, borders). The red margin line is a web-app notebook motif.",
+        "section": "colors"
+      },
+      {
+        "name": "The Soften-Don't-Hide Rule",
+        "body": "Lower confidence moves a chord from `ink` to `muted` and adds a 1.5px dotted `muted` underline. A low-confidence chord is never removed or replaced by a placeholder. No-chord (`N`) cells render in `muted`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif-Is-For-Chords Rule",
+        "body": "Serif is only for the wordmark, titles and headers, and chord names (grid, ribbon, footer Now/Next, edit popover). Key, tempo, scale, transpose, counters, labels, steps and buttons are always sans. Values are bold sans and labels are regular or micro-caps sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed-Pixel Rule",
+        "body": "The type scale is a fixed set of pixel sizes, not fluid `clamp()`. The extension sits inside YouTube's layout and the web sheet needs stable cell widths. Use the sizes above; don't add new ones in between.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper-On-Desk Rule",
+        "body": "A surface either sits on the desk (Sheet or Bar shadow) or floats over content (Popover shadow). The media player is the one exception (Player shadow). Don't stack shadows or add colored glows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep amber for progress only: the current beat, completed and current pipeline steps, and the wordmark's \"It\".",
+      "**Do** set chord names in serif 600 and key, tempo, scale, transpose and counters in bold sans.",
+      "**Do** keep grid cells, cards and icon borders flat and square. Slant only the logo swipe (−6°).",
+      "**Do** show a low-confidence chord in `muted` with a dotted underline. Never hide it.",
+      "**Do** keep the extension as a paper card on YouTube's dark UI.",
+      "**Do** use the outlined `wordmark.svg` / `icon.svg` assets rather than recreating the mark in live text. Use the mark alone at 32px and below, and never use the stacked lockup below 64px.",
+      "**Do** tint every shadow with ink (`oklch(0.28 0.02 70 / α)`)."
+    ],
+    "donts": [
+      "**Don't** use amber for decoration, hover, focus, or backgrounds.",
+      "**Don't** set key, tempo, or scale in serif.",
+      "**Don't** use red in the in-player extension component (spinners, borders, accents). Red belongs to YouTube.",
+      "**Don't** use `#000`, `#fff`, or cool grays. Every neutral is warm.",
+      "**Don't** build card grids, gradient hero metrics, neon accents, waveform decoration, or dark themes.",
+      "**Don't** add page-load choreography or bouncy easing. Motion only shows state.",
+      "**Don't** add new font sizes, radii, or shadows when an existing token fits."
+    ]
+  }
+}
