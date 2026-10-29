@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 import Panel from './Panel';
 import * as videoTime from './useVideoTime';
+import * as videoTranspose from '../transpose/videoTranspose';
 
 // Mirrors web/src/screens/Sheet.test.tsx's fixture, minus mediaFile (the extension
 // has no media column — see Panel.tsx delta 1).
@@ -44,6 +45,33 @@ test('transpose relabels chords and the scales chip', async () => {
   // cell (chords are plain non-interactive spans per delta 2, no button role).
   expect(screen.getByTestId('marker').parentElement).toHaveTextContent('Bm');
   expect(screen.getByText('B minor pentatonic')).toBeInTheDocument();
+});
+
+test('transpose buttons shift the video audio to match the relabeled chords', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0, adShowing: false });
+  const shift = vi.spyOn(videoTranspose, 'setVideoTranspose').mockResolvedValue();
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  expect(shift).toHaveBeenLastCalledWith(2);
+  await userEvent.click(screen.getByRole('button', { name: /transpose down/i }));
+  expect(shift).toHaveBeenLastCalledWith(1);
+});
+
+test('mounting resets any leftover shift (YouTube reuses one <video> across songs)', () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0, adShowing: false });
+  const shift = vi.spyOn(videoTranspose, 'setVideoTranspose').mockResolvedValue();
+  render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  expect(shift).toHaveBeenCalledWith(0);
+});
+
+test('unmounting restores the original pitch', async () => {
+  vi.spyOn(videoTime, 'useVideoTime').mockReturnValue({ time: 0, adShowing: false });
+  const shift = vi.spyOn(videoTranspose, 'setVideoTranspose').mockResolvedValue();
+  const { unmount } = render(<Panel chart={chart as never} onCollapse={() => {}} />);
+  await userEvent.click(screen.getByRole('button', { name: /transpose up/i }));
+  unmount();
+  expect(shift).toHaveBeenLastCalledWith(0);
 });
 
 test('ad playing dims the sheet and shows a tag', () => {
