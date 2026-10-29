@@ -18,8 +18,8 @@ Never `#000`/`#fff`; every neutral tinted warm.
 | Ink muted | `oklch(0.52 0.02 70)` | secondary text, metadata |
 | Rule line | `oklch(0.88 0.015 250)` | faint notebook feint-blue horizontal rules |
 | Margin line | `oklch(0.70 0.10 25)` | notebook red margin — web app / landing pages only, never in the extension's in-player component |
-| Highlighter | `oklch(0.90 0.12 92)` | the EditPopover "edited" indicator and other small accent marks; no longer the current-chord highlight (see beat grid, below) |
-| Amber (progress) | `oklch(0.88 0.14 90)` | the in-player component's progress state only: done/current pipeline steps, current beat cell. Never decorative, never a hover or background fill |
+| Highlighter | `oklch(0.90 0.12 92)` | browser text-selection highlight (`::selection` in `web/src/index.css`) only; no longer the current-chord highlight, and not the edited-chord indicator either — `BeatGrid`'s edited dot uses Margin line, above |
+| Amber (progress) | `oklch(0.88 0.14 90)` | the in-player component's progress state (done/current pipeline steps) and the web app's `BeatGrid` current-beat cell. Never decorative, never a hover or background fill |
 | Amber dot | `oklch(0.55 0.13 70)` | active beat-dot inside the amber current-beat cell |
 | Graphite | `oklch(0.55 0.02 70)` | pencil underline / "next" chord marker |
 
@@ -45,11 +45,11 @@ The mark is a Fraunces bold-italic "t" over an amber swipe rotated −6°, on a 
 - **Chord sheet is the hero**, laid out as bars on ruled-paper lines like a real chart. The video is a small, quiet companion (compact player, not dominant).
 - Generous margins, notebook rhythm. Vary spacing; no uniform padding.
 - No card grids. The sheet is one warm paper surface, not a grid of tiles.
-- Responsive: on narrow screens the player collapses to a slim sticky bar; the sheet reflows to fewer bars per line.
+- Responsive: on narrow screens the player collapses to a slim sticky bar; the beat grid's row length is fixed (4 bars per row, meter-aware) and does not reflow on narrow screens — revisit if it reads poorly on small screens.
 
 ## Motion (state only, 150–250ms)
 
-- The **current-chord highlighter** and the **playhead** move smoothly as playback advances — this motion IS the karaoke-follow state, so it earns its place.
+- The **amber beat cell** (see Signature moments, below) and the **playhead** move smoothly as playback advances — this motion IS the karaoke-follow state, so it earns its place.
 - Control transitions (hover/focus/press) 150–200ms, ease-out. No bounce, no page-load choreography.
 
 ## Signature moments

@@ -7,13 +7,17 @@ import { chartKey, loadOverrides, saveOverrides, type Overrides } from '../lib/o
 import YouTubePlayer from '../playback/YouTubePlayer';
 import AudioPlayer from '../playback/AudioPlayer';
 import { usePlaybackTime, type PlaybackSource } from '../playback/usePlaybackTime';
-import BeatGrid from './BeatGrid';
+import BeatGrid, { rowLenFor } from './BeatGrid';
 
 interface SheetProps {
   chart: Chart;
   mediaFile: File | null;
   onBack: () => void;
 }
+
+// Keys that scroll a focused scroll container - treated as manual intent, same
+// as wheel/touch/pointer input (see the scroll-pause effects below).
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
 export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   const [transpose, setTranspose] = useState(0);
@@ -98,33 +102,52 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     };
   });
 
+  // Row containing the current beat (BeatGrid wraps at rowLenFor(chart.meter)
+  // beats per row). Auto-scroll only reacts to this changing, not to every beat,
+  // since nothing leaves the viewport while the row stays the same.
+  const rowLen = rowLenFor(chart.meter);
+  const currentRow = currentBeatIndex >= 0 ? Math.floor(currentBeatIndex / rowLen) : -1;
+
   const lastManualScrollAt = useRef(0);
-  const programmaticUntil = useRef(0);
 
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const onScroll = () => {
-      // scrollIntoView({ behavior: 'smooth' }) fires a 'scroll' event per animation
-      // frame, not once - a one-shot flag would catch only the first of those and
-      // misread the rest as manual. Ignore every scroll event for a window covering
-      // the animation instead, so none of its trailing events count as manual.
-      if (Date.now() < programmaticUntil.current) return;
+    // Detect manual intent from the INPUT that causes scrolling, not from the
+    // generic 'scroll' event - a programmatic container.scrollTo(...) fires
+    // 'scroll' events indistinguishable from the user's own, so inferring
+    // "was this mine?" from the scroll stream itself is a dead end (confirmed
+    // the hard way: it took two rounds of window-tuning and still broke at
+    // realistic per-beat cadence). Wheel/touch/pointer/key input is unambiguous.
+    const markManual = () => {
       lastManualScrollAt.current = Date.now();
     };
-    container.addEventListener('scroll', onScroll);
-    return () => container.removeEventListener('scroll', onScroll);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (SCROLL_KEYS.has(e.key)) markManual();
+    };
+    container.addEventListener('wheel', markManual);
+    container.addEventListener('touchstart', markManual);
+    container.addEventListener('pointerdown', markManual);
+    container.addEventListener('keydown', onKeyDown);
+    return () => {
+      container.removeEventListener('wheel', markManual);
+      container.removeEventListener('touchstart', markManual);
+      container.removeEventListener('pointerdown', markManual);
+      container.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
   useEffect(() => {
     if (Date.now() - lastManualScrollAt.current < 3000) return;
     const container = scrollRef.current;
-    const cell = container?.querySelector(`[data-beat-index="${currentBeatIndex}"]`);
-    if (cell) {
-      programmaticUntil.current = Date.now() + 1000;
-      cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [currentBeatIndex]);
+    const cell = container?.querySelector(`[data-beat-index="${currentBeatIndex}"]`) as HTMLElement | null;
+    if (!container || !cell) return;
+    // Scroll the container directly, not cell.scrollIntoView(...) - that climbs
+    // every scrollable ancestor including the document, re-centering the whole
+    // browser window instead of just this inner panel.
+    const target = cell.offsetTop - container.clientHeight / 2 + cell.clientHeight / 2;
+    container.scrollTo({ top: target, behavior: 'smooth' });
+  }, [currentRow]);
 
   const hasChords = chords.length > 0;
   const nextIdx = hasChords ? Math.min(currentIndex + 1, decorated.length - 1) : 0;

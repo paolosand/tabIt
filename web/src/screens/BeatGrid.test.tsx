@@ -32,7 +32,7 @@ test('one cell per beat; row wraps at (beatsPerBar * 4)', () => {
   const rows = container.querySelectorAll('[data-row]');
   expect(rows.length).toBe(2);
   rows.forEach((row) => {
-    expect((row as HTMLElement).style.gridTemplateColumns).toBe('repeat(16, 1fr)');
+    expect((row as HTMLElement).style.gridTemplateColumns).toBe('repeat(16, minmax(0, 1fr))');
   });
 });
 
@@ -143,4 +143,33 @@ test('isEditing renders the EditPopover for that cell', () => {
     <BeatGrid beats={beats} chords={chords} currentBeatIndex={0} {...baseCallbacks} />,
   );
   expect(getByRole('button', { name: /reset to detected/i })).toBeInTheDocument();
+});
+
+test('a long chord label does not widen its column - grid stays equal-width', () => {
+  const beats = Array.from({ length: 4 }, (_, i) => i);
+  const chords = [
+    chord({ index: 0, start: 0, end: 1, label: 'F#m7b5/Bb' }),
+    chord({ index: 1, start: 1, end: 4, label: 'C' }),
+  ];
+  const { container } = render(
+    <BeatGrid beats={beats} chords={chords} currentBeatIndex={0} {...baseCallbacks} />,
+  );
+  const row = container.querySelector('[data-row]') as HTMLElement;
+  // rowLen defaults to 16 (no meter passed) regardless of the long label's width.
+  expect(row.style.gridTemplateColumns).toBe('repeat(16, minmax(0, 1fr))');
+});
+
+test('a chord that falls strictly between two beats still renders and is clickable', () => {
+  const beats = [0, 1, 2, 3]; // 1s apart
+  // start/end (1.2-1.8) sit strictly between beats[1]=1 and beats[2]=2, so
+  // chordBeatSpan finds no beat boundary for it (firstBeat -1) - it must still
+  // fall back onto its closest beat cell (beat 1) instead of disappearing.
+  const chords = [chord({ index: 0, start: 1.2, end: 1.8, label: 'Dsus4' })];
+  const onToggleEdit = vi.fn();
+  const { getByRole, container } = render(
+    <BeatGrid beats={beats} chords={chords} currentBeatIndex={0} {...baseCallbacks} onToggleEdit={onToggleEdit} />,
+  );
+  expect(container.querySelector('[data-beat-index="1"]')?.textContent).toBe('Dsus4');
+  getByRole('button', { name: 'Dsus4' }).click();
+  expect(onToggleEdit).toHaveBeenCalledWith(0);
 });

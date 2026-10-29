@@ -1,5 +1,10 @@
-import { chordBeatSpan } from '../lib/beats';
+import { beatIndexAt, chordBeatSpan } from '../lib/beats';
 import EditPopover from './EditPopover';
+
+/** Beats per row (4 bars, meter-aware) - shared with Sheet.tsx's row-change scroll gating. */
+export function rowLenFor(meter?: { beatsPerBar: number; confidence: number }): number {
+  return (meter?.beatsPerBar ?? 4) * 4;
+}
 
 export interface DecoratedChord {
   index: number;
@@ -55,14 +60,29 @@ function buildCells({ beats, downbeats, meter, chords, currentBeatIndex }: BeatG
   const downbeatSet = new Set(downbeats ?? []);
   const beatsPerBar = meter?.beatsPerBar ?? 4;
   const beatChord = new Array<DecoratedChord | undefined>(beats.length).fill(undefined);
+  // Beat index each chord's label actually renders on. Usually its first beat,
+  // but a chord that doesn't land cleanly on a beat boundary (a short passing
+  // chord, a pickup before beats[0], or a chord after the last beat) has no
+  // firstBeat from chordBeatSpan - fall back to its closest beat cell so it's
+  // never invisible or uneditable, even without a dedicated span. If more than
+  // one such chord lands on the same cell, the last one wins (acceptable
+  // minimal fix, not a new crowded-cell design).
+  const chordStartBeat = new Map<DecoratedChord, number>();
   chords.forEach((c) => {
     const { firstBeat, beatCount } = chordBeatSpan(beats, c);
-    for (let b = firstBeat; b >= 0 && b < firstBeat + beatCount; b++) beatChord[b] = c;
+    if (firstBeat >= 0) {
+      for (let b = firstBeat; b < firstBeat + beatCount; b++) beatChord[b] = c;
+      chordStartBeat.set(c, firstBeat);
+      return;
+    }
+    const closest = Math.min(Math.max(beatIndexAt(beats, c.start), 0), beats.length - 1);
+    beatChord[closest] = c;
+    chordStartBeat.set(c, closest);
   });
 
   return beats.map((t, b) => {
     const chord = beatChord[b];
-    const isChordStart = !!chord && chordBeatSpan(beats, chord).firstBeat === b;
+    const isChordStart = !!chord && chordStartBeat.get(chord) === b;
     return {
       beatIndex: b,
       chord: isChordStart ? chord : undefined,
@@ -75,7 +95,7 @@ function buildCells({ beats, downbeats, meter, chords, currentBeatIndex }: BeatG
 
 export default function BeatGrid(props: BeatGridProps) {
   const { meter, onToggleEdit, onRootUp, onRootDown, onQuality, onReset, onCloseEdit } = props;
-  const rowLen = (meter?.beatsPerBar ?? 4) * 4;
+  const rowLen = rowLenFor(meter);
   const cells = buildCells(props);
 
   const rows: Cell[][] = [];
@@ -87,7 +107,7 @@ export default function BeatGrid(props: BeatGridProps) {
         <div
           key={ri}
           data-row={ri}
-          style={{ display: 'grid', gridTemplateColumns: `repeat(${rowLen}, 1fr)` }}
+          style={{ display: 'grid', gridTemplateColumns: `repeat(${rowLen}, minmax(0, 1fr))` }}
         >
           {row.map((cell) => (
             <div
@@ -112,6 +132,8 @@ export default function BeatGrid(props: BeatGridProps) {
               {cell.chord && cell.chord.quality === 'N' && (
                 <span
                   style={{
+                    display: 'inline-block', maxWidth: '100%', overflow: 'hidden',
+                    whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                     fontFamily: "'Fraunces', serif", fontWeight: 600,
                     fontSize: cell.chord.fontSize, color: 'oklch(0.52 0.02 70)',
                   }}
@@ -124,6 +146,8 @@ export default function BeatGrid(props: BeatGridProps) {
                   <button
                     onClick={() => onToggleEdit(cell.chord!.index)}
                     style={{
+                      display: 'inline-block', maxWidth: '100%', overflow: 'hidden',
+                      whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                       background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                       fontFamily: "'Fraunces', serif", fontWeight: 600,
                       fontSize: cell.chord.fontSize, color: cell.chord.textColor,

@@ -101,33 +101,62 @@ test('sweeps per beat when the chart has real beat data', () => {
   expect(now.getAttribute('data-beat-index')).toBe('6');
 });
 
-test('manual scroll pauses auto-scroll for the idle window, then resumes after it', () => {
-  vi.useFakeTimers();
-  const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6); // beat index 6
-  const { rerender } = render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+// rowLen = beatsPerBar(4) * 4 = 16, so rows are beats [0-15] (row 0), [16-31]
+// (row 1), [32-47] (row 2), [48-63] (row 3) - three row-crossing points to
+// exercise pause-across-multiple-crossings, then resume.
+const chartManyBeats = {
+  ...chart,
+  beats: Array.from({ length: 64 }, (_, i) => i), // 1 beat/sec, 0..63s
+  meter: { beatsPerBar: 4, confidence: 1 },
+};
+
+test('per-beat playback alone never triggers a scroll within the same row', () => {
+  const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(5); // beat 5, row 0
+  const { rerender } = render(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
   const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
-  const originalScrollIntoView = Element.prototype.scrollIntoView;
-  const scrollIntoViewSpy = vi.fn();
-  Element.prototype.scrollIntoView = scrollIntoViewSpy;
+  // Mount's own initial auto-scroll (row 0, nothing manual yet) isn't under test here.
+  const scrollToSpy = vi.spyOn(scrollArea, 'scrollTo').mockImplementation(() => {});
 
-  // Let the mount's own auto-scroll animation window lapse before the user scrolls
-  // manually, so this scroll event isn't mistaken for that animation's trailing events.
-  vi.advanceTimersByTime(1500);
-  scrollArea.dispatchEvent(new Event('scroll'));
+  // Beat advances several times but stays inside row 0 - nothing has left the
+  // viewport, so the row-change-gated effect must not re-fire at all.
+  for (const beat of [8, 10, 13, 15]) {
+    timeSpy.mockReturnValue(beat);
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+  }
+  expect(scrollToSpy).not.toHaveBeenCalled();
+});
 
-  // The beat advances while still inside the 3s idle window following the manual
-  // scroll - auto-scroll must not fire.
-  vi.advanceTimersByTime(1000);
-  timeSpy.mockReturnValue(7); // beat index 7
-  rerender(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
-  expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+test('manual input pauses auto-scroll for the idle window, then resumes once it elapses', () => {
+  vi.useFakeTimers();
+  try {
+    const timeSpy = vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(5); // beat 5, row 0
+    const { rerender } = render(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
+    const scrollToSpy = vi.spyOn(scrollArea, 'scrollTo').mockImplementation(() => {});
 
-  // The beat advances again once the idle window has elapsed - auto-scroll resumes.
-  vi.advanceTimersByTime(2500); // 3.5s total since the manual scroll
-  timeSpy.mockReturnValue(8); // beat index 8
-  rerender(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
-  expect(scrollIntoViewSpy).toHaveBeenCalled();
+    // User scrolls manually (mouse wheel) over the sheet.
+    scrollArea.dispatchEvent(new Event('wheel'));
 
-  Element.prototype.scrollIntoView = originalScrollIntoView;
-  vi.useRealTimers();
+    // Beat crosses into row 1 while still inside the 3s idle window following
+    // the manual scroll - auto-scroll must not pull the view back.
+    vi.advanceTimersByTime(500);
+    timeSpy.mockReturnValue(16); // row 1
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).not.toHaveBeenCalled();
+
+    // A second row crossing, still inside the idle window - still must not scroll.
+    vi.advanceTimersByTime(500);
+    timeSpy.mockReturnValue(33); // row 2
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).not.toHaveBeenCalled();
+
+    // Idle window has now elapsed (3.5s since the manual scroll) and the beat
+    // crosses into row 3 - auto-scroll resumes.
+    vi.advanceTimersByTime(2500);
+    timeSpy.mockReturnValue(50); // row 3
+    rerender(<Sheet chart={chartManyBeats as never} mediaFile={null} onBack={() => {}} />);
+    expect(scrollToSpy).toHaveBeenCalled();
+  } finally {
+    vi.useRealTimers();
+  }
 });
