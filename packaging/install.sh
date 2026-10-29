@@ -36,6 +36,12 @@ fail() {
   exit 1
 }
 
+# Backstop for aborts that bypass fail() (a `set -e` exit, e.g. the uv installer
+# pipe failing): the temp wheel dir never outlives the script. Independent of the
+# INT/TERM/HUP restore traps, and it touches nothing but WHEEL_DIR.
+cleanup_wheel_dir() { [ -z "${WHEEL_DIR:-}" ] || rm -rf "$WHEEL_DIR"; }
+trap cleanup_wheel_dir EXIT
+
 # Is git safe to run? Decided WITHOUT running it: on a Mac that never had
 # developer tools /usr/bin/git is a shim whose mere execution pops Apple's
 # "install the command line tools" dialog. `-ef` compares the files themselves,
@@ -266,7 +272,7 @@ main() {
     step "Reusing the existing Python environment"
     create_env=false
   else
-    step "Creating the Python 3.11 environment (first run downloads ~1 GB of wheels)"
+    step "Creating the Python 3.11 environment (first run downloads ~1 GB of wheels; about 2 GB of disk with the cache)"
   fi
 
   # Rewritten after warmup succeeds; never left describing a replaced engine.
@@ -341,7 +347,7 @@ main() {
 
   printf '\n\033[1m✓ tabIt helper installed and running.\033[0m\n'
   printf 'Next: load the Chrome extension — see %s#readme\n' "$TABIT_REPO"
-  printf 'Manage it with: tabit status · tabit logs · tabit restart · tabit uninstall\n'
+  printf 'Manage it with: ~/.local/bin/tabit status · logs · restart · uninstall\n'
 }
 
 main "$@"

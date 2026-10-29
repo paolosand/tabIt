@@ -19,5 +19,5 @@ export const UNSUPPORTED_MESSAGE = 'tabIt needs a Mac for now';
 export const CONNECTED_NOTE = 'Helper connected';
 
 export const OFFLINE_MESSAGE = "tabIt isn't running. Open Terminal and paste:";
-export const RESTART_COMMAND = 'tabit restart';
+export const RESTART_COMMAND = '~/.local/bin/tabit restart';
 export const RETRY_LABEL = 'Retry';

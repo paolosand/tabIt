@@ -8,7 +8,7 @@ test('offline variant explains the dead helper and offers retry', async () => {
   const onRetry = vi.fn();
   render(<Bar variant="offline" onRetry={onRetry} onCopy={async () => true} />);
   expect(screen.getByText(/tabIt isn't running/)).toBeInTheDocument();
-  expect(screen.getByText('tabit restart')).toBeInTheDocument();
+  expect(screen.getByText('~/.local/bin/tabit restart')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: /retry/i }));
   expect(onRetry).toHaveBeenCalledTimes(1);
 });

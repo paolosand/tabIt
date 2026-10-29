@@ -30,7 +30,7 @@ While the song plays:
 
 Honest about what it doesn't know: chord recognition is not perfect, and some songs will come out wrong. Where tabIt is unsure, the chord is shown softer instead of guessed at with false confidence. Treat it as a good starting point and trust your ears.
 
-How setup works: the first time, the extension shows three steps. Open Terminal, paste one command, press Return. That installs the helper on your Mac (about 1 GB, a few minutes, no admin password). The analysis happens on your own computer, not in the cloud. After that it starts by itself when you log in.
+How setup works: the first time, the extension shows three steps. Open Terminal, paste one command, press Return. That installs the helper on your Mac (about 2 GB of disk: a 1 GB environment plus the download cache; a few minutes, no admin password). The analysis happens on your own computer, not in the cloud. After that it starts by itself when you log in.
 
 Private by design: tabIt has no accounts and no tracking, and sends nothing to the developer. The helper downloads the audio of videos you ask about from YouTube onto your Mac, and keeps the finished charts there.
 
