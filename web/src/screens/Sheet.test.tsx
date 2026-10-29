@@ -29,7 +29,7 @@ test('renders chords, marks current, N is a dash', () => {
   render(<Sheet chart={chart as never} mediaFile={null} onBack={() => {}} />);
   expect(screen.getByText('Am')).toBeInTheDocument();
   expect(screen.getByText('—')).toBeInTheDocument();
-  expect(screen.getByTestId('marker').parentElement).toHaveTextContent('F');
+  expect(screen.getByTestId('beat-now').textContent).toBe('F');
   expect(screen.getByText(/Now:/).parentElement).toHaveTextContent('F');
 });
 
@@ -86,4 +86,31 @@ test('reset restores the detected chord', async () => {
   await userEvent.click(screen.getByRole('button', { name: /reset to detected/i }));
   expect(screen.getByRole('button', { name: 'F' })).toBeInTheDocument();
   expect(localStorage.getItem('tabit:overrides:x')).toBe('{}');
+});
+
+const chartWithBeats = {
+  ...chart,
+  beats: Array.from({ length: 20 }, (_, i) => i), // 1 beat/sec, 0..19s
+  meter: { beatsPerBar: 4, confidence: 1 },
+};
+
+test('sweeps per beat when the chart has real beat data', () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6); // beat index 6, inside F (chord start 4)
+  render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+  const now = screen.getByTestId('beat-now');
+  expect(now.getAttribute('data-beat-index')).toBe('6');
+});
+
+test('manual scroll pauses auto-scroll for the idle window', () => {
+  vi.useFakeTimers();
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(6);
+  render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+  const scrollArea = screen.getByTestId('beat-now').closest('[data-scroll-area]') as HTMLElement;
+  const scrollIntoViewSpy = vi.fn();
+  Element.prototype.scrollIntoView = scrollIntoViewSpy;
+  scrollArea.dispatchEvent(new Event('scroll'));
+  vi.advanceTimersByTime(1000);
+  // still within the 3s idle window - auto-scroll must not have fired again
+  expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+  vi.useRealTimers();
 });

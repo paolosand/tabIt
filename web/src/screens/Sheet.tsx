@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Chart, ChordSegment } from '../lib/types';
 import { findCurrentIndex, formatLabel, transposeRoot, transposeScaleName } from '../lib/music';
+import { beatIndexAt } from '../lib/beats';
 import { chartKey, loadOverrides, saveOverrides, type Overrides } from '../lib/overrides';
 import YouTubePlayer from '../playback/YouTubePlayer';
 import AudioPlayer from '../playback/AudioPlayer';
 import { usePlaybackTime, type PlaybackSource } from '../playback/usePlaybackTime';
-import EditPopover from './EditPopover';
+import BeatGrid from './BeatGrid';
 
 interface SheetProps {
   chart: Chart;
@@ -14,19 +15,17 @@ interface SheetProps {
   onBack: () => void;
 }
 
-const HIGHLIGHT_COLOR = 'oklch(0.90 0.12 92)';
-
 export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   const [transpose, setTranspose] = useState(0);
   const [source, setSource] = useState<PlaybackSource | null>(null);
   const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(chartKey(chart)));
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const rowRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const time = usePlaybackTime(source);
   const chords = chart.chords;
   const currentIndex = findCurrentIndex(chords, time);
+  const currentBeatIndex = beatIndexAt(chart.beats, time);
 
   // Override spread over the detected base chord; an edited chord's confidence
   // is treated as 1 so it's never shown dimmed/low-confidence (design parity).
@@ -99,22 +98,32 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     };
   });
 
-  const rows: { chords: typeof decorated; rowIndex: number }[] = [];
-  for (let i = 0; i < decorated.length; i += 4) {
-    rows.push({ chords: decorated.slice(i, i + 4), rowIndex: i / 4 });
-  }
+  const lastManualScrollAt = useRef(0);
+  const programmaticScroll = useRef(false);
 
   useEffect(() => {
-    const curRowIndex = Math.floor(currentIndex / 4);
-    const rowEl = rowRefs.current[curRowIndex];
     const container = scrollRef.current;
-    if (rowEl && container) {
-      const target = rowEl.offsetTop - container.clientHeight / 2 + rowEl.clientHeight / 2;
-      if (Math.abs(container.scrollTop - target) > 8) {
-        container.scrollTop = target;
+    if (!container) return;
+    const onScroll = () => {
+      if (programmaticScroll.current) {
+        programmaticScroll.current = false;
+        return;
       }
+      lastManualScrollAt.current = Date.now();
+    };
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (Date.now() - lastManualScrollAt.current < 3000) return;
+    const container = scrollRef.current;
+    const cell = container?.querySelector(`[data-beat-index="${currentBeatIndex}"]`);
+    if (cell) {
+      programmaticScroll.current = true;
+      cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [currentIndex]);
+  }, [currentBeatIndex]);
 
   const hasChords = chords.length > 0;
   const nextIdx = hasChords ? Math.min(currentIndex + 1, decorated.length - 1) : 0;
@@ -325,6 +334,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
         )}
         <div
           ref={scrollRef}
+          data-scroll-area
           style={{
             maxHeight: 420,
             overflowY: 'auto',
@@ -332,115 +342,19 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
             scrollBehavior: 'smooth',
           }}
         >
-          {rows.map((row) => (
-            <div
-              key={row.rowIndex}
-              ref={(el) => {
-                rowRefs.current[row.rowIndex] = el;
-              }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, minmax(90px, 1fr))',
-                columnGap: 22,
-                padding: '14px 0',
-                borderBottom: '1px solid oklch(0.88 0.015 250)',
-              }}
-            >
-              {row.chords.map((chord, ci) => {
-                const isN = chord.quality === 'N';
-                return (
-                  <div
-                    key={ci}
-                    style={{
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '10px 4px',
-                    }}
-                  >
-                    {chord.isCurrent && (
-                      <div
-                        data-testid="marker"
-                        style={{
-                          position: 'absolute',
-                          left: '6%',
-                          right: '6%',
-                          top: '14%',
-                          bottom: '18%',
-                          background: HIGHLIGHT_COLOR,
-                          borderRadius: '3px 8px 5px 9px',
-                          transform: 'rotate(-0.6deg)',
-                          zIndex: 0,
-                          transition: 'opacity 200ms ease-out',
-                        }}
-                      />
-                    )}
-                    {isN ? (
-                      <span
-                        style={{
-                          position: 'relative',
-                          zIndex: 1,
-                          fontFamily: "'Fraunces', serif",
-                          fontWeight: 600,
-                          fontSize: chord.fontSize,
-                          color: 'oklch(0.52 0.02 70)',
-                        }}
-                      >
-                        {chord.label}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => toggleEdit(chord.index)}
-                        style={{
-                          position: 'relative',
-                          zIndex: 1,
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                          fontFamily: "'Fraunces', serif",
-                          fontWeight: 600,
-                          fontSize: chord.fontSize,
-                          color: chord.textColor,
-                          borderBottom: chord.underline,
-                          paddingBottom: 3,
-                          transition: 'color 200ms ease-out',
-                        }}
-                      >
-                        {chord.label}
-                      </button>
-                    )}
-                    {chord.edited && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: 2,
-                          right: '14%',
-                          width: 5,
-                          height: 5,
-                          borderRadius: '50%',
-                          background: 'oklch(0.70 0.10 25)',
-                          zIndex: 2,
-                        }}
-                      />
-                    )}
-                    {chord.isEditing && (
-                      <EditPopover
-                        label={chord.label}
-                        edited={chord.edited}
-                        onRootUp={() => nudgeRoot(chord.index, 1)}
-                        onRootDown={() => nudgeRoot(chord.index, -1)}
-                        onQuality={(quality) => applyQuality(chord.index, quality)}
-                        onReset={() => clearOverride(chord.index)}
-                        onClose={closeEditing}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+          <BeatGrid
+            beats={chart.beats}
+            downbeats={chart.downbeats}
+            meter={chart.meter}
+            currentBeatIndex={currentBeatIndex}
+            chords={decorated}
+            onToggleEdit={toggleEdit}
+            onRootUp={(i) => nudgeRoot(i, 1)}
+            onRootDown={(i) => nudgeRoot(i, -1)}
+            onQuality={applyQuality}
+            onReset={clearOverride}
+            onCloseEdit={closeEditing}
+          />
         </div>
       </div>
 
