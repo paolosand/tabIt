@@ -1,9 +1,11 @@
 import { beatIndexAt, chordBeatSpan } from '../lib/beats';
 import EditPopover from './EditPopover';
 
-/** Beats per row (4 bars, meter-aware) - shared with Sheet.tsx's row-change scroll gating. */
-export function rowLenFor(meter?: { beatsPerBar: number; confidence: number }): number {
-  return (meter?.beatsPerBar ?? 4) * 4;
+/** Beats per row (barsPerRow bars, meter-aware) - shared with Sheet.tsx's row-change
+ *  scroll gating. barsPerRow defaults to 4; Sheet.tsx narrows it to 2 on measured-narrow
+ *  containers so chord labels stay readable instead of truncating. */
+export function rowLenFor(meter?: { beatsPerBar: number; confidence: number }, barsPerRow = 4): number {
+  return (meter?.beatsPerBar ?? 4) * barsPerRow;
 }
 
 export interface DecoratedChord {
@@ -24,6 +26,7 @@ export interface BeatGridProps {
   beats: number[];
   downbeats?: number[];
   meter?: { beatsPerBar: number; confidence: number };
+  barsPerRow?: number;
   chords: DecoratedChord[];
   currentBeatIndex: number;
   onToggleEdit: (index: number) => void;
@@ -94,8 +97,8 @@ function buildCells({ beats, downbeats, meter, chords, currentBeatIndex }: BeatG
 }
 
 export default function BeatGrid(props: BeatGridProps) {
-  const { meter, onToggleEdit, onRootUp, onRootDown, onQuality, onReset, onCloseEdit } = props;
-  const rowLen = rowLenFor(meter);
+  const { meter, barsPerRow, onToggleEdit, onRootUp, onRootDown, onQuality, onReset, onCloseEdit } = props;
+  const rowLen = rowLenFor(meter, barsPerRow);
   const cells = buildCells(props);
 
   const rows: Cell[][] = [];

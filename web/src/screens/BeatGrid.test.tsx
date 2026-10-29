@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
-import BeatGrid, { type DecoratedChord } from './BeatGrid';
+import BeatGrid, { rowLenFor, type DecoratedChord } from './BeatGrid';
 
 function chord(over: Partial<DecoratedChord>): DecoratedChord {
   return {
@@ -172,4 +172,22 @@ test('a chord that falls strictly between two beats still renders and is clickab
   expect(container.querySelector('[data-beat-index="1"]')?.textContent).toBe('Dsus4');
   getByRole('button', { name: 'Dsus4' }).click();
   expect(onToggleEdit).toHaveBeenCalledWith(0);
+});
+
+test('rowLenFor respects an explicit barsPerRow, defaulting to 4', () => {
+  expect(rowLenFor({ beatsPerBar: 4, confidence: 1 })).toBe(16);
+  expect(rowLenFor({ beatsPerBar: 4, confidence: 1 }, 2)).toBe(8);
+  expect(rowLenFor(undefined, 2)).toBe(8);
+  expect(rowLenFor({ beatsPerBar: 3, confidence: 1 }, 2)).toBe(6);
+});
+
+test('barsPerRow prop controls how many beats wrap per row', () => {
+  const beats = Array.from({ length: 16 }, (_, i) => i);
+  const chords = [chord({ index: 0, start: 0, end: 16, label: 'C', isCurrent: true })];
+  const { container } = render(
+    <BeatGrid beats={beats} chords={chords} currentBeatIndex={0} barsPerRow={2} {...baseCallbacks} />,
+  );
+  const rows = container.querySelectorAll('[data-row]');
+  expect(rows.length).toBe(2); // 16 beats / rowLen(8) = 2 rows
+  expect((rows[0] as HTMLElement).style.gridTemplateColumns).toBe('repeat(8, minmax(0, 1fr))');
 });

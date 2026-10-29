@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, test, vi } from 'vitest';
 import Sheet from './Sheet';
@@ -158,5 +158,33 @@ test('manual input pauses auto-scroll for the idle window, then resumes once it 
     expect(scrollToSpy).toHaveBeenCalled();
   } finally {
     vi.useRealTimers();
+  }
+});
+
+test('narrows to 2 bars per row when the grid container is measured narrow', () => {
+  vi.spyOn(playback, 'usePlaybackTime').mockReturnValue(0);
+  const callbacks: ResizeObserverCallback[] = [];
+  class FakeResizeObserver {
+    constructor(cb: ResizeObserverCallback) {
+      callbacks.push(cb);
+    }
+    observe() {}
+    disconnect() {}
+  }
+  const original = globalThis.ResizeObserver;
+  (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = FakeResizeObserver;
+  try {
+    render(<Sheet chart={chartWithBeats as never} mediaFile={null} onBack={() => {}} />);
+    const row = screen.getByTestId('beat-now').closest('[data-row]') as HTMLElement;
+    expect(row.style.gridTemplateColumns).toBe('repeat(16, minmax(0, 1fr))');
+
+    act(() => {
+      callbacks[0]([{ contentRect: { width: 500 } }] as unknown as ResizeObserverEntry[], null as never);
+    });
+
+    const narrowRow = screen.getByTestId('beat-now').closest('[data-row]') as HTMLElement;
+    expect(narrowRow.style.gridTemplateColumns).toBe('repeat(8, minmax(0, 1fr))');
+  } finally {
+    globalThis.ResizeObserver = original;
   }
 });

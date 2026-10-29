@@ -19,11 +19,16 @@ interface SheetProps {
 // as wheel/touch/pointer input (see the scroll-pause effects below).
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
+// Below this measured grid-container width, 16 beats/row (4 bars) truncates most
+// chord labels - narrow to 2 bars/row instead so cells stay readable.
+const NARROW_GRID_WIDTH = 900;
+
 export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
   const [transpose, setTranspose] = useState(0);
   const [source, setSource] = useState<PlaybackSource | null>(null);
   const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(chartKey(chart)));
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [barsPerRow, setBarsPerRow] = useState(4);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const time = usePlaybackTime(source);
@@ -102,13 +107,24 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
     };
   });
 
-  // Row containing the current beat (BeatGrid wraps at rowLenFor(chart.meter)
+  // Row containing the current beat (BeatGrid wraps at rowLenFor(chart.meter, barsPerRow)
   // beats per row). Auto-scroll only reacts to this changing, not to every beat,
   // since nothing leaves the viewport while the row stays the same.
-  const rowLen = rowLenFor(chart.meter);
+  const rowLen = rowLenFor(chart.meter, barsPerRow);
   const currentRow = currentBeatIndex >= 0 ? Math.floor(currentBeatIndex / rowLen) : -1;
 
   const lastManualScrollAt = useRef(0);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      setBarsPerRow(width < NARROW_GRID_WIDTH ? 2 : 4);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const container = scrollRef.current;
@@ -370,6 +386,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
             beats={chart.beats}
             downbeats={chart.downbeats}
             meter={chart.meter}
+            barsPerRow={barsPerRow}
             currentBeatIndex={currentBeatIndex}
             chords={decorated}
             onToggleEdit={toggleEdit}
