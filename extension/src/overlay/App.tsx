@@ -23,7 +23,7 @@ type State =
   | { kind: 'unsupported' }
   | { kind: 'loading'; step?: string }
   | { kind: 'sheet'; chart: Chart }
-  | { kind: 'offline' }
+  | { kind: 'offline'; probing?: boolean } // probing: shown by the status probe, which keeps polling
   | { kind: 'error'; message: string };
 
 /** Resolves false (never throws) when the clipboard is unavailable or refuses. */
@@ -87,9 +87,16 @@ export function App({ videoId }: AppProps) {
       .then((response: HelperStatusResponse | undefined) => {
         if (!aliveRef.current) return;
         const prev = stateRef.current;
-        if (prev.kind !== 'collapsed' && prev.kind !== 'setup') return;
+        const watching = prev.kind === 'setup' || (prev.kind === 'offline' && prev.probing === true);
+        if (prev.kind !== 'collapsed' && !watching) return;
         if (!response || (response.state !== 'up' && response.state !== 'down')) {
-          if (prev.kind === 'setup') retryLater();
+          if (watching) retryLater();
+          return;
+        }
+        if (response.state === 'down' && response.everSeen) {
+          // Installed before but not running now: say so immediately, keep watching.
+          retryLater();
+          if (!(prev.kind === 'offline' && prev.probing)) setState({ kind: 'offline', probing: true });
           return;
         }
         const needsSetup = response.state === 'up' ? response.tooOld : !response.everSeen;
@@ -100,15 +107,12 @@ export function App({ videoId }: AppProps) {
           return;
         }
         statusAttemptRef.current = 0;
-        if (prev.kind === 'setup') {
-          // Only a live, current helper counts as "connected"; a helper that died
-          // mid-update just returns to the plain bar.
-          setState(response.state === 'up' ? { kind: 'collapsed', justConnected: true } : { kind: 'collapsed' });
-        }
+        if (watching) setState({ kind: 'collapsed', justConnected: true });
       })
       .catch(() => {
         if (!aliveRef.current) return;
-        if (stateRef.current.kind === 'setup') retryLater();
+        const cur = stateRef.current;
+        if (cur.kind === 'setup' || (cur.kind === 'offline' && cur.probing)) retryLater();
       });
   }, []);
 

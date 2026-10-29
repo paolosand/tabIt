@@ -168,18 +168,76 @@ describe('first-run states', () => {
     expect(screen.getByText(INSTALL)).toBeInTheDocument();
   });
 
-  test('helper down but seen before stays collapsed, then shows the offline bar on Get chords', async () => {
+  test('helper down but seen before shows the offline bar straight away, no click needed', async () => {
+    statusResponses.mockResolvedValue({ state: 'down', everSeen: true });
+    render(<App videoId="vid00000001" />);
+    expect(await screen.findByText(/tabIt isn't running/)).toBeInTheDocument();
+    expect(screen.getByText('~/.local/bin/tabit restart')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy command' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /get chords/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(INSTALL)).not.toBeInTheDocument();
+  });
+
+  test('offline-on-mount keeps polling with backoff, then returns to "Helper connected" and stops', async () => {
+    vi.useFakeTimers();
+    statusResponses
+      .mockResolvedValueOnce({ state: 'down', everSeen: true })
+      .mockResolvedValueOnce({ state: 'down', everSeen: true })
+      .mockResolvedValue({ state: 'up', tooOld: false });
+    render(<App videoId="vid00000001" />);
+    const send = chrome.runtime.sendMessage as Mock;
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByText(/tabIt isn't running/)).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); }); // 3s
+    expect(statusCalls(send)).toHaveLength(2);
+    expect(screen.getByText(/tabIt isn't running/)).toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); }); // backoff 6s: not yet
+    expect(statusCalls(send)).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
+    expect(screen.getByText('Helper connected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /get chords/i })).toBeInTheDocument();
+    const n = statusCalls(send).length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(120000); });
+    expect(statusCalls(send)).toHaveLength(n);
+    vi.useRealTimers();
+  });
+
+  test('offline-on-mount then a too-old helper comes up: shows the update bar', async () => {
+    vi.useFakeTimers();
+    statusResponses
+      .mockResolvedValueOnce({ state: 'down', everSeen: true })
+      .mockResolvedValue({ state: 'up', tooOld: true });
+    render(<App videoId="vid00000001" />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(3100); });
+    expect(screen.getByText('tabIt needs a quick update')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  test('Retry on the offline-on-mount bar restarts chart polling and re-enters offline if still down', async () => {
     statusResponses.mockResolvedValue({ state: 'down', everSeen: true });
     chartResponses.mockResolvedValue({ status: 'offline' });
     render(<App videoId="vid00000001" />);
-    await waitFor(() => expect(statusResponses).toHaveBeenCalled());
-    expect(screen.queryByText(INSTALL)).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /retry/i }));
+    await waitFor(() => expect(chartCalls(chrome.runtime.sendMessage as Mock).length).toBeGreaterThan(0));
     expect(await screen.findByText(/tabIt isn't running/)).toBeInTheDocument();
-    expect(screen.getByText('~/.local/bin/tabit restart')).toBeInTheDocument();
   });
 
-  test('a helper that dies during an update poll returns to a plain collapsed bar', async () => {
+  test('unmounting during offline-on-mount polling leaves no timer and no later sendMessage', async () => {
+    vi.useFakeTimers();
+    statusResponses.mockResolvedValue({ state: 'down', everSeen: true });
+    const { unmount } = render(<App videoId="vid00000001" />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    const send = chrome.runtime.sendMessage as Mock;
+    const before = send.mock.calls.length;
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    await act(async () => { await vi.advanceTimersByTimeAsync(120000); });
+    expect(send.mock.calls.length).toBe(before);
+    vi.useRealTimers();
+  });
+
+  test('a helper that dies during an update poll shows the offline bar, never "Helper connected"', async () => {
     vi.useFakeTimers();
     statusResponses
       .mockResolvedValueOnce({ state: 'up', tooOld: true })
@@ -188,7 +246,7 @@ describe('first-run states', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(0); });
     expect(screen.getByText('tabIt needs a quick update')).toBeInTheDocument();
     await act(async () => { await vi.advanceTimersByTimeAsync(3100); });
-    expect(screen.getByRole('button', { name: /get chords/i })).toBeInTheDocument();
+    expect(screen.getByText(/tabIt isn't running/)).toBeInTheDocument();
     expect(screen.queryByText('Helper connected')).not.toBeInTheDocument();
     vi.useRealTimers();
   });
