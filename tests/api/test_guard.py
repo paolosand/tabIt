@@ -35,7 +35,8 @@ def test_origin_none_always_allowed(method):
     assert origin_is_allowed(None, method)
 
 
-@pytest.mark.parametrize("origin", ["chrome-extension://abcdef", "http://localhost:5173"])
+@pytest.mark.parametrize("origin", ["chrome-extension://abcdef", "http://localhost:5173",
+                                    "http://127.0.0.1:5173"])
 @pytest.mark.parametrize("method", ["GET", "POST", "PUT", "DELETE"])
 def test_origin_trusted_allowed(origin, method):
     assert origin_is_allowed(origin, method)
@@ -48,7 +49,7 @@ def test_origin_foreign_allowed_for_safe_methods(method):
 
 @pytest.mark.parametrize("method", ["POST", "PUT", "DELETE", "PATCH"])
 @pytest.mark.parametrize("origin", ["https://evil.example", "http://localhost:5173.evil.com",
-                                    "http://localhost:3000", "null", ""])
+                                    "http://localhost:3000", "http://127.0.0.1:5173.evil.com", "null", ""])
 def test_origin_foreign_rejected_for_unsafe_methods(origin, method):
     assert not origin_is_allowed(origin, method)
 

@@ -15,7 +15,7 @@ import re
 _HOST_RE = re.compile(r"^(localhost|127\.0\.0\.1|\[::1\])(:\d{1,5})?$")
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _EXTENSION_PREFIX = "chrome-extension://"
-_DEV_ORIGIN = "http://localhost:5173"
+_DEV_ORIGINS = {"http://localhost:5173", "http://127.0.0.1:5173"}
 
 
 def host_is_allowed(host: str | None) -> bool:
@@ -25,7 +25,7 @@ def host_is_allowed(host: str | None) -> bool:
 def origin_is_allowed(origin: str | None, method: str) -> bool:
     if origin is None or method.upper() in _SAFE_METHODS:
         return True
-    return origin.startswith(_EXTENSION_PREFIX) or origin == _DEV_ORIGIN
+    return origin.startswith(_EXTENSION_PREFIX) or origin in _DEV_ORIGINS
 
 
 class LocalGuardMiddleware:
