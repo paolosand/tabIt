@@ -37,9 +37,9 @@ export default function Landing({ value, onChange, onSubmitUrl, onSubmitFile, er
       }}
     >
       <img
-        src="/wordmark.svg"
+        src="/icon-lockup.svg"
         alt="tabIt"
-        style={{ height: 56, width: 'auto', display: 'block', marginBottom: 6 }}
+        style={{ height: 120, width: 120, display: 'block', marginBottom: 18 }}
       />
       <div
         style={{

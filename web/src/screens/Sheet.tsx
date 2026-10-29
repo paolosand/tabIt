@@ -260,7 +260,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
               >
                 Key
               </span>
-              <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 17 }}>{keyLabel}</span>
+              <span style={{ fontWeight: 600, fontSize: 17 }}>{keyLabel}</span>
             </div>
             <div
               style={{
@@ -283,7 +283,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
               >
                 Tempo
               </span>
-              <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 17 }}>{bpmLabel}</span>
+              <span style={{ fontWeight: 600, fontSize: 17 }}>{bpmLabel}</span>
             </div>
             <div
               style={{
@@ -333,7 +333,7 @@ export default function Sheet({ chart, mediaFile, onBack }: SheetProps) {
               –
             </button>
             <span
-              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 15, minWidth: 56, textAlign: 'center' }}
+              style={{ fontWeight: 600, fontSize: 15, minWidth: 56, textAlign: 'center' }}
             >
               {transposeLabel}
             </span>
