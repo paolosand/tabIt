@@ -11,6 +11,9 @@ Turn any song into a synced, play-along guitar chord sheet, embedded right under
 YouTube video you're watching: chords, key, and suggested scales,
 followed karaoke-style as the music plays.
 
+**v0.5.1** · submitted to the Chrome Web Store, awaiting review ·
+[install the extension now](#2-chrome-extension) from the release zip
+
 [![CI](https://github.com/paolosand/tabIt/actions/workflows/ci.yml/badge.svg)](https://github.com/paolosand/tabIt/actions/workflows/ci.yml) ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white) ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-fadc7d)
 
 </div>
@@ -116,8 +119,17 @@ packages are removed (your chart cache is kept).
 
 ### 2. Chrome extension
 
-With the API from step 1 running (already the case if you used the one-line
-installer — the helper serves it as a background service):
+The extension is submitted to the Chrome Web Store and awaiting review. Until it is
+listed, install it from the release:
+
+1. Run the one-line installer from step 1 (it sets up the helper the extension talks to).
+2. Download `tabit-extension-v0.5.1.zip` from the
+   [v0.5.1 release](https://github.com/paolosand/tabIt/releases/tag/v0.5.1) and unzip it.
+3. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and
+   choose the unzipped folder.
+
+To build it yourself instead, with the API from step 1 running (already the case if you
+used the one-line installer, since the helper serves it as a background service):
 
 ```bash
 # terminal 1: API — skip if you used the one-line installer
@@ -128,10 +140,9 @@ uvicorn api.main:app --port 28224
 cd extension && npm install && npm run build
 ```
 
-Load `extension/dist` as an unpacked extension at `chrome://extensions`
-(Developer mode → Load unpacked), then open any YouTube video and click the
-"♪ Get chords" bar that appears below the player. It expands into the beat
-ribbon — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
+Load `extension/dist` as an unpacked extension the same way. Then open any YouTube
+video and click the "♪ Get chords" bar that appears below the player. It expands into
+the beat ribbon — Shadow-DOM isolated, SPA-navigation safe, ad-aware. Verified end-to-end on
 real YouTube with a headful Playwright run (cached chart renders in ~50 ms; the
 marker tracks playback across chord boundaries; teardown/remount survives SPA
 navigation).
@@ -140,7 +151,7 @@ navigation).
 
 The extension is the product; the web app is the dev-facing renderer of the
 same chart JSON — and the only UI for **local audio files** (the extension is
-YouTube-only). It shows the whole song as a songbook-style sheet, synced to
+YouTube-only). It shows the whole song as a per-beat chord grid on paper, synced to
 playback the same way.
 
 ```bash
@@ -185,8 +196,10 @@ engine/      Python MIR pipeline: audio in, chart JSON out
 api/         FastAPI wrapper: analyze endpoints, job store, disk cache
 web/         Vite + React app: player + synced chord sheet
 extension/   Chrome MV3 extension: the sheet overlaid on youtube.com
+helper/      macOS helper: launchd service, `tabit` CLI, health checks
+packaging/   one-line installer and Web Store art
 data/charts/ cached analyses (videoId @ engine version)
-docs/        design specs, implementation plans, progress ledger
+docs/        design specs, implementation plans, progress ledger, brand assets, store listing
 ```
 
 ## Roadmap
@@ -199,7 +212,10 @@ docs/        design specs, implementation plans, progress ledger
 - [x] Real-song accuracy floor (Isophonics-labeled pilot benchmark, 11 songs)
 - [x] BTC-only engine (0.4.0): no TensorFlow, Demucs or crema; ~1 GB install instead of ~2 GB
 - [ ] Song sections (verse/chorus) via allin1
-- [ ] Package the extension for the Chrome Web Store (pre-built zip release as a stopgap)
+- [x] Package the extension: pre-built zip on every release, privacy policy, store listing
+- [x] Brand redesign: new wordmark and icons, paper-and-highlighter look across the extension and web app, per-beat chord grid in the web sheet
+- [x] Chrome Web Store submission (v0.5.1)
+- [ ] Chrome Web Store listing approved
 - [ ] Signed menubar app — download, guided setup, no terminal (packaging Phase 2)
 
 The full per-task build ledger lives in [docs/PROGRESS.md](docs/PROGRESS.md), with the
