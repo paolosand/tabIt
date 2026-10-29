@@ -10,6 +10,8 @@ fi
 in=$1
 out=$2
 [ -f "$in" ] || { echo "no such file: $in" >&2; exit 1; }
+# shellcheck disable=SC3013
+# -ef is not POSIX but dash, bash and macOS /bin/sh implement it; it catches every spelling of the same file.
 [ "$in" -ef "$out" ] && { echo "refusing to overwrite the input" >&2; exit 1; }
 h=$(sips -g pixelHeight "$in" | awk '/pixelHeight/ {print $2}')
 w=$(sips -g pixelWidth "$in" | awk '/pixelWidth/ {print $2}')
