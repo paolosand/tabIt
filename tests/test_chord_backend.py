@@ -38,4 +38,4 @@ def test_backend_selection_env_var_is_gone():
 
 def test_engine_version_is_the_package_version():
     from engine import __version__, engine_version
-    assert engine_version() == __version__ == "0.5.0"
+    assert engine_version() == __version__ == "0.5.1"

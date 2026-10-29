@@ -69,6 +69,6 @@ Music & Audio is not confirmed against the current dashboard list; choose the cl
 
 ## Assets
 
-- Store icon 128x128: `extension/icons/icon128.png`
+- Store icon 128x128: `extension/icons/icon-128.png`
 - Screenshots: see `docs/store/screenshots.md`
 - Reviewer notes: `docs/store/reviewer-instructions.md`
