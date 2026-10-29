@@ -8,7 +8,7 @@ name: Installer e2e
 # docs/superpowers/specs/2026-07-12-tabit-helper-packaging-design.md).
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
     paths:
       - 'packaging/**'
       - 'helper/**'
