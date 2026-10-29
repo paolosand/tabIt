@@ -131,6 +131,20 @@ export function App({ videoId }: AppProps) {
           offlineAttemptRef.current += 1;
           setState({ kind: 'offline' });
           timerRef.current = setTimeout(poll, delay);
+          // A helper that was never installed is not "stopped": show the setup bar.
+          const statusRequest: GetHelperStatusRequest = { type: 'GET_HELPER_STATUS' };
+          chrome.runtime
+            .sendMessage(statusRequest)
+            .then((status: HelperStatusResponse | undefined) => {
+              const kind = stateRef.current.kind; // may still be 'loading': the offline render can lag
+              if (!aliveRef.current || (kind !== 'offline' && kind !== 'loading')) return;
+              if (status?.state !== 'down' || status.everSeen) return;
+              if (timerRef.current !== null) clearTimeout(timerRef.current);
+              statusAttemptRef.current = 0;
+              setState({ kind: 'setup', mode: 'install' });
+              timerRef.current = setTimeout(checkStatus, OFFLINE_POLL_BASE_MS);
+            })
+            .catch(() => {});
           return;
         }
         offlineAttemptRef.current = 0;
@@ -147,7 +161,7 @@ export function App({ videoId }: AppProps) {
         if (!aliveRef.current) return;
         setState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
       });
-  }, [videoId]);
+  }, [videoId, checkStatus]);
 
   const startPolling = useCallback(() => {
     if (timerRef.current !== null) clearTimeout(timerRef.current);

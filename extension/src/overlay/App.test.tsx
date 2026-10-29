@@ -176,7 +176,7 @@ describe('first-run states', () => {
     expect(screen.queryByText(INSTALL)).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
     expect(await screen.findByText(/tabIt isn't running/)).toBeInTheDocument();
-    expect(screen.getByText('tabit restart')).toBeInTheDocument();
+    expect(screen.getByText('~/.local/bin/tabit restart')).toBeInTheDocument();
   });
 
   test('a helper that dies during an update poll returns to a plain collapsed bar', async () => {
@@ -232,6 +232,17 @@ describe('first-run states', () => {
     await act(async () => { resolve({ state: 'down', everSeen: false }); });
     expect(screen.queryByText(INSTALL)).not.toBeInTheDocument();
     expect(screen.getByText('Fetch audio')).toBeInTheDocument();
+  });
+
+  test('chart offline while the helper has never been seen shows the setup bar, not "tabit restart"', async () => {
+    statusResponses
+      .mockResolvedValueOnce({ state: 'up', tooOld: false }) // mount probe
+      .mockResolvedValue({ state: 'down', everSeen: false });
+    chartResponses.mockResolvedValue({ status: 'offline' });
+    render(<App videoId="vid00000001" />);
+    await userEvent.click(await screen.findByRole('button', { name: /get chords/i }));
+    expect(await screen.findByText(INSTALL)).toBeInTheDocument();
+    expect(screen.queryByText(/tabit restart/)).not.toBeInTheDocument();
   });
 
   test('not a Mac shows the unsupported bar and sends no status message', async () => {
