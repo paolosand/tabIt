@@ -44,7 +44,7 @@ jobs:
       - name: Verify the build output before shipping it
         working-directory: extension/dist
         run: |
-          for f in manifest.json content.js background.js icons/icon128.png; do
+          for f in manifest.json content.js background.js icons/icon-128.png; do
             [ -f "$f" ] || { echo "missing dist/$f — build produced an incomplete extension" >&2; exit 1; }
           done
 
