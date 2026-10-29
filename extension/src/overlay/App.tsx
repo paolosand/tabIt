@@ -16,6 +16,9 @@ import Panel from './Panel';
 const POLL_INTERVAL_MS = 3000;
 const OFFLINE_POLL_BASE_MS = 3000;
 const OFFLINE_POLL_MAX_MS = 30000;
+// A single failed health probe can just be a busy or still-starting helper, so the
+// first down on the mount/status path is tentative: re-probe once, quickly.
+const TENTATIVE_RECHECK_MS = 1500;
 
 type State =
   | { kind: 'collapsed'; justConnected?: boolean }
@@ -59,6 +62,8 @@ export function App({ videoId }: AppProps) {
   const offlineAttemptRef = useRef(0);
   // Consecutive status polls spent in setup, for backoff.
   const statusAttemptRef = useRef(0);
+  // Consecutive 'down (seen before)' answers on the status path; any other answer resets it.
+  const downStreakRef = useRef(0);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -94,11 +99,18 @@ export function App({ videoId }: AppProps) {
           return;
         }
         if (response.state === 'down' && response.everSeen) {
-          // Installed before but not running now: say so immediately, keep watching.
+          downStreakRef.current += 1;
+          if (downStreakRef.current < 2) {
+            // Tentative: keep whatever bar is showing and look again shortly.
+            timerRef.current = setTimeout(checkStatus, TENTATIVE_RECHECK_MS);
+            return;
+          }
+          // Installed before but confirmed not running: say so, keep watching.
           retryLater();
           if (!(prev.kind === 'offline' && prev.probing)) setState({ kind: 'offline', probing: true });
           return;
         }
+        downStreakRef.current = 0;
         const needsSetup = response.state === 'up' ? response.tooOld : !response.everSeen;
         if (needsSetup) {
           const mode = response.state === 'up' ? 'update' : 'install';
@@ -170,6 +182,7 @@ export function App({ videoId }: AppProps) {
   const startPolling = useCallback(() => {
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     offlineAttemptRef.current = 0;
+    downStreakRef.current = 0;
     setState({ kind: 'loading' });
     poll();
   }, [poll]);
