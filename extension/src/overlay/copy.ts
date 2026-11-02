@@ -35,3 +35,6 @@ export const REPORT_REASON_LABELS = {
 export const REPORT_NOTE_LABEL = 'Add a note (optional)';
 export const REPORT_SEND = 'Send';
 export const REPORT_DETAILS_DONE = 'Sent — thank you';
+export const SHARING_LABEL = 'Help improve tabIt';
+export const SHARING_NOTE =
+  'Shares which songs you analyze and the charts tabIt makes for them, including songs that fail. No account or name.';

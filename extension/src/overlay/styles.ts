@@ -503,4 +503,13 @@ export const OVERLAY_CSS = `
 .tabit-report-send:focus-visible, .tabit-report-note:focus-visible {
   outline: 2px solid var(--tabit-ink); outline-offset: 2px;
 }
+.tabit-sharing { flex: 1 1 100%; }
+.tabit-sharing-label {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  color: var(--tabit-muted);
+}
+.tabit-sharing-label:hover { color: var(--tabit-ink); }
+.tabit-sharing-label input { margin: 0; accent-color: var(--tabit-ink); cursor: pointer; }
+.tabit-sharing-label input:focus-visible { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
+.tabit-sharing-note { margin: 2px 0 0; color: var(--tabit-muted); }
 `;

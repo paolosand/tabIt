@@ -7,6 +7,7 @@ import { useVideoTime } from './useVideoTime';
 import { Wordmark } from './Wordmark';
 import Ribbon from './Ribbon';
 import ReportControl from './ReportControl';
+import SharingToggle from './SharingToggle';
 
 export interface PanelProps {
   chart: Chart;
@@ -250,6 +251,7 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
 
         <div className="tabit-feedback-row">
           <ReportControl chart={chart} />
+          <SharingToggle />
         </div>
       </div>
     </div>
