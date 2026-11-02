@@ -154,6 +154,9 @@ export function App({ videoId }: AppProps) {
       .then((response: GetChartResponse) => {
         if (!aliveRef.current) return;
         if (response.status === 'offline') {
+          // The helper stopped (often because the user is updating it): don't resurrect a
+          // stale "newer helper available" when it comes back; the next page load re-probes.
+          setUpdateAvailable(false);
           const delay = Math.min(
             OFFLINE_POLL_BASE_MS * 2 ** offlineAttemptRef.current,
             OFFLINE_POLL_MAX_MS,

@@ -560,3 +560,19 @@ describe('update notice', () => {
     expect(dismissCalls(chrome.runtime.sendMessage as Mock)).toHaveLength(1);
   });
 });
+
+test('the update notice does not come back after a helper restart (offline, then recovered)', async () => {
+  statusResponses.mockResolvedValue({ state: 'up', tooOld: false, updateAvailable: true });
+  chartResponses
+    .mockResolvedValueOnce({ status: 'offline' })
+    .mockResolvedValue({ status: 'done', chart: CHART });
+  vi.useFakeTimers();
+  render(<App videoId="vid00000001" />);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  await waitFor(() => expect(screen.getByText(/a newer helper is available/i)).toBeInTheDocument());
+  await user.click(screen.getByRole('button', { name: /get chords/i }));
+  await vi.advanceTimersByTimeAsync(3500);
+  await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+  expect(screen.queryByText(/a newer helper is available/i)).not.toBeInTheDocument();
+  vi.useRealTimers();
+});
