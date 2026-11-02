@@ -101,8 +101,9 @@ engine didn't earn. Treat the number as a directional signal, not a spec.
 
 ## Privacy and safety
 
-- There are no accounts, no analytics and no tracking, and nothing is sent to the developer.
-  [`PRIVACY.md`](../PRIVACY.md) has the full policy.
+- There are no accounts and no tracking, and analysis runs entirely on your Mac. By default
+  nothing is sent to the developer; the report button and the opt-in "Help improve tabIt"
+  setting send the data described in [`PRIVACY.md`](../PRIVACY.md), which has the full policy.
 - The helper listens on `127.0.0.1` only. A guard in front of it rejects any request whose
   `Host` is not a loopback name (against DNS rebinding) and any cross-site write that does
   not come from the Chrome extension or the local dev web app.
