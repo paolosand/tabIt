@@ -1,5 +1,6 @@
 import { vi, type Mock } from 'vitest';
-import { handleGetChart, handleGetHelperStatus } from './handler';
+import { handleDismissUpdateNotice, handleGetChart, handleGetHelperStatus } from './handler';
+import { RECOMMENDED_ENGINE_VERSION } from '../version';
 import * as api from './api';
 
 vi.mock('./api', () => ({
@@ -113,14 +114,14 @@ describe('handleGetHelperStatus', () => {
   test('healthy current helper -> up, remembers it was seen', async () => {
     const f = okJson({ status: 'ok', engineVersion: '0.4.0' });
     vi.stubGlobal('fetch', f);
-    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false, updateAvailable: true });
     expect(f).toHaveBeenCalledWith('http://localhost:28224/health', expect.objectContaining({ signal: expect.anything() }));
     expect((await chrome.storage.local.get('helperSeen')).helperSeen).toBe(true);
   });
 
   test('older helper -> up with tooOld', async () => {
     vi.stubGlobal('fetch', okJson({ status: 'ok', engineVersion: '0.3.1' }));
-    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: true });
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: true, updateAvailable: false });
   });
 
   test('network failure, never seen -> down, everSeen false', async () => {
@@ -154,6 +155,60 @@ describe('handleGetHelperStatus', () => {
   test('a failing storage write does not discard a confirmed up result', async () => {
     vi.stubGlobal('fetch', okJson({ status: 'ok', engineVersion: '0.4.0' }));
     vi.spyOn(chrome.storage.local, 'set').mockRejectedValue(new Error('quota'));
-    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false, updateAvailable: true });
+  });
+});
+
+describe('update notice', () => {
+  const health = (engineVersion: string) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ status: 'ok', engineVersion }) }));
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  test('the recommended version starts at 0.6.0', () => {
+    expect(RECOMMENDED_ENGINE_VERSION).toBe('0.6.0');
+  });
+
+  test.each([
+    ['0.5.1', true],
+    ['0.6.0', false],
+    ['0.9.0', false], // a helper newer than the extension recommends: nothing to say
+    ['unknown', false],
+    ['0.6.0.dev1', false],
+  ])('helper %s -> updateAvailable %s, never tooOld', async (version, expected) => {
+    health(version);
+    expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false, updateAvailable: expected });
+  });
+
+  test('a helper that is tooOld gets the setup bar, not the notice', async () => {
+    health('0.3.1');
+    expect(await handleGetHelperStatus()).toMatchObject({ tooOld: true, updateAvailable: false });
+  });
+
+  test('dismissed for the current recommended version -> no notice', async () => {
+    health('0.5.1');
+    await chrome.storage.local.set({ updateNoticeDismissed: RECOMMENDED_ENGINE_VERSION });
+    expect(await handleGetHelperStatus()).toMatchObject({ updateAvailable: false });
+  });
+
+  test('a dismissal of an older recommended version resets', async () => {
+    health('0.5.1');
+    await chrome.storage.local.set({ updateNoticeDismissed: '0.5.0' });
+    expect(await handleGetHelperStatus()).toMatchObject({ updateAvailable: true });
+  });
+
+  test('an unreadable dismissal means not dismissed: the notice still shows', async () => {
+    health('0.5.1');
+    vi.spyOn(chrome.storage.local, 'get').mockRejectedValue(new Error('storage broken'));
+    expect(await handleGetHelperStatus()).toMatchObject({ updateAvailable: true });
+  });
+
+  test('handleDismissUpdateNotice stores the recommended version', async () => {
+    await handleDismissUpdateNotice();
+    expect((await chrome.storage.local.get('updateNoticeDismissed')).updateNoticeDismissed).toBe(RECOMMENDED_ENGINE_VERSION);
+  });
+
+  test('a failing dismissal write never throws', async () => {
+    vi.spyOn(chrome.storage.local, 'set').mockRejectedValue(new Error('quota'));
+    await expect(handleDismissUpdateNotice()).resolves.toBeUndefined();
   });
 });

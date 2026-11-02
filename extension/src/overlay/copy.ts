@@ -21,3 +21,8 @@ export const CONNECTED_NOTE = 'Helper connected';
 export const OFFLINE_MESSAGE = "tabIt isn't running. Open Terminal and paste:";
 export const RESTART_COMMAND = '~/.local/bin/tabit restart';
 export const RETRY_LABEL = 'Retry';
+
+export const UPDATE_NOTICE = 'A newer helper is available';
+export const COPY_UPDATE_COMMAND = 'Copy update command';
+export const PASTE_IN_TERMINAL = 'Paste it in Terminal, press Return';
+export const DISMISS_LABEL = 'Dismiss';

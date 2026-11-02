@@ -515,3 +515,48 @@ describe('first-run states', () => {
     expect(await screen.findByText('Select the command, then press Cmd+C')).toBeInTheDocument();
   });
 });
+
+describe('update notice', () => {
+  const NOTICE = /a newer helper is available/i;
+  const dismissCalls = (send: Mock) => send.mock.calls.filter(([m]) => m.type === 'DISMISS_UPDATE_NOTICE');
+
+  test('shown above the collapsed bar when the status says an update is available', async () => {
+    statusResponses.mockResolvedValue({ state: 'up', tooOld: false, updateAvailable: true });
+    render(<App videoId="vid00000001" />);
+    expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /get chords/i })).toBeInTheDocument();
+  });
+
+  test('not shown when no update is available', async () => {
+    statusResponses.mockResolvedValue({ state: 'up', tooOld: false, updateAvailable: false });
+    render(<App videoId="vid00000001" />);
+    await waitFor(() => expect(statusCalls(chrome.runtime.sendMessage as Mock)).toHaveLength(1));
+    expect(screen.queryByText(NOTICE)).not.toBeInTheDocument();
+  });
+
+  test('still shown on the chord sheet', async () => {
+    statusResponses.mockResolvedValue({ state: 'up', tooOld: false, updateAvailable: true });
+    chartResponses.mockResolvedValue({ status: 'done', chart: CHART });
+    render(<App videoId="vid00000001" />);
+    await screen.findByText(NOTICE);
+    await userEvent.click(screen.getByRole('button', { name: /get chords/i }));
+    await waitFor(() => expect(screen.getByText(/A major pentatonic/)).toBeInTheDocument());
+    expect(screen.getByText(NOTICE)).toBeInTheDocument();
+  });
+
+  test('never shown alongside the setup bar', async () => {
+    statusResponses.mockResolvedValue({ state: 'up', tooOld: true, updateAvailable: true });
+    render(<App videoId="vid00000001" />);
+    await screen.findByText(/tabit needs a quick update/i);
+    expect(screen.queryByText(NOTICE)).not.toBeInTheDocument();
+  });
+
+  test('dismiss hides it at once and tells the background', async () => {
+    statusResponses.mockResolvedValue({ state: 'up', tooOld: false, updateAvailable: true });
+    render(<App videoId="vid00000001" />);
+    await screen.findByText(NOTICE);
+    await userEvent.click(screen.getByRole('button', { name: /dismiss/i }));
+    expect(screen.queryByText(NOTICE)).not.toBeInTheDocument();
+    expect(dismissCalls(chrome.runtime.sendMessage as Mock)).toHaveLength(1);
+  });
+});

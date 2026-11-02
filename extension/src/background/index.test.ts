@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 vi.mock('./handler', () => ({
   handleGetChart: vi.fn(),
   handleGetHelperStatus: vi.fn(),
+  handleDismissUpdateNotice: vi.fn().mockResolvedValue(undefined),
 }));
 
 test('GET_HELPER_STATUS always gets a reply, even if the handler rejects', async () => {
@@ -14,4 +15,14 @@ test('GET_HELPER_STATUS always gets a reply, even if the handler rejects', async
   const reply = vi.fn();
   expect(listener({ type: 'GET_HELPER_STATUS' }, {}, reply)).toBe(true);
   await vi.waitFor(() => expect(reply).toHaveBeenCalledWith({ state: 'down', everSeen: false }));
+});
+
+test('DISMISS_UPDATE_NOTICE is handled and acknowledged', async () => {
+  const { handleDismissUpdateNotice } = await import('./handler');
+  const listener = (chrome.runtime.onMessage.addListener as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as
+    (m: unknown, s: unknown, r: (x: unknown) => void) => boolean;
+  const reply = vi.fn();
+  expect(listener({ type: 'DISMISS_UPDATE_NOTICE' }, {}, reply)).toBe(true);
+  await vi.waitFor(() => expect(reply).toHaveBeenCalled());
+  expect(handleDismissUpdateNotice).toHaveBeenCalled();
 });
