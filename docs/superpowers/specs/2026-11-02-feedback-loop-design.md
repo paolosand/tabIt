@@ -147,8 +147,11 @@ Author's calls:
 ## Decided after builder review (developer's answers)
 
 - **Failed analyses are logged for opted-in users.** When the helper reports an error
-  (download failure, unavailable video, engine error), record video ID, error type,
-  engine version, install ID and timestamp, with no chart. Nothing is sent about
+  (download failure, unavailable video, engine error), record video ID, engine
+  version, install ID and timestamp, plus the reason: an error category (download
+  failed / video unavailable / engine error / timeout) and a short message with
+  home-directory paths scrubbed (e.g. `/Users/<name>` replaced) and capped at about
+  300 characters, never a stack trace. No chart. Nothing is sent about
   failures unless the usage toggle is on. This answers "which songs is the app failing
   on" for outright failures; the report button covers wrong-but-completed charts.
   The privacy copy must mention failures.
