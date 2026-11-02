@@ -1,5 +1,7 @@
 import type { Chart } from '../../web/src/lib/types';
 
+export type ReportReason = 'chords' | 'key' | 'tempo' | 'other';
+
 export interface GetChartRequest { type: 'GET_CHART'; videoId: string; }
 
 export type GetChartResponse =
