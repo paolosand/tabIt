@@ -51,8 +51,18 @@ helper exists and have an easy way to take it.
 ### 2. Update notice in the panel
 
 - Shown when the helper is `up`, not `tooOld`, and older than `RECOMMENDED_ENGINE_VERSION`.
-- Content: "A newer helper is available" and the install command with a copy button. Quiet
-  styling (a one-line strip in the panel footer area), not a blocking screen.
+- Content: "A newer helper is available", a **Copy update command** button, and a dismiss
+  (×). The full command (about 95 characters) is not shown inline; the button copies it.
+  After copying the strip reads "Paste it in Terminal, press Return" and the button
+  "Copied". If the clipboard is unavailable, the command appears in the existing code box
+  with "Select the command, then press Cmd+C" (the "Show command" button in the mock
+  goes away once the command is visible).
+- Placement: above the bar or panel, like the "Helper connected" toast; shown on the
+  collapsed bar and the chord sheet only, never on the setup, offline, loading or error
+  screens. Ink and paper only (amber is reserved for progress); secondary-button style;
+  2px ink focus ring; wraps under the message on narrow panels; no fade with reduced motion.
+- Approved mock: `assets/update-notice-mock.html` (screenshot: `assets/update-notice-mock.png`).
+- New strings go in `extension/src/overlay/copy.ts`.
 - Dismissible; the dismissal is remembered per helper version in `chrome.storage.local` and
   resets when the recommended version changes.
 - No network access: pure comparison of `engineVersion` from `/health` with the constant.

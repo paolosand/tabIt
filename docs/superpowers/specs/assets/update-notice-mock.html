@@ -1,0 +1,110 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>tabIt update notice mock</title>
+<style>
+:root {
+  --tabit-bg: oklch(0.972 0.008 85);
+  --tabit-paper: oklch(0.988 0.006 85);
+  --tabit-ink: oklch(0.28 0.02 70);
+  --tabit-muted: oklch(0.52 0.02 70);
+  --tabit-border: oklch(0.88 0.015 250);
+  --tabit-wash: oklch(0.94 0.01 85);
+  --tabit-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --tabit-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 28px; background: oklch(0.18 0.005 70); font-family: var(--tabit-sans); color: #ddd; }
+h2 { font: 600 11px/1 var(--tabit-sans); letter-spacing: .08em; text-transform: uppercase; color: oklch(0.7 0.01 70); margin: 26px 0 10px; }
+.stage { width: 640px; max-width: 100%; }
+.stage.narrow { width: 360px; }
+.video { height: 70px; background: oklch(0.12 0 0); border-radius: 4px; margin-bottom: 8px; }
+
+/* ---- existing overlay vocabulary (copied from extension/src/overlay/styles.ts) ---- */
+.tabit-bar { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%;
+  padding: 10px 16px; margin: 8px 0; background: var(--tabit-paper); border-radius: 3px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06); color: var(--tabit-ink); }
+.wm { font: italic 600 18px/1 var(--tabit-serif); }
+.tabit-btn { font: 600 11px/1 var(--tabit-sans); letter-spacing: .06em; text-transform: uppercase; border: none; border-radius: 2px;
+  padding: 8px 16px; cursor: pointer; white-space: nowrap; transition: background 180ms ease-out, transform 180ms ease-out; }
+.tabit-btn-primary { color: var(--tabit-paper); background: var(--tabit-ink); }
+.tabit-btn-secondary { color: var(--tabit-ink); background: transparent; border: 1.5px solid var(--tabit-border); }
+.tabit-btn-secondary:hover, .tabit-btn-secondary.is-hover { background: var(--tabit-wash); }
+
+/* ---- NEW: the update notice ---- */
+.tabit-update-note {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+  width: fit-content; max-width: 100%;
+  padding: 6px 6px 6px 14px; margin: 8px 0;
+  background: var(--tabit-paper); border-radius: 3px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);
+  font: 13px/1.4 var(--tabit-sans); color: var(--tabit-ink);
+  animation: none; /* mock only: real component fades in over 0.25s */
+}
+.tabit-update-note-text { min-width: 0; }
+.tabit-update-note-text strong { font-weight: 600; }
+.tabit-update-note-text span { color: var(--tabit-muted); }
+.tabit-update-note .tabit-btn { padding: 6px 12px; }
+.tabit-update-dismiss {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; margin-left: auto; padding: 0;
+  border: none; border-radius: 2px; background: transparent;
+  color: var(--tabit-muted); font: 16px/1 var(--tabit-sans); cursor: pointer;
+  transition: background 180ms ease-out;
+}
+.tabit-update-dismiss:hover, .tabit-update-dismiss.is-hover { background: var(--tabit-wash); color: var(--tabit-ink); }
+.tabit-update-note .is-focus, .tabit-update-note button:focus-visible { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
+.tabit-update-fallback { flex-basis: 100%; margin: 0; }
+.tabit-update-fallback code {
+  display: block; padding: 6px 8px; border: 1.5px solid var(--tabit-border); border-radius: 2px;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--tabit-ink);
+  overflow-wrap: anywhere; user-select: all;
+}
+.tabit-update-fallback small { display: block; margin-top: 4px; font: 12px/1.4 var(--tabit-sans); color: var(--tabit-muted); }
+@keyframes tabit-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tabit-update-note { animation: none; } .tabit-btn, .tabit-update-dismiss { transition: none; } }
+</style>
+
+<div class="stage">
+  <h2>1 · Default (above the collapsed bar)</h2>
+  <div class="video"></div>
+  <div class="tabit-update-note" role="region" aria-label="Helper update">
+    <span class="tabit-update-note-text"><strong>A newer helper is available</strong></span>
+    <button class="tabit-btn tabit-btn-secondary">Copy update command</button>
+    <button class="tabit-update-dismiss" aria-label="Dismiss">×</button>
+  </div>
+  <div class="tabit-bar"><span class="wm">tabIt</span><button class="tabit-btn tabit-btn-primary">♪ Get chords</button></div>
+
+  <h2>2 · Hover on copy, focus on dismiss</h2>
+  <div class="tabit-update-note">
+    <span class="tabit-update-note-text"><strong>A newer helper is available</strong></span>
+    <button class="tabit-btn tabit-btn-secondary is-hover">Copy update command</button>
+    <button class="tabit-update-dismiss is-focus">×</button>
+  </div>
+
+  <h2>3 · After copying</h2>
+  <div class="tabit-update-note" role="region" aria-label="Helper update">
+    <span class="tabit-update-note-text"><strong>Paste it in Terminal, press Return</strong></span>
+    <button class="tabit-btn tabit-btn-secondary">Copied</button>
+    <button class="tabit-update-dismiss" aria-label="Dismiss">×</button>
+  </div>
+
+  <h2>4 · Clipboard unavailable (fallback)</h2>
+  <div class="tabit-update-note">
+    <span class="tabit-update-note-text"><strong>A newer helper is available</strong></span>
+    <button class="tabit-btn tabit-btn-secondary">Show command</button>
+    <button class="tabit-update-dismiss" aria-label="Dismiss">×</button>
+    <p class="tabit-update-fallback">
+      <code>curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh | sh</code>
+      <small>Select the command, then press Cmd+C</small>
+    </p>
+  </div>
+</div>
+
+<div class="stage narrow">
+  <h2>5 · Narrow panel (360px)</h2>
+  <div class="tabit-update-note">
+    <span class="tabit-update-note-text"><strong>A newer helper is available</strong></span>
+    <button class="tabit-update-dismiss" aria-label="Dismiss">×</button>
+    <button class="tabit-btn tabit-btn-secondary">Copy update command</button>
+  </div>
+</div>
