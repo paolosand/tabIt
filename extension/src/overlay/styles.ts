@@ -466,6 +466,19 @@ export const OVERLAY_CSS = `
   color: var(--tabit-muted);
 }
 .tabit-report-btn, .tabit-report-send, .tabit-report-chip {
+  font: inherit; cursor: pointer;
+}
+.tabit-report-btn {
+  padding: 2px 0; border: none; background: none;
+  color: var(--tabit-muted); text-decoration: underline; text-underline-offset: 2px;
+}
+.tabit-report-btn:hover:not(:disabled) { color: var(--tabit-ink); }
+.tabit-report-btn:disabled { cursor: default; opacity: 0.6; text-decoration: none; }
+.tabit-report-status { color: var(--tabit-muted); }
+.tabit-report-followup { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.tabit-report-title { margin: 0; color: var(--tabit-ink); }
+.tabit-report-reasons { display: flex; gap: 4px; }
+.tabit-report-chip {
   padding: 2px 9px; border-radius: 2px;
   border: 1.5px solid var(--tabit-border); background: none; color: var(--tabit-ink);
 }
