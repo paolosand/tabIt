@@ -21,9 +21,20 @@ const CHART = { schemaVersion: 1 } as never;
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  // Fire-and-forget failure recording looks up the engine version via /health.
+  // Default to an instantly-failing health check so no test leaves a real network
+  // request in flight that could land its recordFailure call in a later test.
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
   // reset the session stub between tests
   (chrome.storage.session as unknown as { _data: Record<string, unknown> })._data = {};
   (chrome.storage.local as unknown as { _data: Record<string, unknown> })._data = {};
+});
+
+afterEach(async () => {
+  // Drain any fire-and-forget recorders started by the test (one macrotask is
+  // enough: with fetch stubbed they settle in microtasks) before mocks reset.
+  await new Promise((r) => setTimeout(r, 0));
+  vi.unstubAllGlobals();
 });
 
 test('session-cached chart returns done without network', async () => {
@@ -171,8 +182,6 @@ describe('usage recording', () => {
     ok: true, status: 200, json: async () => ({ status: 'ok', engineVersion: '0.4.0' }),
   }));
   const healthDown = () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
-  afterEach(() => { vi.unstubAllGlobals(); });
-
   test('job done records the analysis once and still returns the chart', async () => {
     await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
     (api.pollJobOnce as Mock).mockResolvedValue({ status: 'done', chart: CHART });
@@ -219,7 +228,7 @@ describe('usage recording', () => {
     healthDown();
     (api.fetchCachedChart as Mock).mockRejectedValue(new TypeError('Failed to fetch'));
     expect(await handleGetChart('vid00000001')).toEqual({ status: 'offline' });
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 0));
     expect(record.recordAnalysis).not.toHaveBeenCalled();
     expect(record.recordFailure).not.toHaveBeenCalled();
   });
