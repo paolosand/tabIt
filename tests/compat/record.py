@@ -17,25 +17,27 @@ from fastapi.testclient import TestClient
 
 import api.main as m
 from engine import engine_version
+from engine.schema import Analysis, Chart, ChordSegment, Key, Meter, Scale, Source, Tempo
 
 BASE = "http://localhost:28224"  # the guard only admits loopback Hosts
 VIDEO_ID = "dQw4w9WgXcQ"
 FIXTURES = Path(__file__).parent / "fixtures"
 
-FAKE_CHART = {
-    "schemaVersion": 1,
-    "source": {"kind": "youtube", "videoId": VIDEO_ID, "title": "t", "duration": 2.0},
-    "analysis": {"engineVersion": engine_version(), "createdAt": "2026-07-09T00:00:00Z"},
-    "key": {"tonic": "A", "mode": "minor", "confidence": 0.8},
-    "scales": [{"name": "A minor pentatonic", "notes": ["A", "C", "D", "E", "G"]}],
-    "tempo": {"bpm": 120.0},
-    "beats": [0.0, 0.5, 1.0, 1.5],
-    "sections": [],
-    "chords": [{"start": 0.0, "end": 2.0, "label": "Am", "root": "A",
-                "quality": "min", "bass": "A", "confidence": 0.9}],
-    "meter": {"beatsPerBar": 4, "confidence": 0.9},
-    "downbeats": [0.0],
-}
+def _fake_chart() -> dict:
+    """A chart built by the engine's own schema model, so the recorded shape is the shape the
+    engine really emits (an engine that drops a field drops it here too)."""
+    return Chart(
+        source=Source(kind="youtube", videoId=VIDEO_ID, title="t", duration=2.0),
+        analysis=Analysis(engineVersion=engine_version(), createdAt="2026-07-09T00:00:00Z"),
+        key=Key(tonic="A", mode="minor", confidence=0.8),
+        scales=[Scale(name="A minor pentatonic", notes=["A", "C", "D", "E", "G"])],
+        tempo=Tempo(bpm=120.0),
+        beats=[0.0, 0.5, 1.0, 1.5],
+        chords=[ChordSegment(start=0.0, end=2.0, label="Am", root="A", quality="min",
+                             bass="A", confidence=0.9)],
+        meter=Meter(beatsPerBar=4, confidence=0.9),
+        downbeats=[0.0],
+    ).model_dump()
 
 
 def _wait_for(predicate, timeout=5.0):
@@ -57,7 +59,7 @@ def build_responses() -> dict[str, object]:
         if on_step:
             on_step("analyzing")
         release.wait(5.0)
-        return FAKE_CHART
+        return _fake_chart()
 
     saved = (m.cache, m.jobs, m._run_analysis)
     with tempfile.TemporaryDirectory() as tmp:

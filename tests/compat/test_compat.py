@@ -47,3 +47,27 @@ def test_current_api_is_superset_of_every_fixture(version):
         old = json.loads(path.read_text())
         missing = key_paths(old) - key_paths(current[path.stem])
         assert not missing, f"{version}/{path.name}: current API dropped {sorted(missing)}"
+
+
+def test_recorded_chart_comes_from_the_engine_schema(monkeypatch):
+    """Guards the guard: the chart is built by engine.schema.Chart, not a hard-coded dict,
+    so an engine that stops emitting a field shows up as a dropped key in the comparison."""
+    from pydantic import BaseModel
+
+    from engine.schema import Analysis, ChordSegment, Key, Scale, Source, Tempo
+    from tests.compat import record
+
+    class SlimChart(BaseModel):  # no sections / meter / downbeats
+        schemaVersion: int = 1
+        source: Source
+        analysis: Analysis
+        key: Key
+        scales: list[Scale]
+        tempo: Tempo
+        beats: list[float]
+        chords: list[ChordSegment]
+
+    monkeypatch.setattr(record, "Chart", SlimChart)
+    chart = record.build_responses()["chart"]
+    assert "downbeats" not in chart and "meter" not in chart
+    assert {"key", "tempo", "chords"} <= set(chart)
