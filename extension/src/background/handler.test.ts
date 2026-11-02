@@ -1,5 +1,6 @@
 import { vi, type Mock } from 'vitest';
-import { handleGetChart, handleGetHelperStatus } from './handler';
+import { handleGetChart, handleGetHelperStatus, handleGetSharing, handleSetSharing } from './handler';
+import * as record from '../telemetry/record';
 import * as api from './api';
 
 vi.mock('./api', () => ({
@@ -7,6 +8,13 @@ vi.mock('./api', () => ({
   fetchCachedChart: vi.fn(),
   submitAnalysis: vi.fn(),
   pollJobOnce: vi.fn(),
+}));
+
+vi.mock('../telemetry/record', () => ({
+  recordAnalysis: vi.fn(),
+  recordFailure: vi.fn(),
+  submitReport: vi.fn(),
+  submitReportDetails: vi.fn(),
 }));
 
 const CHART = { schemaVersion: 1 } as never;
@@ -156,4 +164,78 @@ describe('handleGetHelperStatus', () => {
     vi.spyOn(chrome.storage.local, 'set').mockRejectedValue(new Error('quota'));
     expect(await handleGetHelperStatus()).toEqual({ state: 'up', tooOld: false });
   });
+});
+
+describe('usage recording', () => {
+  const healthUp = () => vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    ok: true, status: 200, json: async () => ({ status: 'ok', engineVersion: '0.4.0' }),
+  }));
+  const healthDown = () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  test('job done records the analysis once and still returns the chart', async () => {
+    await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
+    (api.pollJobOnce as Mock).mockResolvedValue({ status: 'done', chart: CHART });
+    const res = await handleGetChart('vid00000001');
+    expect(res).toEqual({ status: 'done', chart: CHART });
+    expect(record.recordAnalysis).toHaveBeenCalledTimes(1);
+    expect(record.recordAnalysis).toHaveBeenCalledWith(CHART);
+  });
+
+  test('server cache hit records once; the session-cache hit afterwards does not', async () => {
+    (api.fetchCachedChart as Mock).mockResolvedValue(CHART);
+    await handleGetChart('vid00000001');
+    await handleGetChart('vid00000001');
+    expect(record.recordAnalysis).toHaveBeenCalledTimes(1);
+  });
+
+  test('job error records a failure with the engine version', async () => {
+    healthUp();
+    await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
+    (api.pollJobOnce as Mock).mockResolvedValue({ status: 'error', error: 'HTTP Error 403' });
+    const res = await handleGetChart('vid00000001');
+    expect(res).toEqual({ status: 'error', error: 'HTTP Error 403' });
+    await vi.waitFor(() => expect(record.recordFailure).toHaveBeenCalledWith('vid00000001', 'HTTP Error 403', '0.4.0'));
+    expect(record.recordFailure).toHaveBeenCalledTimes(1);
+  });
+
+  test('job error with the helper down records a null engine version', async () => {
+    healthDown();
+    await chrome.storage.session.set({ 'job:vid00000001': 'job-1' });
+    (api.pollJobOnce as Mock).mockResolvedValue({ status: 'error', error: 'boom' });
+    await handleGetChart('vid00000001');
+    await vi.waitFor(() => expect(record.recordFailure).toHaveBeenCalledWith('vid00000001', 'boom', null));
+  });
+
+  test('a non-TypeError exception records a failure', async () => {
+    healthDown();
+    (api.fetchCachedChart as Mock).mockRejectedValue(new Error('API 500'));
+    const res = await handleGetChart('vid00000001');
+    expect(res).toEqual({ status: 'error', error: 'API 500' });
+    await vi.waitFor(() => expect(record.recordFailure).toHaveBeenCalledWith('vid00000001', 'API 500', null));
+  });
+
+  test('a TypeError (offline) records nothing', async () => {
+    healthDown();
+    (api.fetchCachedChart as Mock).mockRejectedValue(new TypeError('Failed to fetch'));
+    expect(await handleGetChart('vid00000001')).toEqual({ status: 'offline' });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(record.recordAnalysis).not.toHaveBeenCalled();
+    expect(record.recordFailure).not.toHaveBeenCalled();
+  });
+
+  test('recording that rejects or never resolves does not affect the response', async () => {
+    (api.fetchCachedChart as Mock).mockResolvedValue(CHART);
+    (record.recordAnalysis as Mock).mockRejectedValueOnce(new Error('nope'));
+    expect(await handleGetChart('vid00000001')).toEqual({ status: 'done', chart: CHART });
+    (chrome.storage.session as unknown as { _data: Record<string, unknown> })._data = {};
+    (record.recordAnalysis as Mock).mockReturnValueOnce(new Promise(() => {}));
+    expect(await handleGetChart('vid00000001')).toEqual({ status: 'done', chart: CHART });
+  });
+});
+
+test('setSharing(true) persists and getSharing reports it', async () => {
+  expect(await handleGetSharing()).toEqual({ shareUsage: false });
+  expect(await handleSetSharing(true)).toEqual({ shareUsage: true });
+  expect(await handleGetSharing()).toEqual({ shareUsage: true });
 });

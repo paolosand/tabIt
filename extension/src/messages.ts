@@ -15,3 +15,11 @@ export interface GetHelperStatusRequest { type: 'GET_HELPER_STATUS'; }
 export type HelperStatusResponse =
   | { state: 'up'; tooOld: boolean }
   | { state: 'down'; everSeen: boolean };
+
+export interface ReportRequest { type: 'REPORT_BAD_TRANSCRIPTION'; chart: Chart; reportId: string; }
+export interface ReportDetailsRequest { type: 'REPORT_DETAILS'; reportId: string; reason: ReportReason; note: string; }
+export interface OkResponse { ok: boolean; }
+
+export interface GetSharingRequest { type: 'GET_SHARING'; }
+export interface SetSharingRequest { type: 'SET_SHARING'; shareUsage: boolean; }
+export interface SharingResponse { shareUsage: boolean; }
