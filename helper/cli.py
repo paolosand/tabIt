@@ -5,6 +5,7 @@ Heavy imports (warmup) stay inside their subcommand functions.
 """
 import argparse
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -90,9 +91,19 @@ def _cmd_warmup(args: argparse.Namespace) -> int:
 INSTALL_SCRIPT_URL = "https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh"
 _MAX_SCRIPT_BYTES = 1_000_000
 
-# Runs the installer, keeps its exit status, then removes the temp script. exec'd in place of
-# this process because the installer replaces the environment `tabit` itself runs from.
-_RUN_AND_CLEAN = 'sh "$0"; status=$?; rm -f "$0"; exit $status'
+UPDATE_DONE_NOTE = "Go back to YouTube: the extension picks the helper up on its next request."
+
+
+def _run_and_clean(tabit: str) -> str:
+    """Shell snippet for `sh -c`, with the downloaded script as $0: run the installer, keep
+    its exit status, remove the temp script, and on success show the new version. exec'd in
+    place of this process because the installer replaces the environment `tabit` runs from."""
+    q = shlex.quote(tabit)
+    return (
+        f'sh "$0"; status=$?; rm -f "$0"; '
+        f'if [ $status -eq 0 ]; then {q} --version; echo {shlex.quote(UPDATE_DONE_NOTE)}; fi; '
+        f'exit $status'
+    )
 
 
 def _download_script(url: str) -> str:
@@ -127,7 +138,7 @@ def _cmd_update(args: argparse.Namespace) -> int:
             print("not updated")
             return 1
     script = _download_script(INSTALL_SCRIPT_URL)
-    os.execv("/bin/sh", ["sh", "-c", _RUN_AND_CLEAN, script])
+    os.execv("/bin/sh", ["sh", "-c", _run_and_clean(str(paths.TABIT_SYMLINK)), script])
     return 0  # unreachable: execv replaces the process
 
 

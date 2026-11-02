@@ -312,3 +312,31 @@ def test_download_script_wraps_network_errors(monkeypatch):
     monkeypatch.setattr(cli.urllib.request, "urlopen", refuse)
     with pytest.raises(RuntimeError, match="could not download"):
         cli._download_script("https://example.com/install.sh")
+
+
+def _run_wrapper(tmp_path, installer_body, tabit_body):
+    import subprocess
+
+    installer = tmp_path / "install.sh"
+    installer.write_text(installer_body)
+    tabit = tmp_path / "tab it"  # a space: the wrapper must quote it
+    tabit.write_text(tabit_body)
+    tabit.chmod(0o755)
+    proc = subprocess.run(["sh", "-c", cli._run_and_clean(str(tabit)), str(installer)],
+                          capture_output=True, text=True)
+    return proc, installer
+
+
+def test_update_wrapper_reports_new_version_after_success(tmp_path):
+    proc, installer = _run_wrapper(tmp_path, "echo installing\n", "#!/bin/sh\necho tabit 9.9.9\n")
+    assert proc.returncode == 0
+    assert "tabit 9.9.9" in proc.stdout
+    assert cli.UPDATE_DONE_NOTE in proc.stdout
+    assert not installer.exists()
+
+
+def test_update_wrapper_keeps_failure_status_and_stays_quiet(tmp_path):
+    proc, installer = _run_wrapper(tmp_path, "exit 3\n", "#!/bin/sh\necho tabit 9.9.9\n")
+    assert proc.returncode == 3
+    assert "tabit 9.9.9" not in proc.stdout and cli.UPDATE_DONE_NOTE not in proc.stdout
+    assert not installer.exists()
