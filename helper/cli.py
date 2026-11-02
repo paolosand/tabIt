@@ -8,6 +8,9 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.request
 
 from engine import __version__
 from helper import health, launchd, paths
@@ -81,6 +84,51 @@ def _cmd_warmup(args: argparse.Namespace) -> int:
     from helper.warmup import warm_all  # heavy ML imports live behind this
     warm_all(progress=print)
     return 0
+
+
+# `main`'s install.sh pins TABIT_REF to the latest release, so this is always "the latest".
+INSTALL_SCRIPT_URL = "https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/install.sh"
+_MAX_SCRIPT_BYTES = 1_000_000
+
+# Runs the installer, keeps its exit status, then removes the temp script. exec'd in place of
+# this process because the installer replaces the environment `tabit` itself runs from.
+_RUN_AND_CLEAN = 'sh "$0"; status=$?; rm -f "$0"; exit $status'
+
+
+def _download_script(url: str) -> str:
+    """Fetch the installer into a temp file and return its path; RuntimeError on any failure."""
+    if not url.startswith("https://"):
+        raise RuntimeError(f"refusing to download the installer over a non-https URL: {url}")
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            body = resp.read(_MAX_SCRIPT_BYTES + 1)
+    except (urllib.error.URLError, OSError) as exc:
+        raise RuntimeError(f"could not download the installer from {url}: {exc}") from exc
+    if not body or len(body) > _MAX_SCRIPT_BYTES:
+        raise RuntimeError(f"the installer at {url} is empty or unexpectedly large")
+    fd, path = tempfile.mkstemp(prefix="tabit-install-", suffix=".sh")
+    with os.fdopen(fd, "wb") as f:
+        f.write(body)
+    return path
+
+
+def _cmd_update(args: argparse.Namespace) -> int:
+    print(f"tabIt helper {__version__} installed")
+    print(f"update = rerun the installer from {INSTALL_SCRIPT_URL}")
+    if args.dry_run:
+        print("(dry run: nothing downloaded or run)")
+        return 0
+    if not args.yes:
+        try:
+            answer = input("Run it now? [y/N] ").strip().lower()
+        except EOFError:  # non-interactive stdin: never proceed unasked
+            answer = "n"
+        if answer != "y":
+            print("not updated")
+            return 1
+    script = _download_script(INSTALL_SCRIPT_URL)
+    os.execv("/bin/sh", ["sh", "-c", _RUN_AND_CLEAN, script])
+    return 0  # unreachable: execv replaces the process
 
 
 def _cmd_uninstall(args: argparse.Namespace) -> int:
@@ -159,6 +207,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help="(re)install and start the launchd agent").set_defaults(func=_cmd_install_agent)
     sub.add_parser("warmup",
                    help="pre-download and load all models").set_defaults(func=_cmd_warmup)
+
+    update = sub.add_parser("update", help="upgrade the helper by rerunning the installer")
+    update.add_argument("--yes", action="store_true", help="don't ask before running")
+    update.add_argument("--dry-run", action="store_true", help="show what would run, run nothing")
+    update.set_defaults(func=_cmd_update)
 
     uninstall = sub.add_parser("uninstall", help="remove the helper from this Mac")
     uninstall.add_argument("--purge", action="store_true",

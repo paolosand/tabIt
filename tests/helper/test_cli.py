@@ -234,3 +234,81 @@ def test_engine_models_dir_is_the_helpers(monkeypatch):
     from helper import paths
     monkeypatch.delenv("TABIT_MODELS_DIR", raising=False)
     assert chords_btc.models_dir() == paths.MODELS_DIR
+
+
+# --- tabit update -----------------------------------------------------------------------
+
+from helper import cli  # noqa: E402
+
+
+def _boom(*a, **kw):
+    raise AssertionError("must not be called")
+
+
+def test_update_dry_run_prints_url_and_runs_nothing(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_download_script", _boom)
+    monkeypatch.setattr(cli.os, "execv", _boom)
+    assert cli_main(["update", "--dry-run"]) == 0
+    assert cli.INSTALL_SCRIPT_URL in capsys.readouterr().out
+
+
+def test_update_declined_does_not_download(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda prompt="": "n")
+    monkeypatch.setattr(cli, "_download_script", _boom)
+    monkeypatch.setattr(cli.os, "execv", _boom)
+    assert cli_main(["update"]) == 1
+
+
+def test_update_non_interactive_without_yes_aborts(monkeypatch):
+    def eof(prompt=""):
+        raise EOFError
+
+    monkeypatch.setattr("builtins.input", eof)
+    monkeypatch.setattr(cli, "_download_script", _boom)
+    monkeypatch.setattr(cli.os, "execv", _boom)
+    assert cli_main(["update"]) == 1
+
+
+def test_update_yes_downloads_then_execs_installer(monkeypatch):
+    calls = []
+    monkeypatch.setattr(cli, "_download_script", lambda url: "/tmp/x.sh")
+    monkeypatch.setattr(cli.os, "execv", lambda prog, argv: calls.append((prog, argv)))
+    assert cli_main(["update", "--yes"]) == 0
+    (prog, argv), = calls
+    assert prog == "/bin/sh"
+    assert argv[:2] == ["sh", "-c"] and argv[3] == "/tmp/x.sh"
+    wrapper = argv[2]
+    assert 'sh "$0"' in wrapper and "exit $status" in wrapper and 'rm -f "$0"' in wrapper
+
+
+def test_update_download_failure_exits_1_without_exec(monkeypatch, capsys):
+    def fail(url):
+        raise RuntimeError("no network")
+
+    monkeypatch.setattr(cli, "_download_script", fail)
+    monkeypatch.setattr(cli.os, "execv", _boom)
+    assert cli_main(["update", "--yes"]) == 1
+    assert "no network" in capsys.readouterr().err
+
+
+def test_update_prints_current_version(monkeypatch, capsys):
+    from engine import __version__
+    monkeypatch.setattr("builtins.input", lambda prompt="": "n")
+    cli_main(["update"])
+    assert __version__ in capsys.readouterr().out
+
+
+def test_download_script_rejects_non_https():
+    with pytest.raises(RuntimeError, match="non-https"):
+        cli._download_script("http://example.com/install.sh")
+
+
+def test_download_script_wraps_network_errors(monkeypatch):
+    import urllib.error
+
+    def refuse(url, timeout):
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(cli.urllib.request, "urlopen", refuse)
+    with pytest.raises(RuntimeError, match="could not download"):
+        cli._download_script("https://example.com/install.sh")
