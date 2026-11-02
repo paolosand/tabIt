@@ -63,7 +63,7 @@
   - `reports(id uuid pk, install_id uuid, video_id text, engine_version text, status text default 'new', created_at timestamptz default now())`
   - `report_details(id bigint identity pk, report_id uuid, reason text check in ('chords','key','tempo','other'), note text null, created_at timestamptz default now())`
 
-**Prerequisite (the developer does this once, before Step 1):** In the dashboard of the dormant Supabase project, confirm it holds nothing worth keeping (tables, auth users, storage, edge functions), then reset it (do not delete it). Check it is not paused. Note the project URL and anon key for Task 2. Requires the Supabase CLI and Docker for local tests.
+**Prerequisite (the developer does this once, before Step 1):** In the dashboard of the dormant Supabase project, confirm it holds nothing worth keeping (tables, auth users, storage, edge functions), then reset it (do not delete it). Check it is not paused. The project is `aptsvcbwkssceyvouocp` (URL `https://aptsvcbwkssceyvouocp.supabase.co`); get its anon key from Project Settings → API for Task 2. Requires the Supabase CLI and Docker for local tests.
 
 - [ ] **Step 1: Write the failing pgTAP tests** in `supabase/tests/rls.test.sql`, each run `set local role anon`:
   - inserting a valid row succeeds in each of the four tables;
