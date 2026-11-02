@@ -6,6 +6,7 @@ import { setVideoTranspose } from '../transpose/videoTranspose';
 import { useVideoTime } from './useVideoTime';
 import { Wordmark } from './Wordmark';
 import Ribbon from './Ribbon';
+import ReportControl from './ReportControl';
 
 export interface PanelProps {
   chart: Chart;
@@ -246,6 +247,10 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
             {view === 'ribbon' ? '⌄ full sheet' : '⌃ beat ribbon'}
           </button>
         )}
+
+        <div className="tabit-feedback-row">
+          <ReportControl chart={chart} />
+        </div>
       </div>
     </div>
   );

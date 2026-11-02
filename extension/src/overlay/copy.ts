@@ -21,3 +21,17 @@ export const CONNECTED_NOTE = 'Helper connected';
 export const OFFLINE_MESSAGE = "tabIt isn't running. Open Terminal and paste:";
 export const RESTART_COMMAND = '~/.local/bin/tabit restart';
 export const RETRY_LABEL = 'Retry';
+
+export const REPORT_BUTTON = 'Report bad transcription';
+export const REPORT_SENDING = 'Sending…';
+export const REPORT_FAILED = 'Couldn’t send — try again';
+export const REPORT_FOLLOWUP_TITLE = 'Thanks — what was off?';
+export const REPORT_REASON_LABELS = {
+  chords: 'Chords',
+  key: 'Key',
+  tempo: 'Tempo',
+  other: 'Other',
+} as const;
+export const REPORT_NOTE_LABEL = 'Add a note (optional)';
+export const REPORT_SEND = 'Send';
+export const REPORT_DETAILS_DONE = 'Sent — thank you';

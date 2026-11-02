@@ -457,4 +457,45 @@ export const OVERLAY_CSS = `
   position: absolute; right: 0; top: 0; bottom: 0; width: 70px; pointer-events: none;
   background: linear-gradient(to right, transparent, oklch(0.985 0.008 90));
 }
+
+/* --- feedback row (report control; sharing toggle joins it) --- */
+.tabit-feedback-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
+  padding: 0 30px 10px;
+  font: 11px/1.4 var(--tabit-sans);
+  color: var(--tabit-muted);
+}
+.tabit-report-btn, .tabit-report-send, .tabit-report-chip {
+  font: inherit; cursor: pointer;
+}
+.tabit-report-btn {
+  padding: 2px 0; border: none; background: none;
+  color: var(--tabit-muted); text-decoration: underline; text-underline-offset: 2px;
+}
+.tabit-report-btn:hover:not(:disabled) { color: var(--tabit-ink); }
+.tabit-report-btn:disabled { cursor: default; opacity: 0.6; text-decoration: none; }
+.tabit-report-status { color: var(--tabit-muted); }
+.tabit-report-followup { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.tabit-report-title { margin: 0; color: var(--tabit-ink); }
+.tabit-report-reasons { display: flex; gap: 4px; }
+.tabit-report-chip {
+  padding: 2px 9px; border-radius: 999px;
+  border: 1px solid var(--tabit-border); background: none; color: var(--tabit-ink);
+}
+.tabit-report-chip:hover { background: oklch(0.94 0.01 85); }
+.tabit-report-chip-on { background: var(--tabit-amber); border-color: var(--tabit-amber); }
+.tabit-report-note {
+  flex: 1 1 140px; min-width: 0; padding: 3px 8px;
+  border: 1px solid var(--tabit-border); border-radius: 6px;
+  background: var(--tabit-paper); color: var(--tabit-ink); font: inherit;
+}
+.tabit-report-send {
+  padding: 3px 12px; border: none; border-radius: 6px;
+  background: var(--tabit-ink); color: var(--tabit-paper);
+}
+.tabit-report-send:disabled { opacity: 0.4; cursor: default; }
+.tabit-report-btn:focus-visible, .tabit-report-chip:focus-visible,
+.tabit-report-send:focus-visible, .tabit-report-note:focus-visible {
+  outline: 2px solid var(--tabit-amber-dot); outline-offset: 2px;
+}
 `;
