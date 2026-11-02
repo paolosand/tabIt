@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Chart } from '../../../web/src/lib/types';
 import { findCurrentIndex, formatLabel, transposeRoot, transposeScaleName } from '../../../web/src/lib/music';
 import { beatIndexAt, beatWithinChord, beatsUntil, chordBeatSpan } from '../../../web/src/lib/beats';
+import { setVideoTranspose } from '../transpose/videoTranspose';
 import { useVideoTime } from './useVideoTime';
 import { Wordmark } from './Wordmark';
 import Ribbon from './Ribbon';
@@ -39,6 +40,14 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
   const [transpose, setTranspose] = useState(0);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const rowRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  // Shift the page audio with the labels so the chords match what you hear. Also runs on
+  // mount (state 0), clearing a shift left on YouTube's reused <video> by the previous song.
+  useEffect(() => {
+    void setVideoTranspose(transpose);
+  }, [transpose]);
+  // Unmount (new song, collapse, teardown) puts the original pitch back.
+  useEffect(() => () => void setVideoTranspose(0), []);
 
   const { time, adShowing } = useVideoTime(true);
   const chords = chart.chords;

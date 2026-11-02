@@ -28,6 +28,13 @@ describe('manifest', () => {
     expect(manifest.host_permissions).toEqual(['http://localhost:28224/*']);
   });
 
+  it('exposes the pitch-shift worklet to YouTube pages (addModule needs a web-accessible URL)', () => {
+    const exposed = (manifest.web_accessible_resources as { resources: string[]; matches: string[] }[]).find((r) =>
+      r.resources.includes('worklet.js'),
+    );
+    expect(exposed?.matches).toEqual(['https://www.youtube.com/*']);
+  });
+
   it('version matches package.json', () => {
     expect(manifest.version).toBe(pkg.version);
   });

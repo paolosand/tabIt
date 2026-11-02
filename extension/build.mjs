@@ -23,6 +23,15 @@ await build({
   logLevel: 'info',
 });
 
+await build({
+  entryPoints: ['src/transpose/worklet.ts'],
+  bundle: true,
+  format: 'iife',            // loaded via audioWorklet.addModule, which runs it as a plain script
+  outfile: 'dist/worklet.js',
+  minify: true,
+  logLevel: 'info',
+});
+
 cpSync('manifest.json', 'dist/manifest.json');
 cpSync('icons', 'dist/icons', { recursive: true });
 console.log('built dist/');

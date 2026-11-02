@@ -8,7 +8,7 @@ name: Installer e2e
 # docs/superpowers/specs/2026-07-12-tabit-helper-packaging-design.md).
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
     paths:
       - 'packaging/**'
       - 'helper/**'
@@ -111,7 +111,7 @@ jobs:
         run: tabit status
 
       - name: /health responds with an engine version
-        run: curl -sf http://127.0.0.1:28224/health | grep -q '"engineVersion":"0.5.1"'
+        run: curl -sf http://127.0.0.1:28224/health | grep -q '"engineVersion":"0.6.0"'
 
       - name: tabit uninstall --purge leaves nothing behind
         run: |

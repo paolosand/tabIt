@@ -12,6 +12,7 @@ env/
 # Node / web
 node_modules/
 dist/
+dist-spike/
 build/
 .next/
 
