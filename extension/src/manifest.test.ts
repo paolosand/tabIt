@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -27,6 +28,16 @@ describe('manifest', () => {
     expect(manifest.permissions).toEqual(['storage']);
     expect(manifest.host_permissions).toEqual(['http://localhost:28224/*']);
   });
+
+  it('build adds the Supabase host to dist/manifest.json when SUPABASE_URL is set', () => {
+    execFileSync('node', ['build.mjs'], {
+      cwd: root,
+      env: { ...process.env, SUPABASE_URL: 'https://abc.supabase.co', SUPABASE_ANON_KEY: 'k' },
+      stdio: 'pipe',
+    });
+    const built = JSON.parse(readFileSync(resolve(root, 'dist/manifest.json'), 'utf8'));
+    expect(built.host_permissions).toEqual(['http://localhost:28224/*', 'https://abc.supabase.co/*']);
+  }, 60_000);
 
   it('exposes the pitch-shift worklet to YouTube pages (addModule needs a web-accessible URL)', () => {
     const exposed = (manifest.web_accessible_resources as { resources: string[]; matches: string[] }[]).find((r) =>

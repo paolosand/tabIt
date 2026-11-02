@@ -34,7 +34,12 @@ jobs:
 
       - name: Install + build
         working-directory: extension
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
+          [ -n "$SUPABASE_URL" ] || { echo "repository variable SUPABASE_URL is empty - the release build would ship with telemetry disabled" >&2; exit 1; }
+          [ -n "$SUPABASE_ANON_KEY" ] || { echo "repository variable SUPABASE_ANON_KEY is empty - the release build would ship with telemetry disabled" >&2; exit 1; }
           npm ci
           npm run build
 

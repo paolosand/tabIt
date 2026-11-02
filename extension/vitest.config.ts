@@ -11,4 +11,8 @@ export default defineConfig({
     fakeTimers: { shouldAdvanceTime: true },
   },
   esbuild: { jsx: 'automatic' },
+  define: {
+    __SUPABASE_URL__: '"https://test.supabase.co"',
+    __SUPABASE_ANON_KEY__: '"test-anon"',
+  },
 });
