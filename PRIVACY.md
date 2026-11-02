@@ -6,7 +6,7 @@ tabIt is a Chrome extension that shows guitar chords for the YouTube video you a
 
 ## The short version
 
-- Chord analysis runs entirely on your Mac. Your audio never leaves it.
+- Chord analysis runs entirely on your Mac. Your audio is never sent to the developer.
 - By default tabIt sends nothing to the developer. There is no account and no tracking.
 - Two things can send data to the developer, and both are your choice: the "Report bad transcription" button, and the "Help improve tabIt" setting, which is off until you turn it on. The sections below say exactly what each one sends.
 - The data is used only to find songs tabIt gets wrong and to improve it. It is not sold and not used for ads.
@@ -20,7 +20,8 @@ When you click it, tabIt sends the developer:
 - the video's ID and title, and the tabIt engine version;
 - the full chart: the chords and their timing, the key, the tempo and the meter;
 - a random install ID (see below);
-- the reason and note, if you add them afterwards (the reason is one of chords, key, tempo or other; the note is optional text you write).
+- the time of the report, and a random report ID;
+- the reason and note, if you add them afterwards (the reason is one of chords, key, tempo or other; the note is optional text you write). The random report ID is what links them to the report.
 
 A report is sent even if "Help improve tabIt" is off, because clicking the button is your consent for that one report.
 
@@ -28,7 +29,7 @@ A report is sent even if "Help improve tabIt" is off, because clicking the butto
 
 It is in the chord panel and is off by default. When it is on:
 
-- each time a song finishes analyzing, tabIt uploads the chart once per video and engine version, plus a short record of the analysis: the video ID, the engine version, your install ID and the time;
+- each time a song finishes analyzing, tabIt uploads the full chart (chords, timing, key, tempo and meter) with the video's title, once per video and engine version, plus a short record of the analysis: the video ID, the engine version, your install ID and the time. The uploaded chart and title are stored once per video and engine version and are not linked to your install ID; the analysis, failure and report records are;
 - when an analysis fails, tabIt records the video ID, the engine version if known, your install ID, the time, a category (download failed, video unavailable, engine error or timeout) and a short error message. Home-directory paths are removed from that message and it is cut to 300 characters. Failures are recorded only while the setting is on. A helper that is simply not running is not recorded.
 
 ### What is never sent
@@ -49,7 +50,7 @@ Uploaded data is stored in Supabase, a hosted database service, and is read only
 
 ### Turning it off, and deletion
 
-Turning "Help improve tabIt" off stops future uploads. It does not delete anything already sent. To ask for data to be deleted, open an issue at https://github.com/paolosand/tabIt/issues. Because the install ID is not shown in the extension, say which video IDs or roughly which dates you want removed and the developer will delete those records.
+Turning "Help improve tabIt" off stops future uploads. It does not delete anything already sent. You can ask for your data to be removed, but deletion is best-effort: what you sent is not tied to anything you can cite (the install ID is not shown in the extension). To ask, open an issue at https://github.com/paolosand/tabIt/issues that says only that you want your data removed. Please do not post video lists, dates or other personal details in the public issue; the developer will arrange a private way to exchange details.
 
 ## What the extension does
 

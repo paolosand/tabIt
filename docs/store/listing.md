@@ -32,7 +32,7 @@ Honest about what it doesn't know: chord recognition is not perfect, and some so
 
 How setup works: the first time, the extension shows three steps. Open Terminal, paste one command, press Return. That installs the helper on your Mac (about 2 GB of disk: a 1 GB environment plus the download cache; a few minutes, no admin password). The analysis happens on your own computer, not in the cloud. After that it starts by itself when you log in.
 
-Private by default: tabIt has no accounts and no tracking, and the analysis runs on your Mac. The helper downloads the audio of videos you ask about from YouTube onto your Mac, and keeps the finished charts there. Two optional things send data to the developer: the "Report bad transcription" button (that video's ID, title and chart) and "Help improve tabIt", which is off until you turn it on (the video ID and chart of each song you analyze, and which songs fail). Audio, account details and browsing history are never sent. See the privacy policy for details.
+Private by default: tabIt has no accounts and no tracking, and the analysis runs on your Mac. The helper downloads the audio of videos you ask about from YouTube onto your Mac, and keeps the finished charts there. Two optional things send data to the developer: the "Report bad transcription" button (that video's ID, title and chart) and "Help improve tabIt", which is off until you turn it on (the video ID, title and full chart of each song you analyze, and which songs fail). Audio, account details and browsing history are never sent. See the privacy policy for details.
 
 Works on macOS only for now.
 
@@ -63,12 +63,12 @@ https://github.com/paolosand/tabIt/blob/main/PRIVACY.md
 
 The extension collects limited data, and only through two optional actions. The disclosures must match `PRIVACY.md`. The OWNER decides the exact checkboxes in the dashboard.
 
-- What is collected: the video ID and title, the chord chart (chords, timing, key, tempo, meter), the engine version, a random install ID that is not tied to a name or account, a timestamp, and for failed analyses an error category and a short message with home-directory paths removed.
+- What is collected: the video ID and title, the full chord chart (chords, timing, key, tempo, meter) for every analysis while "Help improve tabIt" is on and for every report, the engine version, a random install ID that is not tied to a name or account, a timestamp, and for failed analyses an error category and a short message with home-directory paths removed.
 - When: when the user clicks "Report bad transcription" (that one report), or while the user has turned on "Help improve tabIt", which is off by default (opt-in).
 - Never collected: audio, YouTube account details or cookies, browsing history, other tabs.
-- Not sold, not used for ads, not used for creditworthiness or lending, not transferred except to the hosting provider that stores it (Supabase).
+- Not sold, not used for ads, not used for creditworthiness or lending, stored with Supabase, the developer's hosting provider, and read only by the developer.
 - Used only to find songs tabIt gets wrong and to improve tabIt.
-- Likely dashboard categories: "Website content" (video ID and title) and "User activity" (which videos were analyzed), both optional. The owner confirms the mapping.
+- Dashboard categories: UNVERIFIED and probably incomplete. Plausible candidates for the owner to confirm in the live dashboard: website content (video title and chart), user activity (which videos were analyzed), web history (video IDs identify pages visited), and a user or persistent identifier (the install ID).
 
 ## Category
 
