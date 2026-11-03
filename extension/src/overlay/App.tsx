@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Chart } from '../../../web/src/lib/types';
 import type {
+  DismissUpdateNoticeRequest,
   GetChartRequest,
   GetChartResponse,
   GetHelperStatusRequest,
@@ -13,6 +14,7 @@ import { CONNECTED_NOTE, RESTART_COMMAND } from './copy';
 import { Bar } from './Bar';
 import Panel from './Panel';
 import { isolateFeedbackKeys } from './keyboardIsolation';
+import { UpdateNote } from './UpdateNote';
 
 const POLL_INTERVAL_MS = 3000;
 const OFFLINE_POLL_BASE_MS = 3000;
@@ -66,6 +68,8 @@ export function App({ videoId }: AppProps) {
   // regardless of which state the recovered poll() lands on next (loading,
   // sheet, or error), since a GET_CHART retry can resolve to any of those.
   const [justReconnected, setJustReconnected] = useState(false);
+  // The helper works but is older than the extension recommends (soft notice, dismissible).
+  const [updateAvailable, setUpdateAvailable] = useState(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Consecutive offline polls, for backoff; any non-offline response resets it.
   const offlineAttemptRef = useRef(0);
@@ -121,6 +125,7 @@ export function App({ videoId }: AppProps) {
           return;
         }
         downStreakRef.current = 0;
+        if (response.state === 'up') setUpdateAvailable(!response.tooOld && response.updateAvailable === true);
         const needsSetup = response.state === 'up' ? response.tooOld : !response.everSeen;
         if (needsSetup) {
           const mode = response.state === 'up' ? 'update' : 'install';
@@ -150,6 +155,9 @@ export function App({ videoId }: AppProps) {
       .then((response: GetChartResponse) => {
         if (!aliveRef.current) return;
         if (response.status === 'offline') {
+          // The helper stopped (often because the user is updating it): don't resurrect a
+          // stale "newer helper available" when it comes back; the next page load re-probes.
+          setUpdateAvailable(false);
           const delay = Math.min(
             OFFLINE_POLL_BASE_MS * 2 ** offlineAttemptRef.current,
             OFFLINE_POLL_MAX_MS,
@@ -223,8 +231,17 @@ export function App({ videoId }: AppProps) {
     }
   })();
 
+  const dismissUpdate = () => {
+    setUpdateAvailable(false);
+    const request: DismissUpdateNoticeRequest = { type: 'DISMISS_UPDATE_NOTICE' };
+    Promise.resolve(chrome.runtime.sendMessage(request)).catch(() => {});
+  };
+
   return (
     <>
+      {updateAvailable && (state.kind === 'collapsed' || state.kind === 'sheet') && (
+        <UpdateNote onCopy={() => copyText(INSTALL_COMMAND)} onDismiss={dismissUpdate} />
+      )}
       {justReconnected && (
         <div className="tabit-reconnect-toast" data-testid="reconnect-toast">
           <span className="tabit-reconnect-check" aria-hidden="true">✓</span>

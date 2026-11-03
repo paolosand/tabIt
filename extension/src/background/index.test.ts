@@ -7,6 +7,7 @@ vi.mock('./handler', () => ({
   handleReportDetails: vi.fn(),
   handleGetSharing: vi.fn(),
   handleSetSharing: vi.fn(),
+  handleDismissUpdateNotice: vi.fn().mockResolvedValue(undefined),
 }));
 
 const OWN = { id: 'test-extension-id' };
@@ -118,4 +119,13 @@ test('REPORT_DETAILS caps the note at 500 characters', async () => {
   listener({ type: 'REPORT_DETAILS', reportId: 'r1', reason: 'other', note: 'x'.repeat(900) }, OWN, reply);
   await vi.waitFor(() => expect(reply).toHaveBeenCalledWith({ ok: true }));
   expect(h.handleReportDetails).toHaveBeenCalledWith({ type: 'REPORT_DETAILS', reportId: 'r1', reason: 'other', note: 'x'.repeat(500) });
+});
+
+test('DISMISS_UPDATE_NOTICE is handled and acknowledged', async () => {
+  const { listener, h } = await setup();
+  h.handleDismissUpdateNotice.mockResolvedValue(undefined);
+  const reply = vi.fn();
+  expect(listener({ type: 'DISMISS_UPDATE_NOTICE' }, OWN, reply)).toBe(true);
+  await vi.waitFor(() => expect(reply).toHaveBeenCalled());
+  expect(h.handleDismissUpdateNotice).toHaveBeenCalled();
 });

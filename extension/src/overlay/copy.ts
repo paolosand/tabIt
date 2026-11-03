@@ -54,3 +54,7 @@ export const SHARING_LIST = [
 export const SHARING_NEVER = 'Never your audio, account or browsing history. No name attached.';
 export const PRIVACY_LABEL = 'Read the privacy policy';
 export const PRIVACY_URL = 'https://github.com/paolosand/tabIt/blob/main/PRIVACY.md';
+export const UPDATE_NOTICE = 'A newer helper is available';
+export const COPY_UPDATE_COMMAND = 'Copy update command';
+export const PASTE_IN_TERMINAL = 'Paste it in Terminal, press Return';
+export const DISMISS_LABEL = 'Dismiss';

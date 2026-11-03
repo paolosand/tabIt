@@ -83,7 +83,7 @@ edit is kept locally. The extension doesn't edit.
 
 **Measured result.** On a pilot sample of 11 Beatles songs (hand-labeled
 [Isophonics](http://isophonics.net/) annotations, scored with `mir_eval` against the live
-YouTube pipeline), the shipped engine (0.5.1, BTC only) scores:
+YouTube pipeline), the shipped engine (0.7.0, BTC only) scores:
 
 | | majmin | sevenths | root |
 |---|---:|---:|---:|
@@ -169,7 +169,7 @@ curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/v0.3.1/packaging/in
 ## Where it's going
 
 Shipped: engine, helper and one-line installer, extension, web app, redesign, and the
-Chrome Web Store submission (v0.5.1, in review).
+Chrome Web Store listing (v0.7.0).
 
 Next:
 - Chrome Web Store listing approved.

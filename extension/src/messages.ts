@@ -13,7 +13,7 @@ export type GetChartResponse =
 export interface GetHelperStatusRequest { type: 'GET_HELPER_STATUS'; }
 
 export type HelperStatusResponse =
-  | { state: 'up'; tooOld: boolean }
+  | { state: 'up'; tooOld: boolean; updateAvailable: boolean }
   | { state: 'down'; everSeen: boolean };
 
 export interface ReportRequest { type: 'REPORT_BAD_TRANSCRIPTION'; chart: Chart; reportId: string; }
@@ -25,3 +25,4 @@ export interface SetSharingRequest { type: 'SET_SHARING'; shareUsage: boolean; }
 export interface SharingResponse { shareUsage: boolean; }
 /** Answer when the stored value cannot be read or written; the UI must not guess. */
 export interface SharingErrorResponse { error: 'unavailable'; }
+export interface DismissUpdateNoticeRequest { type: 'DISMISS_UPDATE_NOTICE'; }

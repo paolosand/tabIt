@@ -15,6 +15,7 @@ export const OVERLAY_CSS = `
   --tabit-muted: oklch(0.52 0.02 70);
   --tabit-dot: oklch(0.55 0.02 70);
   --tabit-border: oklch(0.88 0.015 250);
+  --tabit-wash: oklch(0.94 0.01 85);
   --tabit-accent: oklch(0.70 0.10 25);
   --tabit-amber: oklch(0.88 0.14 90);
   --tabit-amber-dot: oklch(0.55 0.13 70);
@@ -581,4 +582,58 @@ export const OVERLAY_CSS = `
 .tabit-pop-send:hover:not(:disabled) { background: oklch(0.36 0.03 70); transform: translateY(-1px); }
 .tabit-pop-send:disabled { background: oklch(0.85 0.015 85); color: var(--tabit-muted); cursor: default; }
 .tabit-pop-thanks { color: var(--tabit-ink); font-size: 12px; }
+
+/* Update notice: a quiet strip above the bar when the helper works but is older than
+ * RECOMMENDED_ENGINE_VERSION. Ink and paper only (amber is reserved for progress). */
+.tabit-update-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 6px 6px 14px;
+  margin: 8px 0;
+  background: var(--tabit-paper);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px oklch(0.28 0.02 70 / 0.06), 0 8px 24px oklch(0.28 0.02 70 / 0.06);
+  font: 13px/1.4 var(--tabit-sans);
+  color: var(--tabit-ink);
+  animation: tabit-fade-in 0.25s ease-out;
+}
+.tabit-update-note-text { min-width: 0; }
+.tabit-update-note-text strong { font-weight: 600; }
+.tabit-update-note .tabit-btn { padding: 6px 12px; }
+.tabit-update-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tabit-muted);
+  font: 16px/1 var(--tabit-sans);
+  cursor: pointer;
+  transition: background 180ms ease-out;
+}
+.tabit-update-dismiss:hover { background: var(--tabit-wash); color: var(--tabit-ink); }
+.tabit-update-note button:focus-visible { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
+.tabit-update-fallback { flex-basis: 100%; margin: 0; }
+.tabit-update-fallback code {
+  display: block;
+  padding: 6px 8px;
+  border: 1.5px solid var(--tabit-border);
+  border-radius: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--tabit-ink);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.tabit-update-fallback small { display: block; margin-top: 4px; font: 12px/1.4 var(--tabit-sans); color: var(--tabit-muted); }
+@media (prefers-reduced-motion: reduce) { .tabit-update-note { animation: none; } .tabit-update-dismiss { transition: none; } }
 `;

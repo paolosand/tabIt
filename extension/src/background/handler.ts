@@ -4,7 +4,7 @@ import type {
 } from '../messages';
 import { recordAnalysis, recordFailure, submitReport, submitReportDetails } from '../telemetry/record';
 import { getShareUsage, setShareUsage } from '../telemetry/settings';
-import { MIN_ENGINE_VERSION, isOlderThan } from '../version';
+import { MIN_ENGINE_VERSION, RECOMMENDED_ENGINE_VERSION, isOlderThan } from '../version';
 import { getHelperStatus } from './helper';
 import { fetchCachedChart, pollJobOnce, submitAnalysis } from './api';
 
@@ -115,7 +115,12 @@ export async function handleGetHelperStatus(): Promise<HelperStatusResponse> {
     } catch {
       // Remembering is best-effort; the helper is up regardless.
     }
-    return { state: 'up', tooOld: isOlderThan(status.engineVersion, MIN_ENGINE_VERSION) };
+    const tooOld = isOlderThan(status.engineVersion, MIN_ENGINE_VERSION);
+    const updateAvailable =
+      !tooOld &&
+      isOlderThan(status.engineVersion, RECOMMENDED_ENGINE_VERSION) &&
+      !(await updateNoticeDismissed());
+    return { state: 'up', tooOld, updateAvailable };
   }
   let everSeen = false;
   try {
@@ -125,4 +130,24 @@ export async function handleGetHelperStatus(): Promise<HelperStatusResponse> {
     // Unreadable storage: treat as never seen.
   }
   return { state: 'down', everSeen };
+}
+
+/** True when the user dismissed the notice for the current recommended version. An
+ *  unreadable store counts as "not dismissed", so a storage failure never hides the notice. */
+async function updateNoticeDismissed(): Promise<boolean> {
+  try {
+    const { updateNoticeDismissed: seen } = await chrome.storage.local.get('updateNoticeDismissed');
+    return seen === RECOMMENDED_ENGINE_VERSION;
+  } catch {
+    return false;
+  }
+}
+
+/** Remembers the dismissal per recommended version, so a later bump shows the notice again. */
+export async function handleDismissUpdateNotice(): Promise<void> {
+  try {
+    await chrome.storage.local.set({ updateNoticeDismissed: RECOMMENDED_ENGINE_VERSION });
+  } catch {
+    // Best-effort: worst case the notice returns on the next page load.
+  }
 }

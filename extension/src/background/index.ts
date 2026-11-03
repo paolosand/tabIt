@@ -1,17 +1,17 @@
 import type {
-  GetChartRequest, GetHelperStatusRequest, GetSharingRequest, HelperStatusResponse,
+  DismissUpdateNoticeRequest, GetChartRequest, GetHelperStatusRequest, GetSharingRequest, HelperStatusResponse,
   ReportDetailsRequest, ReportReason, ReportRequest, SetSharingRequest,
   SharingErrorResponse, SharingResponse,
 } from '../messages';
 import {
-  handleGetChart, handleGetHelperStatus, handleGetSharing, handleReport, handleReportDetails, handleSetSharing,
+  handleDismissUpdateNotice, handleGetChart, handleGetHelperStatus, handleGetSharing, handleReport, handleReportDetails, handleSetSharing,
 } from './handler';
 
 console.log('[tabit] background alive');
 
 type Msg =
   | GetChartRequest | GetHelperStatusRequest | ReportRequest | ReportDetailsRequest
-  | GetSharingRequest | SetSharingRequest;
+  | GetSharingRequest | SetSharingRequest | DismissUpdateNoticeRequest;
 
 const REASONS: readonly ReportReason[] = ['chords', 'key', 'tempo', 'other'];
 const MAX_NOTE = 500;
@@ -60,6 +60,10 @@ chrome.runtime.onMessage.addListener((msg: Msg, sender, sendResponse) => {
       // A failed write must not claim a value: answer with what storage actually holds.
       handleSetSharing(msg.shareUsage).catch(currentSharing).then(sendResponse);
     }
+    return true;
+  }
+  if (msg?.type === 'DISMISS_UPDATE_NOTICE') {
+    handleDismissUpdateNotice().then(() => sendResponse(undefined));
     return true;
   }
   return false;
