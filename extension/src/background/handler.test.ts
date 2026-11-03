@@ -164,13 +164,14 @@ describe('update notice', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ status: 'ok', engineVersion }) }));
   afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-  test('the recommended version starts at 0.6.0', () => {
-    expect(RECOMMENDED_ENGINE_VERSION).toBe('0.6.0');
+  test('the recommended version is 0.7.0, the first helper with `tabit update`', () => {
+    expect(RECOMMENDED_ENGINE_VERSION).toBe('0.7.0');
   });
 
   test.each([
     ['0.5.1', true],
-    ['0.6.0', false],
+    ['0.6.0', true],
+    ['0.7.0', false],
     ['0.9.0', false], // a helper newer than the extension recommends: nothing to say
     ['unknown', false],
     ['0.6.0.dev1', false],
