@@ -168,6 +168,19 @@ test('Enter sends once a chip is chosen; Shift+Enter inserts a newline instead',
   expect(detailCalls()[0][0].reason).toBe('chords');
 });
 
+test('Enter that confirms an IME composition never sends', async () => {
+  render(<FeedbackMenu chart={chartA} />);
+  await openMenu();
+  await userEvent.click(reportBtn());
+  await screen.findByRole('dialog', { name: 'Report bad transcription' });
+  await userEvent.click(screen.getByRole('button', { name: 'Chords' }));
+  fireEvent.keyDown(note(), { key: 'Enter', isComposing: true });
+  fireEvent.keyDown(note(), { key: 'Enter', keyCode: 229 });
+  expect(detailCalls()).toHaveLength(0);
+  fireEvent.keyDown(note(), { key: 'Enter' });
+  await waitFor(() => expect(detailCalls()).toHaveLength(1));
+});
+
 test('clicking a chip toggles it without replacing the pop-up element', async () => {
   render(<FeedbackMenu chart={chartA} />);
   await openMenu();

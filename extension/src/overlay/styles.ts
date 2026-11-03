@@ -19,6 +19,7 @@ export const OVERLAY_CSS = `
   --tabit-amber: oklch(0.88 0.14 90);
   --tabit-amber-dot: oklch(0.55 0.13 70);
   --tabit-error: oklch(0.55 0.12 25);
+  --tabit-inset: 14px; /* horizontal inset of footer and feedback row (and the pop-ups' right anchor) */
   --tabit-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --tabit-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 }
@@ -398,7 +399,7 @@ export const OVERLAY_CSS = `
   align-items: baseline;
   gap: 8px;
   margin-top: 6px;
-  padding: 0 14px; /* inset inside the panel card (was previously the panel's 5vw) */
+  padding: 0 var(--tabit-inset); /* inset inside the panel card (was previously the panel's 5vw) */
   font-size: 13.5px;
   color: var(--tabit-muted);
 }
@@ -464,7 +465,7 @@ export const OVERLAY_CSS = `
 .tabit-feedback-row {
   position: relative;
   display: flex; align-items: center; gap: 4px 16px;
-  padding: 0 30px 6px;
+  padding: 0 var(--tabit-inset) 6px;
   font: 11px/1.4 var(--tabit-sans);
   color: var(--tabit-muted);
 }
@@ -494,7 +495,7 @@ export const OVERLAY_CSS = `
 @keyframes tabit-pop-in { from { opacity: 0; } to { opacity: 1; } }
 .tabit-pop-fade { animation: tabit-pop-in 180ms ease-out; }
 .tabit-pop {
-  position: absolute; bottom: calc(100% - 4px); right: 30px; z-index: 5;
+  position: absolute; bottom: calc(100% - 4px); right: var(--tabit-inset); z-index: 5;
   width: 290px; padding: 12px 14px;
   background: var(--tabit-paper); color: var(--tabit-ink);
   border-radius: 4px; box-shadow: 0 4px 14px oklch(0.28 0.02 70 / 0.22);
@@ -538,15 +539,22 @@ export const OVERLAY_CSS = `
 .tabit-switch input:focus-visible + .tabit-switch-box { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
 
 /* Report form */
+/* The tick sits in a flex row with its text, so align-items centres it on the text line. */
+.tabit-pop-title-tick, .tabit-pop-thanks { display: flex; align-items: center; gap: 6px; }
 .tabit-tick {
-  display: inline-grid; place-items: center; width: 14px; height: 14px; margin-right: 6px;
-  border: 1.5px solid var(--tabit-ink); border-radius: 50%; vertical-align: -3px;
+  flex: none; display: inline-grid; place-items: center; width: 14px; height: 14px;
+  border: 1.5px solid var(--tabit-ink); border-radius: 50%;
 }
+/* The L (left + bottom borders) has its centroid ~0.3px left of and below the box centre,
+ * which the -45deg turn maps to ~0.4px straight down; shift the check up by that much. */
 .tabit-tick::after {
   content: ""; width: 5px; height: 2.5px;
   border-left: 1.5px solid var(--tabit-ink); border-bottom: 1.5px solid var(--tabit-ink);
-  transform: rotate(-45deg) translate(0.5px, -0.5px);
+  transform: translate(0, -0.5px) rotate(-45deg);
 }
+/* 12px in the 9.5px caps title so the ring is not heavier than its label; 14px beside 12px text. */
+.tabit-tick-sm { width: 12px; height: 12px; }
+.tabit-tick-sm::after { width: 4px; height: 2px; transform: translate(0, -0.4px) rotate(-45deg); }
 .tabit-pop-question { margin: 0 0 8px; font-size: 13px; color: var(--tabit-ink); }
 .tabit-pop-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .tabit-pop-chip {

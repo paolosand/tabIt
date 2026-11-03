@@ -37,8 +37,8 @@ type Form = 'none' | 'open' | 'thanks' | 'closed';
 
 const THANKS_MS = 1800;
 
-function Tick() {
-  return <span className="tabit-tick" aria-hidden="true" />;
+function Tick({ small }: { small?: boolean }) {
+  return <span className={`tabit-tick${small ? ' tabit-tick-sm' : ''}`} aria-hidden="true" />;
 }
 
 function ReportPopup({
@@ -70,8 +70,8 @@ function ReportPopup({
 
   return (
     <>
-      <h4 className="tabit-pop-title">
-        <Tick />
+      <h4 className="tabit-pop-title tabit-pop-title-tick">
+        <Tick small />
         {REPORT_SENT}
       </h4>
       <p className="tabit-pop-question">{REPORT_QUESTION}</p>
@@ -103,6 +103,8 @@ function ReportPopup({
         value={note}
         onChange={(e) => setNote(e.target.value)}
         onKeyDown={(e) => {
+          // Enter that confirms an IME composition must not send (keyCode 229 covers Safari-style ordering).
+          if (e.nativeEvent.isComposing || e.keyCode === 229) return;
           if (e.key === 'Enter' && !e.shiftKey && reason) {
             e.preventDefault();
             submit();
