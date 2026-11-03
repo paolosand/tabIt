@@ -29,14 +29,15 @@ describe('manifest', () => {
     expect(manifest.host_permissions).toEqual(['http://localhost:28224/*']);
   });
 
-  it('build adds the Supabase host to dist/manifest.json when SUPABASE_URL is set', () => {
+  it('build does NOT add a Supabase host permission even when SUPABASE_URL is set', () => {
     execFileSync('node', ['build.mjs'], {
       cwd: root,
       env: { ...process.env, SUPABASE_URL: 'https://abc.supabase.co', SUPABASE_ANON_KEY: 'k' },
       stdio: 'pipe',
     });
     const built = JSON.parse(readFileSync(resolve(root, 'dist/manifest.json'), 'utf8'));
-    expect(built.host_permissions).toEqual(['http://localhost:28224/*', 'https://abc.supabase.co/*']);
+    // A new host permission would disable the extension for existing users until re-approval.
+    expect(built.host_permissions).toEqual(['http://localhost:28224/*']);
   }, 60_000);
 
   it('exposes the pitch-shift worklet to YouTube pages (addModule needs a web-accessible URL)', () => {

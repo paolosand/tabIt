@@ -1,7 +1,7 @@
 import { build } from 'esbuild';
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync } from 'node:fs';
 
-// Telemetry config; both empty => telemetry is a no-op and the manifest is untouched.
+// Telemetry config; both empty => telemetry is a no-op.
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? '';
 
@@ -40,11 +40,8 @@ await build({
   logLevel: 'info',
 });
 
+// The manifest is copied untouched: no Supabase host permission (it would disable the extension
+// for existing users until they re-approve). Supabase's REST API allows cross-origin requests.
 cpSync('manifest.json', 'dist/manifest.json');
-if (SUPABASE_URL) {
-  const manifest = JSON.parse(readFileSync('dist/manifest.json', 'utf8'));
-  manifest.host_permissions = [...manifest.host_permissions, `${SUPABASE_URL}/*`];
-  writeFileSync('dist/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
-}
 cpSync('icons', 'dist/icons', { recursive: true });
 console.log('built dist/');
