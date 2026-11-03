@@ -11,5 +11,7 @@ export type GetChartResponse =
 export interface GetHelperStatusRequest { type: 'GET_HELPER_STATUS'; }
 
 export type HelperStatusResponse =
-  | { state: 'up'; tooOld: boolean }
+  | { state: 'up'; tooOld: boolean; updateAvailable: boolean }
   | { state: 'down'; everSeen: boolean };
+
+export interface DismissUpdateNoticeRequest { type: 'DISMISS_UPDATE_NOTICE'; }
