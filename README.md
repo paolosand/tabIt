@@ -43,6 +43,8 @@ takes about a minute to analyze; a repeat is instant.
 The extension also walks you through step 1 itself, and notices the helper as soon as it
 is running. The helper starts at login. To check on it or remove it, run
 `~/.local/bin/tabit status`, `~/.local/bin/tabit logs` or `~/.local/bin/tabit uninstall`.
+To upgrade it to the latest release, run `~/.local/bin/tabit update` (it shows what it will
+run and asks first; rerunning the install command above does the same thing).
 
 ## Honest about accuracy
 
