@@ -1,0 +1,61 @@
+{
+  "chart": {
+    "analysis": {
+      "createdAt": "2026-07-09T00:00:00Z",
+      "engineVersion": "0.7.0"
+    },
+    "beats": [
+      0.0,
+      0.5,
+      1.0,
+      1.5
+    ],
+    "chords": [
+      {
+        "bass": "A",
+        "confidence": 0.9,
+        "end": 2.0,
+        "label": "Am",
+        "quality": "min",
+        "root": "A",
+        "start": 0.0
+      }
+    ],
+    "downbeats": [
+      0.0
+    ],
+    "key": {
+      "confidence": 0.8,
+      "mode": "minor",
+      "tonic": "A"
+    },
+    "meter": {
+      "beatsPerBar": 4,
+      "confidence": 0.9
+    },
+    "scales": [
+      {
+        "name": "A minor pentatonic",
+        "notes": [
+          "A",
+          "C",
+          "D",
+          "E",
+          "G"
+        ]
+      }
+    ],
+    "schemaVersion": 1,
+    "sections": [],
+    "source": {
+      "duration": 2.0,
+      "kind": "youtube",
+      "title": "t",
+      "videoId": "dQw4w9WgXcQ"
+    },
+    "tempo": {
+      "bpm": 120.0
+    }
+  },
+  "status": "done"
+}

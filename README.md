@@ -11,7 +11,7 @@ Turn any song on YouTube into synced, play-along guitar chords, embedded right u
 video you're watching: the chords, the key, and scales that fit, followed karaoke-style as
 the music plays.
 
-**v0.6.0** · [on the Chrome Web Store](https://chromewebstore.google.com/detail/tabit-%E2%80%94-chords-for-youtube/kapdioliloodbbjhomdipnmaiedieinn)
+**v0.7.0** · [on the Chrome Web Store](https://chromewebstore.google.com/detail/tabit-%E2%80%94-chords-for-youtube/kapdioliloodbbjhomdipnmaiedieinn)
 
 [![CI](https://github.com/paolosand/tabIt/actions/workflows/ci.yml/badge.svg)](https://github.com/paolosand/tabIt/actions/workflows/ci.yml) ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4?logo=googlechrome&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-fadc7d)
 
@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/main/packaging/inst
 
 **2. Add the extension.** Install it from the
 [Chrome Web Store](https://chromewebstore.google.com/detail/tabit-%E2%80%94-chords-for-youtube/kapdioliloodbbjhomdipnmaiedieinn). Or, to load it by hand,
-download `tabit-extension-v0.6.0.zip` from the
+download `tabit-extension-v0.7.0.zip` from the
 [latest release](https://github.com/paolosand/tabIt/releases/latest) and unzip it. Open
 `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose the
 unzipped folder.
