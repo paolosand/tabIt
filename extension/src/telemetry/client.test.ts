@@ -37,12 +37,12 @@ describe('insertRow', () => {
     expect(init.body).toBe(JSON.stringify(row));
   });
 
-  it('uses on_conflict and ignore-duplicates for charts when asked', async () => {
+  it('uses ignore-duplicates with NO on_conflict target (anon has no SELECT grant) when asked', async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 201 }));
     const { insertRow } = await load();
     await expect(insertRow('charts', { video_id: 'v' }, { ignoreDuplicates: true })).resolves.toBe(true);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://test.supabase.co/rest/v1/charts?on_conflict=video_id,engine_version');
+    expect(url).toBe('https://test.supabase.co/rest/v1/charts');
     expect(init.headers.Prefer).toBe('resolution=ignore-duplicates,return=minimal');
   });
 

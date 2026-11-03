@@ -17,8 +17,9 @@ export async function insertRow(
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
   try {
     const ignore = opts?.ignoreDuplicates === true;
-    const query = ignore ? '?on_conflict=video_id,engine_version' : '';
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    // No `?on_conflict=`: PostgREST then emits a bare `ON CONFLICT DO NOTHING`, while an explicit
+    // conflict target would need a SELECT grant on charts that anon deliberately lacks.
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_ANON_KEY,
