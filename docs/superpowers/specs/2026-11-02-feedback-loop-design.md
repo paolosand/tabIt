@@ -76,11 +76,17 @@ an approved chart for a track first, fall back to the local engine). That librar
   (unique on video ID + engine version, chart as jsonb, title, first seen),
   `analyses` (usage events), `reports` (flags, with status for triage).
 - The extension's **background service worker** makes the calls (content scripts
-  cannot, because of CORS). `manifest.json` gains the Supabase project host in
-  `host_permissions`.
+  cannot, because of CORS). `manifest.json` gains **no** new host permission (a new
+  one would make Chrome disable the extension for every existing user until they
+  re-approve); Supabase's REST API allows cross-origin requests, so the service
+  worker's fetch is expected to work as is (confirm in the manual end-to-end task).
 - The extension holds only the public anon key. **Row Level Security** permits
   insert (and the report follow-up update) but no select. Column/size limits via
-  check constraints bound what can be written.
+  check constraints bound what can be written: column lengths and formats, and the
+  `charts` JSON must name the same video ID and engine version as its columns.
+  Anon has no SELECT grant, so uploads use a bare `ON CONFLICT DO NOTHING` (the
+  client sends no `on_conflict` parameter): an explicit conflict target would need
+  SELECT.
 - Song identity is the YouTube video ID, matching the helper's cache key, so the
   same key serves the future library lookup.
 - Settings state (`shareUsage`, `installId`) in `chrome.storage.local`.
@@ -90,8 +96,8 @@ an approved chart for a track first, fall back to the local engine). That librar
 - Chrome MV3 extension; React overlay in `extension/src/overlay`; background logic
   in `extension/src/background` (see `messages.ts` for the message pattern).
 - `PRIVACY.md` currently promises "does not collect anything" and "runs no servers";
-  this must be rewritten. Web Store review will flag the new host permission and data
-  collection, so the listing's data-usage form must be updated.
+  this must be rewritten. Web Store review will flag the new data
+  collection (there is no new host permission, see Architecture), so the listing's data-usage form must be updated.
 - Branching: work branches from and PRs into `staging`. No version bump in feature
   work. Expected to ship as a minor release (0.7.0) when the developer decides.
 - Supabase's anon key is public by design; safety rests on RLS, not secrecy.
@@ -161,6 +167,17 @@ Author's calls:
   is reproducible.
 
 ## Known risks
+
+- **CORS from the service worker.** With no Supabase host permission, the service
+  worker's fetch depends on Supabase's REST API answering cross-origin requests. If
+  CORS blocks it in the manual end-to-end task, the host permission must be re-added
+  deliberately, accepting the re-approval prompt existing users will see.
+- **Chart poisoning (Phase 2 requirement).** `charts` is world-insertable with the
+  public anon key, and the first writer for a video ID and engine version wins, so a
+  malicious client can plant a bogus chart. The database only checks that the chart
+  JSON names the same video and engine version as its columns. Phase 2 must never
+  serve `charts` directly to users: approved charts go in a separate table that only
+  the developer writes.
 
 - Free-tier Supabase projects pause after a period of inactivity (check the current
   rule). A paused project makes every send fail silently. Before launch, choose a

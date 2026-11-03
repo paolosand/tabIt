@@ -33,6 +33,12 @@ after merging is fine; the hazard only exists when the pin moves.)
      (that test fails if any place above disagrees), the engine-version
      assertion in `tests/test_smoke.py` and the one in
      `tests/test_chord_backend.py` (`test_engine_version_is_the_package_version`)
+   Before releasing, make sure the repository variables `SUPABASE_URL` and
+   `SUPABASE_ANON_KEY` are set (GitHub: Settings -> Secrets and variables ->
+   Actions -> Variables). Copy both from the Supabase dashboard under Project
+   Settings -> API (the project URL and the `anon` public key). The release
+   workflow now fails without them, rather than shipping an extension with
+   telemetry disabled.
 2. Run the suites: `python -m pytest -q` and
    `cd extension && npx vitest run && npx tsc --noEmit`.
 3. Tag the release-candidate commit (the branch HEAD, with the bumps above

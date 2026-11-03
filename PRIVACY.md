@@ -46,7 +46,7 @@ The first time you send a report or turn sharing on, tabIt creates a random ID (
 
 ### Where it is stored, and who sees it
 
-Uploaded data is stored in Supabase, a hosted database service, and is read only by the developer.
+Uploaded data is stored in Supabase, a hosted database service, and is read only by the developer. As with any web request, Supabase sees the IP address of each request and briefly logs it as part of running the service. The developer does not store IP addresses in the tables that hold your uploads.
 
 ### Turning it off, and deletion
 
