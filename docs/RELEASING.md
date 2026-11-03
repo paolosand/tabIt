@@ -18,6 +18,11 @@ after merging is fine; the hazard only exists when the pin moves.)
 
 ## Checklist
 
+Before step 1, decide whether this release carries helper changes users should want. If it
+does, set `RECOMMENDED_ENGINE_VERSION` in `extension/src/version.ts` to this version, so
+users on an older helper see the "newer helper available" notice. Leave it alone otherwise
+(an extension-only release should not nag anyone to update the helper).
+
 1. Bump the version in every place below, together (one `X.Y.Z`; `vX.Y.Z` for
    the install.sh default). That is seven files holding eight literals, plus
    three test literals:
