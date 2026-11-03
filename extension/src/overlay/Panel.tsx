@@ -6,8 +6,8 @@ import { setVideoTranspose } from '../transpose/videoTranspose';
 import { useVideoTime } from './useVideoTime';
 import { Wordmark } from './Wordmark';
 import Ribbon from './Ribbon';
-import ReportControl from './ReportControl';
-import SharingToggle from './SharingToggle';
+import FeedbackMenu from './FeedbackMenu';
+import { FEEDBACK_ROOT_ATTR } from './keyboardIsolation';
 
 export interface PanelProps {
   chart: Chart;
@@ -238,20 +238,21 @@ export default function Panel({ chart, onCollapse }: PanelProps) {
           </div>
         )}
 
-        {hasBeats && (
-          <button
-            type="button"
-            className="tabit-view-toggle"
-            aria-label={view === 'ribbon' ? 'Show full sheet' : 'Show beat ribbon'}
-            onClick={() => setView((v) => (v === 'ribbon' ? 'sheet' : 'ribbon'))}
-          >
-            {view === 'ribbon' ? '⌄ full sheet' : '⌃ beat ribbon'}
-          </button>
-        )}
-
-        <div className="tabit-feedback-row">
-          <ReportControl chart={chart} />
-          <SharingToggle />
+        {/* One slim bottom row: view toggle on the left (hidden for beat-less charts), feedback
+            controls on the right. Keys typed anywhere in it are kept from the page's shortcuts
+            (see keyboardIsolation.ts). */}
+        <div className="tabit-feedback-row" {...{ [FEEDBACK_ROOT_ATTR]: '' }}>
+          {hasBeats && (
+            <button
+              type="button"
+              className="tabit-view-toggle"
+              aria-label={view === 'ribbon' ? 'Show full sheet' : 'Show beat ribbon'}
+              onClick={() => setView((v) => (v === 'ribbon' ? 'sheet' : 'ribbon'))}
+            >
+              {view === 'ribbon' ? '⌄ full sheet' : '⌃ beat ribbon'}
+            </button>
+          )}
+          <FeedbackMenu chart={chart} />
         </div>
       </div>
     </div>

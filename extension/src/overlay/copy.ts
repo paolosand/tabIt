@@ -22,19 +22,35 @@ export const OFFLINE_MESSAGE = "tabIt isn't running. Open Terminal and paste:";
 export const RESTART_COMMAND = '~/.local/bin/tabit restart';
 export const RETRY_LABEL = 'Retry';
 
+export const FEEDBACK_BUTTON = 'Feedback';
+export const FEEDBACK_TITLE = 'Feedback';
+export const FEEDBACK_WRONG_CHORDS = 'Wrong chords?';
 export const REPORT_BUTTON = 'Report bad transcription';
 export const REPORT_SENDING = 'Sending…';
-export const REPORT_FAILED = 'Couldn’t send — try again';
-export const REPORT_FOLLOWUP_TITLE = 'Thanks — what was off?';
+export const REPORT_FAILED = "Couldn't send, try again";
+export const REPORT_ALREADY = 'Reported for this song';
+export const REPORT_SENT = 'Report sent';
+export const REPORTED = 'Reported';
+export const REPORT_POPUP_LABEL = 'Report bad transcription';
+export const REPORT_QUESTION = 'What was off?';
 export const REPORT_REASON_LABELS = {
   chords: 'Chords',
   key: 'Key',
   tempo: 'Tempo',
   other: 'Other',
 } as const;
-export const REPORT_NOTE_LABEL = 'Add a note (optional)';
+export const REPORT_NOTE_LABEL = 'Optional note';
+export const REPORT_NOTE_PLACEHOLDER = 'Add a note (optional)';
+export const REPORT_SKIP = 'Skip';
 export const REPORT_SEND = 'Send';
-export const REPORT_DETAILS_DONE = 'Sent — thank you';
+export const REPORT_THANKS = 'Thanks, noted.';
 export const SHARING_LABEL = 'Help improve tabIt';
-export const SHARING_NOTE =
-  'Shares which songs you analyze and the charts tabIt makes for them, including songs that fail. No account or name.';
+export const SHARING_ERROR = "Couldn't change this, try again";
+export const SHARING_LIST = [
+  'Songs you analyze (video ID and title)',
+  'The chart tabIt makes for each song',
+  'Songs that fail, with a short error',
+] as const;
+export const SHARING_NEVER = 'Never your audio, account or browsing history. No name attached.';
+export const PRIVACY_LABEL = 'Read the privacy policy';
+export const PRIVACY_URL = 'https://github.com/paolosand/tabIt/blob/main/PRIVACY.md';
