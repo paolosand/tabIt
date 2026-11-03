@@ -33,9 +33,9 @@ select throws_ok(
 select lives_ok(
   $$insert into charts (video_id, engine_version, title, chart) values ('abcdefghijk', 'v1', 'T2', '{"source":{"videoId":"abcdefghijk"},"analysis":{"engineVersion":"v1"},"a":2}') on conflict do nothing$$,
   'duplicate chart with bare on conflict do nothing succeeds');
--- PostgREST sends this bare form when the request has Prefer: resolution=ignore-duplicates and
--- NO on_conflict query parameter. An explicit conflict target needs SELECT on charts, which anon
--- must not have, so the client must never send ?on_conflict=.
+-- Note: PostgREST does NOT send this bare form for Prefer: resolution=ignore-duplicates; it answers
+-- 401/42501 for anon, so the client sends a plain insert and treats the duplicate-key 409 (23505)
+-- as success. An explicit conflict target needs SELECT on charts, which anon must not have.
 select throws_ok(
   $$insert into charts (video_id, engine_version, title, chart) values ('abcdefghijk', 'v1', 'T3', '{"source":{"videoId":"abcdefghijk"},"analysis":{"engineVersion":"v1"},"a":3}') on conflict (video_id, engine_version) do nothing$$,
   '42501', null, 'explicit conflict target is not permitted for anon (client must omit on_conflict)');

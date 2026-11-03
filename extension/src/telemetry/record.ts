@@ -16,7 +16,7 @@ async function uploadChart(chart: Chart): Promise<boolean> {
       title: chart.source.title,
       chart,
     },
-    { ignoreDuplicates: true },
+    { duplicateOk: true },
   );
 }
 

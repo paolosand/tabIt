@@ -84,9 +84,10 @@ an approved chart for a track first, fall back to the local engine). That librar
   insert (and the report follow-up update) but no select. Column/size limits via
   check constraints bound what can be written: column lengths and formats, and the
   `charts` JSON must name the same video ID and engine version as its columns.
-  Anon has no SELECT grant, so uploads use a bare `ON CONFLICT DO NOTHING` (the
-  client sends no `on_conflict` parameter): an explicit conflict target would need
-  SELECT.
+  Anon has no SELECT grant, so uploads are plain inserts with `Prefer: return=minimal`
+  only (no `on_conflict`, no `resolution=ignore-duplicates`: PostgREST needs SELECT
+  for those and answers 401). Duplicate charts are rejected by the database's primary
+  key (HTTP 409, code 23505) and the client treats that 409 as success.
 - Song identity is the YouTube video ID, matching the helper's cache key, so the
   same key serves the future library lookup.
 - Settings state (`shareUsage`, `installId`) in `chrome.storage.local`.
@@ -130,8 +131,9 @@ Facts from the code:
   chart (builder: confirm).
 
 Author's calls:
-- Chart dedupe: insert with ignore-duplicates on (video ID, engine version). That
-  needs no select permission. The client may also remember what it has sent in
+- Chart dedupe: the primary key on (video ID, engine version) rejects duplicates
+  (409, code 23505), which the client treats as success. That needs no select
+  permission. The client may also remember what it has sent in
   `chrome.storage.local`, but the server constraint is the source of truth.
 - Reports reference a chart by (video ID, engine version), not a foreign key. The
   client inserts the chart first, then the report.

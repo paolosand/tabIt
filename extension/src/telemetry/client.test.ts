@@ -37,13 +37,46 @@ describe('insertRow', () => {
     expect(init.body).toBe(JSON.stringify(row));
   });
 
-  it('uses ignore-duplicates with NO on_conflict target (anon has no SELECT grant) when asked', async () => {
+  it('sends a plain return=minimal insert with no query string even when duplicates are ok', async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 201 }));
     const { insertRow } = await load();
-    await expect(insertRow('charts', { video_id: 'v' }, { ignoreDuplicates: true })).resolves.toBe(true);
+    await expect(insertRow('charts', { video_id: 'v' }, { duplicateOk: true })).resolves.toBe(true);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://test.supabase.co/rest/v1/charts');
-    expect(init.headers.Prefer).toBe('resolution=ignore-duplicates,return=minimal');
+    expect(init.headers.Prefer).toBe('return=minimal');
+  });
+
+  const dup = () =>
+    new Response(JSON.stringify({ code: '23505', message: 'duplicate key value' }), { status: 409 });
+
+  it('treats 409/23505 as success when duplicates are ok', async () => {
+    fetchMock.mockResolvedValue(dup());
+    const { insertRow } = await load();
+    await expect(insertRow('charts', {}, { duplicateOk: true })).resolves.toBe(true);
+  });
+
+  it('treats 409/23505 as failure when duplicates are not ok', async () => {
+    fetchMock.mockResolvedValue(dup());
+    const { insertRow } = await load();
+    await expect(insertRow('reports', {})).resolves.toBe(false);
+  });
+
+  it('treats a 409 with a different code as failure', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ code: '23503' }), { status: 409 }));
+    const { insertRow } = await load();
+    await expect(insertRow('charts', {}, { duplicateOk: true })).resolves.toBe(false);
+  });
+
+  it('treats a 401 as failure even when duplicates are ok', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ code: '42501' }), { status: 401 }));
+    const { insertRow } = await load();
+    await expect(insertRow('charts', {}, { duplicateOk: true })).resolves.toBe(false);
+  });
+
+  it('treats a 409 with an unparseable body as failure', async () => {
+    fetchMock.mockResolvedValue(new Response('<html>not json', { status: 409 }));
+    const { insertRow } = await load();
+    await expect(insertRow('charts', {}, { duplicateOk: true })).resolves.toBe(false);
   });
 
   it('resolves false when fetch rejects', async () => {

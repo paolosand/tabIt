@@ -50,12 +50,12 @@ describe('sharing off', () => {
 });
 
 describe('sharing on', () => {
-  it('recordAnalysis inserts chart (ignoreDuplicates) then analysis', async () => {
+  it('recordAnalysis inserts chart (duplicateOk) then analysis', async () => {
     await recordAnalysis(chart);
     expect(ins.mock.calls[0]).toEqual([
       'charts',
       { video_id: 'abc12345678', engine_version: '0.4.1', title: 'Song', chart },
-      { ignoreDuplicates: true },
+      { duplicateOk: true },
     ]);
     expect(ins.mock.calls[1][0]).toBe('analyses');
     expect(ins.mock.calls[1][1]).toMatchObject({
