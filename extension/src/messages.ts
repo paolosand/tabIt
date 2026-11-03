@@ -23,3 +23,5 @@ export interface OkResponse { ok: boolean; }
 export interface GetSharingRequest { type: 'GET_SHARING'; }
 export interface SetSharingRequest { type: 'SET_SHARING'; shareUsage: boolean; }
 export interface SharingResponse { shareUsage: boolean; }
+/** Answer when the stored value cannot be read or written; the UI must not guess. */
+export interface SharingErrorResponse { error: 'unavailable'; }

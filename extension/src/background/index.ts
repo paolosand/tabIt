@@ -1,6 +1,7 @@
 import type {
   GetChartRequest, GetHelperStatusRequest, GetSharingRequest, HelperStatusResponse,
-  ReportDetailsRequest, ReportRequest, SetSharingRequest,
+  ReportDetailsRequest, ReportReason, ReportRequest, SetSharingRequest,
+  SharingErrorResponse, SharingResponse,
 } from '../messages';
 import {
   handleGetChart, handleGetHelperStatus, handleGetSharing, handleReport, handleReportDetails, handleSetSharing,
@@ -12,7 +13,18 @@ type Msg =
   | GetChartRequest | GetHelperStatusRequest | ReportRequest | ReportDetailsRequest
   | GetSharingRequest | SetSharingRequest;
 
-chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
+const REASONS: readonly ReportReason[] = ['chords', 'key', 'tempo', 'other'];
+const MAX_NOTE = 500;
+const SHARING_UNAVAILABLE: SharingErrorResponse = { error: 'unavailable' };
+
+/** Always answers with the stored value; an explicit error shape if even that cannot be read. */
+function currentSharing(): Promise<SharingResponse | SharingErrorResponse> {
+  return handleGetSharing().catch((): SharingErrorResponse => SHARING_UNAVAILABLE);
+}
+
+chrome.runtime.onMessage.addListener((msg: Msg, sender, sendResponse) => {
+  // Only this extension's own contexts may talk to the background.
+  if (sender?.id !== chrome.runtime.id) return false;
   if (msg?.type === 'GET_CHART') {
     handleGetChart(msg.videoId).then(sendResponse);
     return true; // async response
@@ -24,19 +36,30 @@ chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
     return true;
   }
   if (msg?.type === 'REPORT_BAD_TRANSCRIPTION') {
-    handleReport(msg).catch(() => ({ ok: false })).then(sendResponse);
+    const valid = typeof msg.reportId === 'string' && msg.reportId !== ''
+      && typeof msg.chart === 'object' && msg.chart !== null;
+    (valid ? handleReport(msg) : Promise.reject(new Error('invalid report')))
+      .catch(() => ({ ok: false })).then(sendResponse);
     return true;
   }
   if (msg?.type === 'REPORT_DETAILS') {
-    handleReportDetails(msg).catch(() => ({ ok: false })).then(sendResponse);
+    const valid = typeof msg.reportId === 'string' && msg.reportId !== ''
+      && REASONS.includes(msg.reason) && typeof msg.note === 'string';
+    (valid ? handleReportDetails({ ...msg, note: msg.note.slice(0, MAX_NOTE) }) : Promise.reject(new Error('invalid details')))
+      .catch(() => ({ ok: false })).then(sendResponse);
     return true;
   }
   if (msg?.type === 'GET_SHARING') {
-    handleGetSharing().catch(() => ({ shareUsage: false })).then(sendResponse);
+    currentSharing().then(sendResponse);
     return true;
   }
   if (msg?.type === 'SET_SHARING') {
-    handleSetSharing(msg.shareUsage).catch(() => ({ shareUsage: false })).then(sendResponse);
+    if (typeof msg.shareUsage !== 'boolean') {
+      currentSharing().then(sendResponse);
+    } else {
+      // A failed write must not claim a value: answer with what storage actually holds.
+      handleSetSharing(msg.shareUsage).catch(currentSharing).then(sendResponse);
+    }
     return true;
   }
   return false;

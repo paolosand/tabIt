@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 // Minimal chrome stub: tests override members per-case with vi.spyOn/vi.fn.
 (globalThis as Record<string, unknown>).chrome = {
   runtime: {
+    id: 'test-extension-id',
     sendMessage: () => Promise.resolve(undefined),
     onMessage: { addListener: () => {} },
     getURL: (path: string) => `chrome-extension://test/${path}`,

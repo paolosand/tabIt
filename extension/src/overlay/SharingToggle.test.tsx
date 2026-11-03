@@ -52,3 +52,64 @@ test('shows the exact privacy note', () => {
   );
   expect(screen.getByText(SHARING_NOTE)).toBeTruthy();
 });
+
+const ERROR_TEXT = 'Couldn’t change this — try again';
+
+test('a rejected turn-off keeps the box ON and shows the error', async () => {
+  stub((m) => {
+    if (m.type === 'GET_SHARING') return { shareUsage: true };
+    throw new Error('port closed');
+  });
+  render(<SharingToggle />);
+  await waitFor(() => expect(box().checked).toBe(true));
+  await userEvent.click(box());
+  await waitFor(() => expect(screen.getByText(ERROR_TEXT)).toBeTruthy());
+  expect(box().checked).toBe(true);
+});
+
+test('SET_SHARING answering undefined keeps the previous value and shows the error', async () => {
+  stub((m) => (m.type === 'GET_SHARING' ? { shareUsage: true } : undefined));
+  render(<SharingToggle />);
+  await waitFor(() => expect(box().checked).toBe(true));
+  await userEvent.click(box());
+  await waitFor(() => expect(screen.getByText(ERROR_TEXT)).toBeTruthy());
+  expect(box().checked).toBe(true);
+});
+
+test('the explicit error shape from the background keeps the previous value', async () => {
+  stub((m) => (m.type === 'GET_SHARING' ? { shareUsage: false } : { error: 'unavailable' }));
+  render(<SharingToggle />);
+  await waitFor(() => expect(send).toHaveBeenCalled());
+  await userEvent.click(box());
+  await waitFor(() => expect(screen.getByText(ERROR_TEXT)).toBeTruthy());
+  expect(box().checked).toBe(false);
+});
+
+test('the error clears after a later successful change', async () => {
+  let fail = true;
+  stub((m) => {
+    if (m.type === 'GET_SHARING') return { shareUsage: false };
+    return fail ? undefined : { shareUsage: m.shareUsage };
+  });
+  render(<SharingToggle />);
+  await userEvent.click(box());
+  await waitFor(() => expect(screen.getByText(ERROR_TEXT)).toBeTruthy());
+  fail = false;
+  await userEvent.click(box());
+  await waitFor(() => expect(box().checked).toBe(true));
+  expect(screen.queryByText(ERROR_TEXT)).toBeNull();
+});
+
+test('a slow initial GET_SHARING reply cannot overwrite a later user choice', async () => {
+  let releaseGet!: (v: unknown) => void;
+  stub((m) => {
+    if (m.type === 'GET_SHARING') return new Promise((r) => { releaseGet = r; });
+    return { shareUsage: m.shareUsage };
+  });
+  render(<SharingToggle />);
+  await userEvent.click(box());
+  await waitFor(() => expect(box().checked).toBe(true));
+  releaseGet({ shareUsage: false });
+  await new Promise((r) => setTimeout(r, 20));
+  expect(box().checked).toBe(true);
+});

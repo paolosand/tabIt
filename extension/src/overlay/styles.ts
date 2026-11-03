@@ -512,4 +512,5 @@ export const OVERLAY_CSS = `
 .tabit-sharing-label input { margin: 0; accent-color: var(--tabit-ink); cursor: pointer; }
 .tabit-sharing-label input:focus-visible { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
 .tabit-sharing-note { margin: 2px 0 0; color: var(--tabit-muted); }
+.tabit-sharing-error { margin: 2px 0 0; color: var(--tabit-error); }
 `;
