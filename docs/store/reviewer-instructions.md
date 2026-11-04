@@ -16,7 +16,7 @@ Requirements: a Mac (macOS), Chrome, about 2 GB of disk (a 1 GB environment plus
 3. Under the video, click the tabIt bar ("Get chords"). If the helper is not found yet, the bar shows the three setup steps with a Copy command button and notices the helper on its own once it is running.
 4. Pass: the bar shows progress (download, chords, chart) and then the chord chart. The current chord moves along as the video plays. A repeat of the same video appears almost instantly.
 
-The extension talks only to http://localhost:28224 and youtube.com. To remove the helper afterwards, run: ~/.local/bin/tabit uninstall
+The extension talks to http://localhost:28224 and youtube.com. It contacts the developer's hosting service (Supabase) only if the user clicks "Report bad transcription" or turns on the off-by-default "Help improve tabIt" setting. To remove the helper afterwards, run: ~/.local/bin/tabit uninstall
 ```
 
 Notes for the owner:

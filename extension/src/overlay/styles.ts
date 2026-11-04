@@ -20,6 +20,7 @@ export const OVERLAY_CSS = `
   --tabit-amber: oklch(0.88 0.14 90);
   --tabit-amber-dot: oklch(0.55 0.13 70);
   --tabit-error: oklch(0.55 0.12 25);
+  --tabit-inset: 14px; /* horizontal inset of footer and feedback row (and the pop-ups' right anchor) */
   --tabit-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --tabit-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 }
@@ -399,7 +400,7 @@ export const OVERLAY_CSS = `
   align-items: baseline;
   gap: 8px;
   margin-top: 6px;
-  padding: 0 14px; /* inset inside the panel card (was previously the panel's 5vw) */
+  padding: 0 var(--tabit-inset); /* inset inside the panel card (was previously the panel's 5vw) */
   font-size: 13.5px;
   color: var(--tabit-muted);
 }
@@ -458,6 +459,129 @@ export const OVERLAY_CSS = `
   position: absolute; right: 0; top: 0; bottom: 0; width: 70px; pointer-events: none;
   background: linear-gradient(to right, transparent, oklch(0.985 0.008 90));
 }
+
+/* --- feedback row: view toggle left, "Feedback" menu right (layout C) --- */
+/* One slim row. position: relative anchors the pop-ups, which float above it (absolute)
+ * and so never change the panel's height. */
+.tabit-feedback-row {
+  position: relative;
+  display: flex; align-items: center; gap: 4px 16px;
+  padding: 0 var(--tabit-inset) 6px;
+  font: 11px/1.4 var(--tabit-sans);
+  color: var(--tabit-muted);
+}
+.tabit-feedback-row .tabit-view-toggle { width: auto; padding: 3px 0; text-align: left; }
+.tabit-fb { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.tabit-fb-status { color: var(--tabit-muted); font-size: 11px; }
+.tabit-sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.tabit-text-btn {
+  padding: 3px 0; border: none; background: none; font: inherit; font-size: 11px;
+  letter-spacing: 0.02em; color: var(--tabit-muted); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+  text-decoration-color: oklch(0.52 0.02 70 / 0.5);
+  transition: color 180ms ease-out;
+}
+.tabit-text-btn:hover:not(:disabled) { color: var(--tabit-ink); }
+.tabit-text-btn:disabled { cursor: default; opacity: 0.6; text-decoration: none; }
+.tabit-text-btn:focus-visible, .tabit-pop-chip:focus-visible, .tabit-pop-send:focus-visible,
+.tabit-pop-link:focus-visible, .tabit-view-toggle:focus-visible {
+  outline: 2px solid var(--tabit-ink); outline-offset: 2px;
+}
+
+/* Pop-ups: float over the song, Popover shadow, fade in once when they first appear. They are
+ * keyed per kind in React, so chips and typing never remount them (no replayed fade). */
+@keyframes tabit-pop-in { from { opacity: 0; } to { opacity: 1; } }
+.tabit-pop-fade { animation: tabit-pop-in 180ms ease-out; }
+.tabit-pop {
+  position: absolute; bottom: calc(100% - 4px); right: var(--tabit-inset); z-index: 5;
+  width: 290px; padding: 12px 14px;
+  background: var(--tabit-paper); color: var(--tabit-ink);
+  border-radius: 4px; box-shadow: 0 4px 14px oklch(0.28 0.02 70 / 0.22);
+  font: 12px/1.45 var(--tabit-sans);
+}
+.tabit-pop:focus { outline: none; }
+.tabit-pop-report { width: 340px; }
+.tabit-pop-title {
+  margin: 0 0 6px; font: 600 9.5px/1 var(--tabit-sans);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--tabit-muted);
+}
+.tabit-pop-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 6px 0; border-top: 1.5px solid var(--tabit-border);
+}
+.tabit-pop-title + .tabit-pop-row { border-top: 0; }
+.tabit-pop-error { margin: 2px 0 4px; color: var(--tabit-error); font-size: 11px; }
+.tabit-pop-list { margin: 6px 0 4px; padding-left: 16px; color: var(--tabit-muted); }
+.tabit-pop-list li { margin: 2px 0; }
+.tabit-pop-never { margin: 0 0 8px; color: var(--tabit-muted); }
+.tabit-pop-link {
+  color: oklch(0.42 0.09 250); text-decoration: underline;
+  text-decoration-color: oklch(0.75 0.06 250); text-underline-offset: 2px;
+}
+.tabit-pop-link:hover { color: oklch(0.32 0.11 250); }
+
+/* "Help improve tabIt" checkbox: native input kept (hidden) for semantics and keyboard. */
+.tabit-switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; position: relative; }
+.tabit-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tabit-switch-box {
+  width: 14px; height: 14px; display: grid; place-items: center;
+  border: 1.5px solid var(--tabit-muted); border-radius: 2px; background: var(--tabit-paper);
+  transition: background 180ms ease-out;
+}
+.tabit-switch input:checked + .tabit-switch-box { background: var(--tabit-ink); border-color: var(--tabit-ink); }
+.tabit-switch input:checked + .tabit-switch-box::after {
+  content: ""; width: 6px; height: 3px;
+  border-left: 1.5px solid var(--tabit-paper); border-bottom: 1.5px solid var(--tabit-paper);
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+.tabit-switch input:focus-visible + .tabit-switch-box { outline: 2px solid var(--tabit-ink); outline-offset: 2px; }
+
+/* Report form */
+/* The tick sits in a flex row with its text, so align-items centres it on the text line. */
+.tabit-pop-title-tick, .tabit-pop-thanks { display: flex; align-items: center; gap: 6px; }
+.tabit-tick {
+  flex: none; display: inline-grid; place-items: center; width: 14px; height: 14px;
+  border: 1.5px solid var(--tabit-ink); border-radius: 50%;
+}
+/* The L (left + bottom borders) has its centroid ~0.3px left of and below the box centre,
+ * which the -45deg turn maps to ~0.4px straight down; shift the check up by that much. */
+.tabit-tick::after {
+  content: ""; width: 5px; height: 2.5px;
+  border-left: 1.5px solid var(--tabit-ink); border-bottom: 1.5px solid var(--tabit-ink);
+  transform: translate(0, -0.5px) rotate(-45deg);
+}
+/* 12px in the 9.5px caps title so the ring is not heavier than its label; 14px beside 12px text. */
+.tabit-tick-sm { width: 12px; height: 12px; }
+.tabit-tick-sm::after { width: 4px; height: 2px; transform: translate(0, -0.4px) rotate(-45deg); }
+.tabit-pop-question { margin: 0 0 8px; font-size: 13px; color: var(--tabit-ink); }
+.tabit-pop-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.tabit-pop-chip {
+  padding: 4px 10px; border-radius: 2px; font: inherit; cursor: pointer;
+  border: 1.5px solid var(--tabit-border); background: transparent; color: var(--tabit-ink);
+  transition: background 180ms ease-out;
+}
+.tabit-pop-chip:hover { background: oklch(0.94 0.01 85); }
+.tabit-pop-chip[aria-pressed="true"] { background: var(--tabit-ink); border-color: var(--tabit-ink); color: var(--tabit-paper); }
+.tabit-pop-note {
+  display: block; width: 100%; padding: 4px 2px; resize: none; line-height: 1.4;
+  border: none; border-bottom: 1.5px solid var(--tabit-border); border-radius: 0;
+  background: transparent; color: var(--tabit-ink); font: inherit; outline: none;
+}
+.tabit-pop-note:focus { border-bottom-color: var(--tabit-ink); }
+.tabit-pop-note::placeholder { color: var(--tabit-muted); }
+.tabit-pop-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 10px; }
+.tabit-pop-send {
+  padding: 6px 14px; border: none; border-radius: 2px; cursor: pointer;
+  background: var(--tabit-ink); color: var(--tabit-paper);
+  font: 600 11px var(--tabit-sans); letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background 180ms ease-out, transform 180ms ease-out;
+}
+.tabit-pop-send:hover:not(:disabled) { background: oklch(0.36 0.03 70); transform: translateY(-1px); }
+.tabit-pop-send:disabled { background: oklch(0.85 0.015 85); color: var(--tabit-muted); cursor: default; }
+.tabit-pop-thanks { color: var(--tabit-ink); font-size: 12px; }
 
 /* Update notice: a quiet strip above the bar when the helper works but is older than
  * RECOMMENDED_ENGINE_VERSION. Ink and paper only (amber is reserved for progress). */

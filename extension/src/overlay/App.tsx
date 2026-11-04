@@ -13,6 +13,7 @@ import { isMac } from '../platform';
 import { CONNECTED_NOTE, RESTART_COMMAND } from './copy';
 import { Bar } from './Bar';
 import Panel from './Panel';
+import { isolateFeedbackKeys } from './keyboardIsolation';
 import { UpdateNote } from './UpdateNote';
 
 const POLL_INTERVAL_MS = 3000;
@@ -258,7 +259,13 @@ export function App({ videoId }: AppProps) {
 export function renderOverlay(shadowRoot: ShadowRoot, videoId: string): () => void {
   const container = document.createElement('div');
   shadowRoot.appendChild(container);
+  // On the shadow root, i.e. ABOVE React's delegated listeners on `container`, so React's own
+  // key handlers (Enter, Escape) run first. Torn down together with the React root.
+  const stopKeys = isolateFeedbackKeys(shadowRoot);
   const root = createRoot(container);
   root.render(<App videoId={videoId} />);
-  return () => root.unmount();
+  return () => {
+    root.unmount();
+    stopKeys();
+  };
 }

@@ -69,8 +69,13 @@ audio comes from [yt-dlp](https://github.com/yt-dlp/yt-dlp) and
 [FFmpeg](https://ffmpeg.org). Full credits, citation and licence notes are in
 [How it works](docs/HOW-IT-WORKS.md#chord-recognition-and-credits).
 
-tabIt has no accounts, no tracking and sends nothing to the developer. See
-[`PRIVACY.md`](PRIVACY.md).
+tabIt has no accounts and no tracking, and chord analysis runs entirely on your Mac. Two
+things are optional and send data to the developer: the **Report bad transcription**
+button (sends that video's ID, title and chart, plus an optional reason and note), and
+**Help improve tabIt**, a setting that is off until you turn it on (uploads the full chart
+and video title and ID of each song you analyze, and records failures). Audio, YouTube account details
+and browsing history are never sent. Data is stored in Supabase, is not sold, and is used
+only to improve tabIt. See [`PRIVACY.md`](PRIVACY.md) for exactly what is sent.
 
 ## Learn more
 

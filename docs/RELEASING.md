@@ -43,27 +43,33 @@ users on an older helper see the "newer helper available" notice. Leave it alone
    `tests/compat/fixtures/X.Y.Z/` files. `tests/compat/test_compat.py` fails until you do,
    and also fails if the new API dropped anything an older release had (see "Helper
    compatibility" in `docs/DEVELOPMENT.md`).
-3. Run the suites: `python -m pytest -q` and
+3. Before releasing, make sure the repository variables `SUPABASE_URL` and
+   `SUPABASE_ANON_KEY` are set (GitHub: Settings -> Secrets and variables ->
+   Actions -> Variables). Copy both from the Supabase dashboard under Project
+   Settings -> API (the project URL and the `anon` public key). The release
+   workflow now fails without them, rather than shipping an extension with
+   telemetry disabled.
+4. Run the suites: `python -m pytest -q` and
    `cd extension && npx vitest run && npx tsc --noEmit`.
-4. Tag the release-candidate commit (the branch HEAD, with the bumps above
+5. Tag the release-candidate commit (the branch HEAD, with the bumps above
    already committed) `vX.Y.Z` and push the tag. The PR is merged with a
    merge commit, so this commit stays an ancestor of `main`. Any commit added
    after tagging means a new tag (`vX.Y.Z+1`, with the bumps redone): never move
    a published tag.
-5. `gh release create vX.Y.Z --title vX.Y.Z --notes "..."`.
-6. Wait for the `Release extension` workflow (it builds the extension zip and
+6. `gh release create vX.Y.Z --title vX.Y.Z --notes "..."`.
+7. Wait for the `Release extension` workflow (it builds the extension zip and
    the engine wheel and fails if the wheel version does not match the tag). To
    re-run it for an existing release, use "Run workflow" with the tag.
-7. Confirm both assets are attached:
+8. Confirm both assets are attached:
    `gh release view vX.Y.Z --json assets`
    - `tabit-extension-vX.Y.Z.zip`
    - `tabit_engine-X.Y.Z-py3-none-any.whl`
-8. Smoke-test the install on a throwaway macOS user account. `main` still has
+9. Smoke-test the install on a throwaway macOS user account. `main` still has
    the old installer at this point, so run the tag's copy:
    `curl -fsSL https://raw.githubusercontent.com/paolosand/tabIt/vX.Y.Z/packaging/install.sh | sh`
-9. Only now merge the PR to `main` (merge commit, not squash or rebase). After
+10. Only now merge the PR to `main` (merge commit, not squash or rebase). After
    the merge, the public install command (the same line with `main`) installs
    the new release.
-10. (Owner) Upload the extension zip to the Chrome Web Store dashboard.
+11. (Owner) Upload the extension zip to the Chrome Web Store dashboard.
 
 v1.1 will add the Setup app to this checklist.
