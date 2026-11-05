@@ -181,3 +181,31 @@ def test_ingest_url_with_null_duration_coerces_to_zero(tone_440_wav, tmp_path, m
     assert result.source.duration == 0.0
     assert result.source.videoId == "abc"
     assert not os.path.exists(downloaded_path)  # cleanup happened
+
+
+def test_persistent_403_hints_at_tabit_update(tmp_path, monkeypatch):
+    """A 403 that survives every retry is most often a stale yt-dlp (issue
+    #34), so the error must tell the user how to refresh it."""
+
+    def fake_run(cmd, **kwargs):
+        raise subprocess.CalledProcessError(
+            1, cmd, stderr=b"ERROR: unable to download video data: HTTP Error 403: Forbidden")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(ingest_mod.time, "sleep", lambda _: None)
+
+    with pytest.raises(RuntimeError, match="tabit update"):
+        ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+
+
+def test_non_403_failure_has_no_update_hint(tmp_path, monkeypatch):
+    def fake_run(cmd, **kwargs):
+        raise subprocess.CalledProcessError(
+            1, cmd, stderr=b"ERROR: [youtube] abc: Video unavailable")
+
+    monkeypatch.setattr(ingest_mod.subprocess, "run", fake_run)
+    monkeypatch.setattr(ingest_mod.time, "sleep", lambda _: None)
+
+    with pytest.raises(RuntimeError) as exc:
+        ingest_mod._download_audio("https://youtu.be/abc", str(tmp_path))
+    assert "tabit update" not in str(exc.value)
