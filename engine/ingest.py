@@ -37,6 +37,10 @@ def _ytdlp_bin() -> str:
 
 _DOWNLOAD_RETRIES = 3
 _RETRY_BACKOFF_SEC = 2
+# A 403 that survives every retry is usually a stale yt-dlp (issue #34);
+# `tabit update` reruns the installer, which resolves yt-dlp fresh.
+_STALE_HINT = (" | If this keeps happening, the helper's yt-dlp may be out of date: "
+               "run `~/.local/bin/tabit update` in a terminal.")
 
 
 def _download_audio(url: str, workdir: str) -> tuple[str, dict]:
@@ -57,7 +61,8 @@ def _download_audio(url: str, workdir: str) -> tuple[str, dict]:
             if attempt == _DOWNLOAD_RETRIES:
                 stderr = (e.stderr or b"").decode(errors="replace").strip()
                 tail = " | ".join(stderr.splitlines()[-3:]) or "no stderr"
-                raise RuntimeError(f"yt-dlp failed for {url}: {tail}") from e
+                hint = _STALE_HINT if "HTTP Error 403" in stderr else ""
+                raise RuntimeError(f"yt-dlp failed for {url}: {tail}{hint}") from e
             time.sleep(_RETRY_BACKOFF_SEC)
     info_path = os.path.join(workdir, "src.info.json")
     with open(info_path) as f:
